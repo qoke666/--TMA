@@ -522,7 +522,8 @@
     }
 
     .modal .apply-form input,
-    .modal .apply-form select {
+    .modal .apply-form select,
+    .modal .apply-form textarea {
       padding: 5px;
       border: 1px solid #4B5563;
       border-radius: 5px;
@@ -542,6 +543,11 @@
       background-size: 12px;
     }
 
+    .modal .apply-form textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
     .modal .apply-form button {
       padding: 5px 12px;
       background: #14B8A6;
@@ -556,6 +562,29 @@
     }
 
     .modal .apply-form button:hover {
+      background: #F28C38;
+      transform: scale(1.05);
+    }
+
+    .modal .bot-button {
+      padding: 5px 12px;
+      background: #14B8A6;
+      color: #F3F4F6;
+      border: none;
+      border-radius: 5px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-weight: 600;
+      font-size: clamp(12px, 3.5vw, 13px);
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.3s ease;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .modal .bot-button:hover {
       background: #F28C38;
       transform: scale(1.05);
     }
@@ -673,7 +702,9 @@
 
       .modal .apply-form input,
       .modal .apply-form select,
+      .modal .apply-form textarea,
       .modal .apply-form button,
+      .modal .bot-button,
       .modal .close-button {
         font-size: 11px;
         padding: 4px;
@@ -707,10 +738,10 @@
     <div class="address">Красноярск, ул. Сакура, 12</div>
     <div class="social-links">
       <span class="social-title">Наши соцсети</span>
-      <a href="https://t.me/karate_dojo" class="social-link">
+      <a href="https://t.me/karate_dojo" class="social-link tg-link" data-social="telegram">
         <i class="fab fa-telegram-plane"></i>
       </a>
-      <a href="https://www.instagram.com/karate_dojo" class="social-link">
+      <a href="https://www.instagram.com/karate_dojo" class="social-link" data-social="instagram">
         <i class="fab fa-instagram"></i>
       </a>
     </div>
@@ -748,6 +779,7 @@
       <li class="menu-item" data-section="booking">Запись</li>
       <li class="menu-item" data-section="payment">Оплата</li>
       <li class="menu-item" data-section="rating">Рейтинг</li>
+      <li class="menu-item" data-section="expenses">Расходы</li>
     </ul>
     <div class="scroll-indicator"></div>
   </nav>
@@ -766,7 +798,7 @@
     <h2 class="section-title">Расписание занятий</h2>
     <div class="card" data-aos="fade-up" data-aos-delay="150">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-white">Март 2025</h3>
+        <h3 class="text-lg font-semibold text-white" id="home-calendar-title"></h3>
         <div class="flex space-x-2">
           <button class="prev-month p-2 rounded-full bg-transparent hover:bg-white/10 border border-white/20">
             <i class="fas fa-chevron-left text-white"></i>
@@ -828,7 +860,7 @@
     <h2 class="section-title">Запись на занятия</h2>
     <div class="card" data-aos="fade-up" data-aos-delay="100">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-white">Март 2025</h3>
+        <h3 class="text-lg font-semibold text-white" id="booking-calendar-title"></h3>
         <div class="flex space-x-2">
           <button class="prev-month p-2 rounded-full bg-transparent hover:bg-white/10 border border-white/20">
             <i class="fas fa-chevron-left text-white"></i>
@@ -965,6 +997,17 @@
     </div>
   </section>
 
+  <section id="expenses" class="section">
+    <h2 class="section-title">Расходы</h2>
+    <div class="grid">
+      <div class="card" data-aos="fade-up" data-aos-delay="100">
+        <h3 class="text-lg font-semibold mb-4 text-white">Добавить расход</h3>
+        <button class="w-full p-2 bg-teal-500 text-white rounded hover:bg-orange-500 transition-transform transform hover:scale-105" onclick="openExpenseModal()">Добавить</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script>
@@ -1000,6 +1043,47 @@
         retina_detect: true
       });
     }
+
+    const tg = window.Telegram?.WebApp;
+    if (tg) tg.expand();
+
+    let user_id = null, username = null, first_name = null, last_name = null;
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      ({ id: user_id, username, first_name, last_name } = tg.initDataUnsafe.user);
+    }
+
+    const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzU_-6GKMZpZwhDEoExEgOqpSNzuUPiXWrec5hKs5u8-q_qCX0GeOa0vloyCcRCrl3o8g/exec'; // Замени на актуальный URL Web App
+
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function sendToSheet(data) {
+      console.log('Sending to sheet:', data);
+      return fetch(SHEET_ENDPOINT, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).catch(error => console.error('Error:', error));
+    }
+
+    function trackEvent(eventName, additional = {}) {
+      sendToSheet({
+        event: eventName,
+        user_id,
+        username,
+        first_name,
+        last_name,
+        timestamp: new Date().toISOString(),
+        additional
+      });
+    }
+
+    trackEvent('webapp_open');
 
     function updateScrollIndicator(list) {
       const indicator = list.parentElement.querySelector('.scroll-indicator');
@@ -1053,6 +1137,7 @@
 
     document.querySelectorAll('.menu-item').forEach(item => {
       item.addEventListener('click', () => {
+        trackEvent('nav_click', { section: item.dataset.section });
         document.querySelectorAll('.section').forEach(section => {
           section.classList.toggle('active', section.id === item.dataset.section);
         });
@@ -1060,13 +1145,26 @@
           i.classList.toggle('active', i === item);
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (item.dataset.section === 'rating') fetchRatings('junior');
+      });
+    });
+
+    document.querySelectorAll('.social-link').forEach(link => {
+      link.addEventListener('click', () => {
+        trackEvent('social_click', { platform: link.dataset.social });
+        if (link.classList.contains('tg-link') && tg) {
+          tg.openLink(link.href);
+        } else {
+          window.open(link.href, '_blank');
+        }
       });
     });
 
     document.querySelector('.trainer-card').addEventListener('click', () => {
+      trackEvent('trainer_contact');
       const link = 'https://t.me/anachoretes';
-      if (window.Telegram && Telegram.WebApp && /^https:\/\/t\.me\//.test(link)) {
-        Telegram.WebApp.openLink(link);
+      if (tg && /^https:\/\/t\.me\//.test(link)) {
+        tg.openLink(link);
       } else {
         window.open(link, '_blank');
       }
@@ -1093,7 +1191,7 @@
         day.className = `calendar-day ${status}`;
         day.textContent = i;
         day.dataset.date = `${year}-${(month + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
-        if (status !== 'full') {
+        if (status !== 'full' && containerId === 'booking-calendar-grid') {
           day.addEventListener('click', () => openBookingModal(day.dataset.date));
         }
         container.appendChild(day);
@@ -1106,7 +1204,7 @@
     function updateCalendars() {
       generateCalendar(currentMonth, currentYear, 'calendar-grid');
       generateCalendar(currentMonth, currentYear, 'booking-calendar-grid');
-      document.querySelectorAll('#home .text-lg, #booking .text-lg').forEach(title => {
+      document.querySelectorAll('#home-calendar-title, #booking-calendar-title').forEach(title => {
         title.textContent = `${['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'][currentMonth]} ${currentYear}`;
       });
     }
@@ -1135,13 +1233,27 @@
 
     updateCalendars();
 
-    function openBookingModal(date) {
+    function openModal(content) {
       const modal = document.createElement('div');
       modal.className = 'modal';
-      modal.innerHTML = `
+      modal.innerHTML = content;
+      document.body.appendChild(modal);
+      setTimeout(() => modal.classList.add('active'), 10);
+      document.body.classList.add('modal-open');
+      modal.querySelector('.close-button')?.addEventListener('click', () => {
+        modal.classList.remove('active');
+        document.body.classList.remove('modal-open');
+        setTimeout(() => modal.remove(), 600);
+      });
+      return modal;
+    }
+
+    function openBookingModal(date) {
+      trackEvent('booking_form_open');
+      const modal = openModal(`
         <h3>Запись на занятие</h3>
         <p>${new Date(date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-        <div class="apply-form">
+        <form class="apply-form">
           <label>Имя ребёнка</label>
           <input type="text" name="childName" placeholder="Введите имя ребёнка" required>
           <label>Группа</label>
@@ -1151,190 +1263,268 @@
             <option value="middle">Средняя группа (7-10 лет)</option>
             <option value="senior">Старшая группа (11-14 лет)</option>
           </select>
-          <button type="button" onclick="submitBookingForm(this, '${date}')"><i class="fas fa-paper-plane"></i> Записаться</button>
+          <button type="submit"><i class="fas fa-paper-plane"></i> Записаться</button>
           <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-        </div>
-      `;
-      document.body.appendChild(modal);
-      setTimeout(() => modal.classList.add('active'), 10);
-      document.body.classList.add('modal-open');
-
-      modal.querySelector('.close-button').addEventListener('click', () => {
-        modal.classList.remove('active');
-        document.body.classList.remove('modal-open');
-        setTimeout(() => modal.remove(), 600);
-      });
-    }
-
-    async function submitBookingForm(button, date) {
-      const form = button.closest('.apply-form');
-      const childName = form.querySelector('input[name="childName"]').value;
-      const group = form.querySelector('select[name="group"]').value;
-
-      if (!childName || !group) {
-        alert('Пожалуйста, заполните все поля');
-        return;
-      }
-
-      form.innerHTML = `<div class="spinner"></div>`;
-      try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzU_-6GKMZpZwhDEoExEgOqpSNzuUPiXWrec5hKs5u8-q_qCX0GeOa0vloyCcRCrl3o8g/exec', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'addBooking',
-            date: date,
-            childName: childName,
-            group: group
-          })
-        });
-
-        const result = await response.json();
-        if (result.status === 'success') {
-          form.innerHTML = `
-            <p style="text-align: center; font-size: 18px; color: #14B8A6;">Запись успешна!</p>
-            <p style="text-align: center; font-size: 15px; color: #6B7280;">Ждем вас на занятии</p>
+        </form>
+      `);
+      modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = {
+          event: 'booking_submit',
+          user_id,
+          username,
+          first_name,
+          last_name,
+          timestamp: new Date().toISOString(),
+          date: date,
+          childName: formData.get('childName'),
+          group: formData.get('group')
+        };
+        modal.innerHTML = `<div class="spinner"></div>`;
+        try {
+          await sendToSheet(data);
+          modal.innerHTML = `
+            <p style="text-align: center; font-size: 18px; color: #14B8A6;">Запись отправлена!</p>
+            <p style="text-align: center; font-size: 15px; color: #6B7280;">Подтверждение придёт в Telegram.</p>
+            <a href="https://t.me/YOUR_BOT_USERNAME?start=booking" class="bot-button tg-link">
+              <i class="fab fa-telegram-plane"></i> Перейти в чат
+            </a>
             <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
           `;
-          form.querySelector('.close-button').addEventListener('click', () => {
-            const modal = form.closest('.modal');
+          modal.querySelector('.close-button').addEventListener('click', () => {
             modal.classList.remove('active');
             document.body.classList.remove('modal-open');
             setTimeout(() => modal.remove(), 600);
           });
-        } else {
-          throw new Error(result.message);
-        }
-      } catch (error) {
-        form.innerHTML = `
-          <p style="text-align: center; font-size: 18px; color: #EF4444;">Ошибка: ${error.message}</p>
-          <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-        `;
-        form.querySelector('.close-button').addEventListener('click', () => {
-          const modal = form.closest('.modal');
-          modal.classList.remove('active');
-          document.body.classList.remove('modal-open');
-          setTimeout(() => modal.remove(), 600);
-        });
-      }
-    }
-
-    document.querySelectorAll('.payment-card button').forEach(button => {
-      button.addEventListener('click', async () => {
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-          <div class="spinner"></div>
-        `;
-        document.body.appendChild(modal);
-        setTimeout(() => modal.classList.add('active'), 10);
-        document.body.classList.add('modal-open');
-
-        const plan = button.closest('.payment-card').dataset.plan;
-        const amount = plan === 'trial' ? 500 : plan === 'basic' ? 3000 : plan === 'standard' ? 5000 : 8000;
-
-        try {
-          const response = await fetch('https://script.google.com/macros/s/AKfycbzU_-6GKMZpZwhDEoExEgOqpSNzuUPiXWrec5hKs5u8-q_qCX0GeOa0vloyCcRCrl3o8g/exec', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'addPayment',
-              childName: 'Unknown', // Placeholder, update with actual logic if needed
-              amount: amount,
-              plan: plan,
-              date: new Date().toISOString().split('T')[0]
-            })
+          modal.querySelector('.tg-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (tg) tg.openLink(e.target.href);
+            else window.open(e.target.href, '_blank');
           });
-
-          const result = await response.json();
-          if (result.status === 'success') {
-            modal.innerHTML = `
-              <p style="text-align: center; font-size: 18px; color: #14B8A6;">Оплата успешна!</p>
-              <p style="text-align: center; font-size: 15px; color: #6B7280;">Ваш абонемент активирован</p>
-              <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-            `;
-          } else {
-            throw new Error(result.message);
-          }
         } catch (error) {
+          console.error('Error submitting booking:', error);
           modal.innerHTML = `
             <p style="text-align: center; font-size: 18px; color: #EF4444;">Ошибка: ${error.message}</p>
             <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
           `;
+          modal.querySelector('.close-button').addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+            setTimeout(() => modal.remove(), 600);
+          });
+          if (tg && tg.showPopup) {
+            tg.showPopup({ title: 'Ошибка', message: 'Не удалось отправить запись', buttons: [{ type: 'ok' }] });
+          } else {
+            alert('Не удалось отправить запись');
+          }
         }
+      });
+    }
 
-        modal.querySelector('.close-button').addEventListener('click', () => {
-          modal.classList.remove('active');
-          document.body.classList.remove('modal-open');
-          setTimeout(() => modal.remove(), 600);
+    document.querySelectorAll('.payment-card button').forEach(button => {
+      button.addEventListener('click', () => {
+        trackEvent('payment_form_open');
+        const plan = button.closest('.payment-card').dataset.plan;
+        const amount = plan === 'trial' ? 500 : plan === 'basic' ? 3000 : plan === 'standard' ? 5000 : 8000;
+        const modal = openModal(`
+          <h3>Оплата абонемента</h3>
+          <form class="apply-form">
+            <label>Имя ребёнка</label>
+            <input type="text" name="childName" placeholder="Введите имя ребёнка" required>
+            <label>Сумма (₽)</label>
+            <input type="number" name="amount" value="${amount}" readonly>
+            <label>План</label>
+            <input type="text" name="plan" value="${plan}" readonly>
+            <label>Дата</label>
+            <input type="date" name="date" value="${new Date().toISOString().split('T')[0]}" required>
+            <button type="submit"><i class="fas fa-credit-card"></i> Оплатить</button>
+            <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
+          </form>
+        `);
+        modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const data = {
+            event: 'payment_submit',
+            user_id,
+            username,
+            first_name,
+            last_name,
+            timestamp: new Date().toISOString(),
+            childName: formData.get('childName'),
+            amount: formData.get('amount'),
+            plan: formData.get('plan'),
+            date: formData.get('date')
+          };
+          modal.innerHTML = `<div class="spinner"></div>`;
+          try {
+            await sendToSheet(data);
+            modal.innerHTML = `
+              <p style="text-align: center; font-size: 18px; color: #14B8A6;">Платёж отправлен!</p>
+              <p style="text-align: center; font-size: 15px; color: #6B7280;">Подтверждение придёт в Telegram.</p>
+              <a href="https://t.me/YOUR_BOT_USERNAME?start=payment" class="bot-button tg-link">
+                <i class="fab fa-telegram-plane"></i> Перейти в чат
+              </a>
+              <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
+            `;
+            modal.querySelector('.close-button').addEventListener('click', () => {
+              modal.classList.remove('active');
+              document.body.classList.remove('modal-open');
+              setTimeout(() => modal.remove(), 600);
+            });
+            modal.querySelector('.tg-link').addEventListener('click', (e) => {
+              e.preventDefault();
+              if (tg) tg.openLink(e.target.href);
+              else window.open(e.target.href, '_blank');
+            });
+          } catch (error) {
+            console.error('Error submitting payment:', error);
+            modal.innerHTML = `
+              <p style="text-align: center; font-size: 18px; color: #EF4444;">Ошибка: ${error.message}</p>
+              <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
+            `;
+            modal.querySelector('.close-button').addEventListener('click', () => {
+              modal.classList.remove('active');
+              document.body.classList.remove('modal-open');
+              setTimeout(() => modal.remove(), 600);
+            });
+            if (tg && tg.showPopup) {
+              tg.showPopup({ title: 'Ошибка', message: 'Не удалось отправить платёж', buttons: [{ type: 'ok' }] });
+            } else {
+              alert('Не удалось отправить платёж');
+            }
+          }
         });
       });
     });
 
-    const ratingData = {
-      junior: [
-        { id: '1', name: 'Алиса Петров', belt: 'yellow', points: 850, rank: 1 },
-        { id: '2', name: 'Максим Иванов', belt: 'yellow', points: 780, rank: 2 },
-        { id: '3', name: 'София Смирнова', belt: 'white', points: 720, rank: 3 },
-        { id: '4', name: 'Даниил Козлов', belt: 'white', points: 680, rank: 4 },
-        { id: '5', name: 'Мария Попова', belt: 'white', points: 620, rank: 5 }
-      ],
-      middle: [
-        { id: '6', name: 'Артем Федоров', belt: 'green', points: 950, rank: 1 },
-        { id: '7', name: 'Анна Морозова', belt: 'orange', points: 900, rank: 2 },
-        { id: '8', name: 'Никита Волков', belt: 'orange', points: 850, rank: 3 },
-        { id: '9', name: 'Екатерина Лебедева', belt: 'yellow', points: 800, rank: 4 },
-        { id: '10', name: 'Михаил Орлов', belt: 'yellow', points: 750, rank: 5 }
-      ],
-      senior: [
-        { id: '11', name: 'Александр Новиков', belt: 'brown', points: 1200, rank: 1 },
-        { id: '12', name: 'Дарья Соколова', belt: 'blue', points: 1150, rank: 2 },
-        { id: '13', name: 'Егор Павлов', belt: 'blue', points: 1100, rank: 3 },
-        { id: '14', name: 'Полина Захарова', belt: 'green', points: 1050, rank: 4 },
-        { id: '15', name: 'Владислав Титов', belt: 'green', points: 1000, rank: 5 }
-      ]
-    };
-
-    function updateRating(group) {
-      const container = document.getElementById('rating-list');
-      container.innerHTML = '';
-      ratingData[group].forEach(student => {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = `
-          <div class="flex items-center gap-2">
-            <div class="text-sm font-semibold ${
-              student.rank === 1 ? 'text-yellow-400' :
-              student.rank === 2 ? 'text-gray-300' :
-              student.rank === 3 ? 'text-amber-500' : 'text-gray-400'
-            }">${student.rank}</div>
-            <div class="w-4 h-2 rounded border ${
-              student.belt === 'white' ? 'bg-gray-100 border-gray-300' :
-              student.belt === 'yellow' ? 'bg-yellow-400 border-yellow-500' :
-              student.belt === 'orange' ? 'bg-orange-400 border-orange-500' :
-              student.belt === 'green' ? 'bg-emerald-400 border-emerald-500' :
-              student.belt === 'blue' ? 'bg-blue-400 border-blue-500' :
-              'bg-amber-600 border-amber-700'
-            }"></div>
-            <div class="flex-1">
-              <div class="text-sm font-semibold">${student.name}</div>
-              <div class="text-xs text-gray-400">${student.points} очков</div>
-            </div>
-          </div>
-        `;
-        container.appendChild(div);
+    function openExpenseModal() {
+      trackEvent('expense_form_open');
+      const modal = openModal(`
+        <h3>Добавить расход</h3>
+        <form class="apply-form">
+          <label>Имя ребёнка</label>
+          <input type="text" name="name" placeholder="Введите имя ребёнка" required>
+          <label>Сумма (₽)</label>
+          <input type="number" name="amount" placeholder="Введите сумму" required>
+          <label>Описание</label>
+          <textarea name="description" placeholder="Например, покупка кимоно" required></textarea>
+          <label>Дата</label>
+          <input type="date" name="date" value="${new Date().toISOString().split('T')[0]}" required>
+          <button type="submit"><i class="fas fa-money-bill"></i> Добавить</button>
+          <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
+        </form>
+      `);
+      modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = {
+          event: 'expense_submit',
+          user_id,
+          username,
+          first_name,
+          last_name,
+          timestamp: new Date().toISOString(),
+          name: formData.get('name'),
+          amount: formData.get('amount'),
+          description: formData.get('description'),
+          date: formData.get('date')
+        };
+        modal.innerHTML = `<div class="spinner"></div>`;
+        try {
+          await sendToSheet(data);
+          modal.innerHTML = `
+            <p style="text-align: center; font-size: 18px; color: #14B8A6;">Расход добавлен!</p>
+            <p style="text-align: center; font-size: 15px; color: #6B7280;">Подробности в Google Sheet.</p>
+            <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
+          `;
+          modal.querySelector('.close-button').addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+            setTimeout(() => modal.remove(), 600);
+          });
+        } catch (error) {
+          console.error('Error submitting expense:', error);
+          modal.innerHTML = `
+            <p style="text-align: center; font-size: 18px; color: #EF4444;">Ошибка: ${error.message}</p>
+            <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
+          `;
+          modal.querySelector('.close-button').addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+            setTimeout(() => modal.remove(), 600);
+          });
+          if (tg && tg.showPopup) {
+            tg.showPopup({ title: 'Ошибка', message: 'Не удалось добавить расход', buttons: [{ type: 'ok' }] });
+          } else {
+            alert('Не удалось добавить расход');
+          }
+        }
       });
+    }
+
+    async function fetchRatings(group) {
+      trackEvent('ratings_view', { group });
+      const container = document.getElementById('rating-list');
+      container.innerHTML = `<div class="spinner"></div>`;
+      try {
+        const response = await fetch(SHEET_ENDPOINT, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event: 'get_data' })
+        });
+        const data = await response.json();
+        container.innerHTML = '';
+        if (data.status === 'success' && data.ratings) {
+          const filteredRatings = data.ratings.filter(student => student.group === group);
+          filteredRatings.forEach(student => {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.innerHTML = `
+              <div class="flex items-center gap-2">
+                <div class="text-sm font-semibold ${
+                  student.rank === 1 ? 'text-yellow-400' :
+                  student.rank === 2 ? 'text-gray-300' :
+                  student.rank === 3 ? 'text-amber-500' : 'text-gray-400'
+                }">${student.rank}</div>
+                <div class="w-4 h-2 rounded border ${
+                  student.belt === 'white' ? 'bg-gray-100 border-gray-300' :
+                  student.belt === 'yellow' ? 'bg-yellow-400 border-yellow-500' :
+                  student.belt === 'orange' ? 'bg-orange-400 border-orange-500' :
+                  student.belt === 'green' ? 'bg-emerald-400 border-emerald-500' :
+                  student.belt === 'blue' ? 'bg-blue-400 border-blue-500' :
+                  'bg-amber-600 border-amber-700'
+                }"></div>
+                <div class="flex-1">
+                  <div class="text-sm font-semibold">${student.name}</div>
+                  <div class="text-xs text-gray-400">${student.points} очков</div>
+                </div>
+              </div>
+            `;
+            container.appendChild(div);
+          });
+          AOS.refresh();
+        } else {
+          container.innerHTML = '<p class="text-center text-red-500">Ошибка загрузки рейтинга</p>';
+        }
+      } catch (error) {
+        console.error('Error fetching ratings:', error);
+        container.innerHTML = '<p class="text-center text-red-500">Ошибка загрузки рейтинга</p>';
+      }
     }
 
     document.querySelectorAll('.group-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.group-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        updateRating(tab.dataset.group);
+        fetchRatings(tab.dataset.group);
       });
     });
 
-    updateRating('junior');
+    // Инициализация рейтинга при загрузке
+    fetchRatings('junior');
   </script>
 </body>
 </html>
