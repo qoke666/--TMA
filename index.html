@@ -1178,7 +1178,7 @@
 
       form.innerHTML = `<div class="spinner"></div>`;
       try {
-        const response = await fetch(' https://script.google.com/macros/s/AKfycbwC3edBRYfhE66VimHG0khgvY5eTttJYq6kRGKs3GFc_Gh7PSNdHXViuRGhuXalaI6A7A/exec ', {
+        const response = await fetch('https://script.google.com/macros/s/AKfycbwDGP6KPQvh_pEt45wD9OSPye9CoxPSZscEZy5Noyf0ays1vvICFq-CWvxWP_6ORX8fUQ/exec', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1234,7 +1234,7 @@
         const amount = plan === 'trial' ? 500 : plan === 'basic' ? 3000 : plan === 'standard' ? 5000 : 8000;
 
         try {
-          const response = await fetch(' https://script.google.com/macros/s/AKfycbwC3edBRYfhE66VimHG0khgvY5eTttJYq6kRGKs3GFc_Gh7PSNdHXViuRGhuXalaI6A7A/exec ', {
+          const response = await fetch('https://script.google.com/macros/s/AKfycbwDGP6KPQvh_pEt45wD9OSPye9CoxPSZscEZy5Noyf0ays1vvICFq-CWvxWP_6ORX8fUQ/exec', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
