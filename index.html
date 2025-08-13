@@ -1045,45 +1045,65 @@
     }
 
     const tg = window.Telegram?.WebApp;
-    if (tg) tg.expand();
+    if (tg) {
+      tg.expand();
+      if (!tg.isExpanded) console.log('Failed to expand Telegram Web App');
+    }
 
     let user_id = null, username = null, first_name = null, last_name = null;
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
       ({ id: user_id, username, first_name, last_name } = tg.initDataUnsafe.user);
+      console.log('Telegram User:', { user_id, username, first_name, last_name });
+    } else {
+      console.log('No Telegram user data available');
     }
 
-    const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzU_-6GKMZpZwhDEoExEgOqpSNzuUPiXWrec5hKs5u8-q_qCX0GeOa0vloyCcRCrl3o8g/exec'; // Замени на актуальный URL Web App
+    const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzU_-6GKMZpZwhDEoExEgOqpSNzuUPiXWrec5hKs5u8-q_qCX0GeOa0vloyCcRCrl3o8g/exec';
+    const BOT_USERNAME = '@KarateClubBot';
 
-    function generateUUID() {
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-      });
+    function showError(message) {
+      if (tg && tg.showPopup) {
+        tg.showPopup({ title: 'Ошибка', message, buttons: [{ type: 'ok' }] });
+      } else {
+        alert(message);
+      }
     }
 
-    function sendToSheet(data) {
-      console.log('Sending to sheet:', data);
-      return fetch(SHEET_ENDPOINT, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      }).catch(error => console.error('Error:', error));
+    async function sendToSheet(data) {
+      console.log('Sending to sheet:', JSON.stringify(data, null, 2));
+      try {
+        const response = await fetch(SHEET_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        console.log('Server response:', result);
+        if (result.status !== 'success') {
+          throw new Error(result.message || 'Неизвестная ошибка сервера');
+        }
+        return result;
+      } catch (error) {
+        console.error('Fetch error:', error.message);
+        throw error;
+      }
     }
 
     function trackEvent(eventName, additional = {}) {
-      sendToSheet({
+      const data = {
         event: eventName,
-        user_id,
-        username,
-        first_name,
-        last_name,
+        user_id: user_id || 'unknown',
+        username: username || 'unknown',
+        first_name: first_name || 'unknown',
+        last_name: last_name || 'unknown',
         timestamp: new Date().toISOString(),
         additional
-      });
+      };
+      console.log('Tracking event:', data);
+      return sendToSheet(data);
     }
 
-    trackEvent('webapp_open');
+    trackEvent('webapp_open').catch(error => console.error('Failed to track webapp_open:', error));
 
     function updateScrollIndicator(list) {
       const indicator = list.parentElement.querySelector('.scroll-indicator');
@@ -1170,10 +1190,52 @@
       }
     });
 
-    function generateCalendar(month, year, containerId) {
+    async function fetchCalendarData(month, year) {
+      const cacheKey = `calendar_${year}_${month}`;
+      const cachedData = localStorage.getItem(cacheKey);
+      const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
+      const now = Date.now();
+      const cacheDuration = 60 * 60 * 1000; // 1 час
+
+      if (cachedData && cacheTimestamp && now - cacheTimestamp < cacheDuration) {
+        console.log('Using cached calendar data');
+        return JSON.parse(cachedData);
+      }
+
+      try {
+        const response = await fetch(SHEET_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'get_calendar_data',
+            month: month + 1,
+            year
+          })
+        });
+        const data = await response.json();
+        console.log('Calendar data response:', data);
+        if (data.status === 'success' && data.calendar) {
+          localStorage.setItem(cacheKey, JSON.stringify(data.calendar));
+          localStorage.setItem(`${cacheKey}_timestamp`, now);
+          return data.calendar;
+        } else {
+          throw new Error(data.message || 'Ошибка загрузки данных календаря');
+        }
+      } catch (error) {
+        console.error('Error fetching calendar data:', error);
+        showError('Не удалось загрузить данные календаря: ' + error.message);
+        return {};
+      }
+    }
+
+    async function generateCalendar(month, year, containerId) {
       const container = document.getElementById(containerId);
+      container.innerHTML = '<div class="spinner"></div>';
+
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       const firstDay = new Date(year, month, 1).getDay();
+      const calendarData = await fetchCalendarData(month, year);
+
       container.innerHTML = '';
 
       const offset = firstDay === 0 ? 6 : firstDay - 1;
@@ -1183,14 +1245,15 @@
       }
 
       for (let i = 1; i <= daysInMonth; i++) {
-        const totalSpots = Math.floor(Math.random() * 10) + 10;
-        const availableSpots = Math.floor(Math.random() * totalSpots);
-        let status = availableSpots === 0 ? 'full' : availableSpots <= totalSpots * 0.3 ? 'limited' : 'available';
+        const date = `${year}-${(month + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
+        const totalSpots = 10; // Максимум мест на день
+        const bookedSpots = calendarData[date]?.bookedSpots || 0;
+        let status = bookedSpots >= totalSpots ? 'full' : bookedSpots >= totalSpots * 0.7 ? 'limited' : 'available';
 
         const day = document.createElement('div');
         day.className = `calendar-day ${status}`;
         day.textContent = i;
-        day.dataset.date = `${year}-${(month + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
+        day.dataset.date = date;
         if (status !== 'full' && containerId === 'booking-calendar-grid') {
           day.addEventListener('click', () => openBookingModal(day.dataset.date));
         }
@@ -1272,10 +1335,10 @@
         const formData = new FormData(e.target);
         const data = {
           event: 'booking_submit',
-          user_id,
-          username,
-          first_name,
-          last_name,
+          user_id: user_id || 'unknown',
+          username: username || 'unknown',
+          first_name: first_name || 'unknown',
+          last_name: last_name || 'unknown',
           timestamp: new Date().toISOString(),
           date: date,
           childName: formData.get('childName'),
@@ -1283,11 +1346,15 @@
         };
         modal.innerHTML = `<div class="spinner"></div>`;
         try {
-          await sendToSheet(data);
+          const result = await sendToSheet(data);
+          // Очистка кэша для текущего месяца, чтобы обновить календарь
+          const cacheKey = `calendar_${currentYear}_${currentMonth}`;
+          localStorage.removeItem(cacheKey);
+          localStorage.removeItem(`${cacheKey}_timestamp`);
           modal.innerHTML = `
-            <p style="text-align: center; font-size: 18px; color: #14B8A6;">Запись отправлена!</p>
+            <p style="text-align: center; font-size: 18px; color: #14B8A6;">Запись успешна!</p>
             <p style="text-align: center; font-size: 15px; color: #6B7280;">Подтверждение придёт в Telegram.</p>
-            <a href="https://t.me/YOUR_BOT_USERNAME?start=booking" class="bot-button tg-link">
+            <a href="https://t.me/${BOT_USERNAME}?start=booking" class="bot-button tg-link">
               <i class="fab fa-telegram-plane"></i> Перейти в чат
             </a>
             <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
@@ -1295,7 +1362,10 @@
           modal.querySelector('.close-button').addEventListener('click', () => {
             modal.classList.remove('active');
             document.body.classList.remove('modal-open');
-            setTimeout(() => modal.remove(), 600);
+            setTimeout(() => {
+              modal.remove();
+              updateCalendars(); // Обновляем календарь после записи
+            }, 600);
           });
           modal.querySelector('.tg-link').addEventListener('click', (e) => {
             e.preventDefault();
@@ -1313,11 +1383,7 @@
             document.body.classList.remove('modal-open');
             setTimeout(() => modal.remove(), 600);
           });
-          if (tg && tg.showPopup) {
-            tg.showPopup({ title: 'Ошибка', message: 'Не удалось отправить запись', buttons: [{ type: 'ok' }] });
-          } else {
-            alert('Не удалось отправить запись');
-          }
+          showError('Не удалось отправить запись: ' + error.message);
         }
       });
     }
@@ -1347,10 +1413,10 @@
           const formData = new FormData(e.target);
           const data = {
             event: 'payment_submit',
-            user_id,
-            username,
-            first_name,
-            last_name,
+            user_id: user_id || 'unknown',
+            username: username || 'unknown',
+            first_name: first_name || 'unknown',
+            last_name: last_name || 'unknown',
             timestamp: new Date().toISOString(),
             childName: formData.get('childName'),
             amount: formData.get('amount'),
@@ -1359,11 +1425,11 @@
           };
           modal.innerHTML = `<div class="spinner"></div>`;
           try {
-            await sendToSheet(data);
+            const result = await sendToSheet(data);
             modal.innerHTML = `
-              <p style="text-align: center; font-size: 18px; color: #14B8A6;">Платёж отправлен!</p>
+              <p style="text-align: center; font-size: 18px; color: #14B8A6;">Оплата успешна!</p>
               <p style="text-align: center; font-size: 15px; color: #6B7280;">Подтверждение придёт в Telegram.</p>
-              <a href="https://t.me/YOUR_BOT_USERNAME?start=payment" class="bot-button tg-link">
+              <a href="https://t.me/${BOT_USERNAME}?start=payment" class="bot-button tg-link">
                 <i class="fab fa-telegram-plane"></i> Перейти в чат
               </a>
               <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
@@ -1389,11 +1455,7 @@
               document.body.classList.remove('modal-open');
               setTimeout(() => modal.remove(), 600);
             });
-            if (tg && tg.showPopup) {
-              tg.showPopup({ title: 'Ошибка', message: 'Не удалось отправить платёж', buttons: [{ type: 'ok' }] });
-            } else {
-              alert('Не удалось отправить платёж');
-            }
+            showError('Не удалось отправить платёж: ' + error.message);
           }
         });
       });
@@ -1421,10 +1483,10 @@
         const formData = new FormData(e.target);
         const data = {
           event: 'expense_submit',
-          user_id,
-          username,
-          first_name,
-          last_name,
+          user_id: user_id || 'unknown',
+          username: username || 'unknown',
+          first_name: first_name || 'unknown',
+          last_name: last_name || 'unknown',
           timestamp: new Date().toISOString(),
           name: formData.get('name'),
           amount: formData.get('amount'),
@@ -1433,7 +1495,7 @@
         };
         modal.innerHTML = `<div class="spinner"></div>`;
         try {
-          await sendToSheet(data);
+          const result = await sendToSheet(data);
           modal.innerHTML = `
             <p style="text-align: center; font-size: 18px; color: #14B8A6;">Расход добавлен!</p>
             <p style="text-align: center; font-size: 15px; color: #6B7280;">Подробности в Google Sheet.</p>
@@ -1455,11 +1517,7 @@
             document.body.classList.remove('modal-open');
             setTimeout(() => modal.remove(), 600);
           });
-          if (tg && tg.showPopup) {
-            tg.showPopup({ title: 'Ошибка', message: 'Не удалось добавить расход', buttons: [{ type: 'ok' }] });
-          } else {
-            alert('Не удалось добавить расход');
-          }
+          showError('Не удалось добавить расход: ' + error.message);
         }
       });
     }
@@ -1471,47 +1529,39 @@
       try {
         const response = await fetch(SHEET_ENDPOINT, {
           method: 'POST',
-          mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ event: 'get_data' })
+          body: JSON.stringify({
+            event: 'get_data',
+            type: 'ratings',
+            group
+          })
         });
         const data = await response.json();
-        container.innerHTML = '';
+        console.log('Ratings response:', data);
         if (data.status === 'success' && data.ratings) {
-          const filteredRatings = data.ratings.filter(student => student.group === group);
-          filteredRatings.forEach(student => {
-            const div = document.createElement('div');
-            div.className = 'item';
-            div.innerHTML = `
-              <div class="flex items-center gap-2">
-                <div class="text-sm font-semibold ${
-                  student.rank === 1 ? 'text-yellow-400' :
-                  student.rank === 2 ? 'text-gray-300' :
-                  student.rank === 3 ? 'text-amber-500' : 'text-gray-400'
-                }">${student.rank}</div>
-                <div class="w-4 h-2 rounded border ${
-                  student.belt === 'white' ? 'bg-gray-100 border-gray-300' :
-                  student.belt === 'yellow' ? 'bg-yellow-400 border-yellow-500' :
-                  student.belt === 'orange' ? 'bg-orange-400 border-orange-500' :
-                  student.belt === 'green' ? 'bg-emerald-400 border-emerald-500' :
-                  student.belt === 'blue' ? 'bg-blue-400 border-blue-500' :
-                  'bg-amber-600 border-amber-700'
-                }"></div>
-                <div class="flex-1">
-                  <div class="text-sm font-semibold">${student.name}</div>
-                  <div class="text-xs text-gray-400">${student.points} очков</div>
-                </div>
-              </div>
+          container.innerHTML = '';
+          if (data.ratings.length === 0) {
+            container.innerHTML = '<p class="text-center text-sm text-gray-400">Рейтинг пуст</p>';
+            return;
+          }
+          data.ratings.forEach(r => {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.innerHTML = `
+              <div class="flex-1 text-sm">${r.name}</div>
+              <div class="text-xs text-gray-400">${r.belt}</div>
+              <div class="text-xs text-gray-400">${r.points} баллов</div>
+              <div class="text-xs text-teal-400">${r.rank}</div>
             `;
-            container.appendChild(div);
+            container.appendChild(item);
           });
-          AOS.refresh();
         } else {
-          container.innerHTML = '<p class="text-center text-red-500">Ошибка загрузки рейтинга</p>';
+          throw new Error(data.message || 'Ошибка загрузки рейтинга');
         }
       } catch (error) {
         console.error('Error fetching ratings:', error);
-        container.innerHTML = '<p class="text-center text-red-500">Ошибка загрузки рейтинга</p>';
+        container.innerHTML = '<p class="text-center text-sm text-red-400">Ошибка загрузки рейтинга</p>';
+        showError('Не удалось загрузить рейтинг: ' + error.message);
       }
     }
 
@@ -1522,9 +1572,6 @@
         fetchRatings(tab.dataset.group);
       });
     });
-
-    // Инициализация рейтинга при загрузке
-    fetchRatings('junior');
   </script>
 </body>
 </html>
