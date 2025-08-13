@@ -1197,12 +1197,13 @@
       const now = Date.now();
       const cacheDuration = 60 * 60 * 1000; // 1 час
 
-      if (cachedData && cacheTimestamp && now - cacheTimestamp < cacheDuration) {
-        console.log('Using cached calendar data');
+      if (cachedData && cacheTimestamp && now - parseInt(cacheTimestamp) < cacheDuration) {
+        console.log('Using cached calendar data for:', cacheKey);
         return JSON.parse(cachedData);
       }
 
       try {
+        console.log('Fetching calendar data for:', { month: month + 1, year });
         const response = await fetch(SHEET_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1214,51 +1215,70 @@
         });
         const data = await response.json();
         console.log('Calendar data response:', data);
-        if (data.status === 'success' && data.calendar) {
-          localStorage.setItem(cacheKey, JSON.stringify(data.calendar));
-          localStorage.setItem(`${cacheKey}_timestamp`, now);
-          return data.calendar;
+        if (data.status === 'success') {
+          const calendar = data.calendar || {};
+          localStorage.setItem(cacheKey, JSON.stringify(calendar));
+          localStorage.setItem(`${cacheKey}_timestamp`, now.toString());
+          return calendar;
         } else {
           throw new Error(data.message || 'Ошибка загрузки данных календаря');
         }
       } catch (error) {
-        console.error('Error fetching calendar data:', error);
+        console.error('Error fetching calendar data:', error.message);
+        localStorage.removeItem(cacheKey);
+        localStorage.removeItem(`${cacheKey}_timestamp`);
         showError('Не удалось загрузить данные календаря: ' + error.message);
         return {};
       }
     }
 
-    async function generateCalendar(month, year, containerId) {
+    function generateCalendar(month, year, containerId) {
       const container = document.getElementById(containerId);
-      container.innerHTML = '<div class="spinner"></div>';
+      if (!container) {
+        console.error('Container not found:', containerId);
+        return;
+      }
+      container.innerHTML = ''; // Очищаем контейнер
 
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       const firstDay = new Date(year, month, 1).getDay();
-      const calendarData = await fetchCalendarData(month, year);
-
-      container.innerHTML = '';
-
       const offset = firstDay === 0 ? 6 : firstDay - 1;
+
+      // Рендерим пустые ячейки для смещения
       for (let i = 0; i < offset; i++) {
         const empty = document.createElement('div');
         container.appendChild(empty);
       }
 
+      // Рендерим дни месяца
       for (let i = 1; i <= daysInMonth; i++) {
         const date = `${year}-${(month + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
-        const totalSpots = 10; // Максимум мест на день
-        const bookedSpots = calendarData[date]?.bookedSpots || 0;
-        let status = bookedSpots >= totalSpots ? 'full' : bookedSpots >= totalSpots * 0.7 ? 'limited' : 'available';
-
         const day = document.createElement('div');
-        day.className = `calendar-day ${status}`;
+        day.className = 'calendar-day full'; // По умолчанию все дни "full"
         day.textContent = i;
         day.dataset.date = date;
-        if (status !== 'full' && containerId === 'booking-calendar-grid') {
-          day.addEventListener('click', () => openBookingModal(day.dataset.date));
-        }
         container.appendChild(day);
       }
+
+      // Асинхронно обновляем статусы дней
+      fetchCalendarData(month, year).then(calendarData => {
+        const totalSpots = 10; // Максимум мест на день
+        const days = container.querySelectorAll('.calendar-day');
+        days.forEach(day => {
+          if (day.dataset.date) {
+            const bookedSpots = calendarData[day.dataset.date]?.bookedSpots || 0;
+            const status = bookedSpots >= totalSpots ? 'full' : bookedSpots >= totalSpots * 0.7 ? 'limited' : 'available';
+            day.className = `calendar-day ${status}`;
+            if (status !== 'full' && containerId === 'booking-calendar-grid') {
+              day.addEventListener('click', () => openBookingModal(day.dataset.date));
+            }
+          }
+        });
+      }).catch(error => {
+        console.error('Failed to update calendar statuses:', error.message);
+        // Календарь уже отрендерен, просто показываем ошибку
+        showError('Не удалось обновить статусы календаря: ' + error.message);
+      });
     }
 
     let currentMonth = new Date().getMonth();
@@ -1267,8 +1287,9 @@
     function updateCalendars() {
       generateCalendar(currentMonth, currentYear, 'calendar-grid');
       generateCalendar(currentMonth, currentYear, 'booking-calendar-grid');
+      const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
       document.querySelectorAll('#home-calendar-title, #booking-calendar-title').forEach(title => {
-        title.textContent = `${['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'][currentMonth]} ${currentYear}`;
+        title.textContent = `${monthNames[currentMonth]} ${currentYear}`;
       });
     }
 
@@ -1316,7 +1337,7 @@
       const modal = openModal(`
         <h3>Запись на занятие</h3>
         <p>${new Date(date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-        <form class="apply-form">
+        <div class="apply-form">
           <label>Имя ребёнка</label>
           <input type="text" name="childName" placeholder="Введите имя ребёнка" required>
           <label>Группа</label>
@@ -1328,11 +1349,12 @@
           </select>
           <button type="submit"><i class="fas fa-paper-plane"></i> Записаться</button>
           <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-        </form>
+        </div>
       `);
-      modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
+      modal.querySelector('.apply-form').addEventListener('click', async (e) => {
+        if (e.target.type !== 'submit') return;
         e.preventDefault();
-        const formData = new FormData(e.target);
+        const formData = new FormData(modal.querySelector('.apply-form'));
         const data = {
           event: 'booking_submit',
           user_id: user_id || 'unknown',
@@ -1347,7 +1369,7 @@
         modal.innerHTML = `<div class="spinner"></div>`;
         try {
           const result = await sendToSheet(data);
-          // Очистка кэша для текущего месяца, чтобы обновить календарь
+          // Очистка кэша для текущего месяца
           const cacheKey = `calendar_${currentYear}_${currentMonth}`;
           localStorage.removeItem(cacheKey);
           localStorage.removeItem(`${cacheKey}_timestamp`);
@@ -1395,7 +1417,7 @@
         const amount = plan === 'trial' ? 500 : plan === 'basic' ? 3000 : plan === 'standard' ? 5000 : 8000;
         const modal = openModal(`
           <h3>Оплата абонемента</h3>
-          <form class="apply-form">
+          <div class="apply-form">
             <label>Имя ребёнка</label>
             <input type="text" name="childName" placeholder="Введите имя ребёнка" required>
             <label>Сумма (₽)</label>
@@ -1406,11 +1428,12 @@
             <input type="date" name="date" value="${new Date().toISOString().split('T')[0]}" required>
             <button type="submit"><i class="fas fa-credit-card"></i> Оплатить</button>
             <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-          </form>
+          </div>
         `);
-        modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
+        modal.querySelector('.apply-form').addEventListener('click', async (e) => {
+          if (e.target.type !== 'submit') return;
           e.preventDefault();
-          const formData = new FormData(e.target);
+          const formData = new FormData(modal.querySelector('.apply-form'));
           const data = {
             event: 'payment_submit',
             user_id: user_id || 'unknown',
@@ -1465,7 +1488,7 @@
       trackEvent('expense_form_open');
       const modal = openModal(`
         <h3>Добавить расход</h3>
-        <form class="apply-form">
+        <div class="apply-form">
           <label>Имя ребёнка</label>
           <input type="text" name="name" placeholder="Введите имя ребёнка" required>
           <label>Сумма (₽)</label>
@@ -1476,11 +1499,12 @@
           <input type="date" name="date" value="${new Date().toISOString().split('T')[0]}" required>
           <button type="submit"><i class="fas fa-money-bill"></i> Добавить</button>
           <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-        </form>
+        </div>
       `);
-      modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
+      modal.querySelector('.apply-form').addEventListener('click', async (e) => {
+        if (e.target.type !== 'submit') return;
         e.preventDefault();
-        const formData = new FormData(e.target);
+        const formData = new FormData(modal.querySelector('.apply-form'));
         const data = {
           event: 'expense_submit',
           user_id: user_id || 'unknown',
