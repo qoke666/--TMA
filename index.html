@@ -566,29 +566,6 @@
       transform: scale(1.05);
     }
 
-    .modal .bot-button {
-      padding: 5px 12px;
-      background: #14B8A6;
-      color: #F3F4F6;
-      border: none;
-      border-radius: 5px;
-      font-family: 'Noto Sans JP', sans-serif;
-      font-weight: 600;
-      font-size: clamp(12px, 3.5vw, 13px);
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.3s ease;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .modal .bot-button:hover {
-      background: #F28C38;
-      transform: scale(1.05);
-    }
-
     .modal .close-button {
       padding: 5px 12px;
       background: #4B5563;
@@ -704,7 +681,6 @@
       .modal .apply-form select,
       .modal .apply-form textarea,
       .modal .apply-form button,
-      .modal .bot-button,
       .modal .close-button {
         font-size: 11px;
         padding: 4px;
@@ -1058,8 +1034,7 @@
       console.log('No Telegram user data available');
     }
 
-    const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzU_-6GKMZpZwhDEoExEgOqpSNzuUPiXWrec5hKs5u8-q_qCX0GeOa0vloyCcRCrl3o8g/exec';
-    const BOT_USERNAME = '@KarateClubBot';
+    const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzU_-6GKMZpZwhDEoExEgOqpSNzuUPiXWrec5hKs5u8-q_qCX0GeOa0vloyCcRCrl3o8g/exec'; // Замените на URL из Apps Script после развертывания
 
     function showError(message) {
       if (tg && tg.showPopup) {
@@ -1351,34 +1326,28 @@
           <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
         </div>
       `);
-      modal.querySelector('.apply-form').addEventListener('click', async (e) => {
-        if (e.target.type !== 'submit') return;
+      modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formData = new FormData(modal.querySelector('.apply-form'));
+        const formData = new FormData(e.target);
         const data = {
           event: 'booking_submit',
           user_id: user_id || 'unknown',
           username: username || 'unknown',
           first_name: first_name || 'unknown',
           last_name: last_name || 'unknown',
-          timestamp: new Date().toISOString(),
           date: date,
           childName: formData.get('childName'),
           group: formData.get('group')
         };
         modal.innerHTML = `<div class="spinner"></div>`;
         try {
-          const result = await sendToSheet(data);
-          // Очистка кэша для текущего месяца
+          await sendToSheet(data);
           const cacheKey = `calendar_${currentYear}_${currentMonth}`;
           localStorage.removeItem(cacheKey);
           localStorage.removeItem(`${cacheKey}_timestamp`);
           modal.innerHTML = `
             <p style="text-align: center; font-size: 18px; color: #14B8A6;">Запись успешна!</p>
-            <p style="text-align: center; font-size: 15px; color: #6B7280;">Подтверждение придёт в Telegram.</p>
-            <a href="https://t.me/${BOT_USERNAME}?start=booking" class="bot-button tg-link">
-              <i class="fab fa-telegram-plane"></i> Перейти в чат
-            </a>
+            <p style="text-align: center; font-size: 15px; color: #6B7280;">Данные сохранены в Google Sheets.</p>
             <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
           `;
           modal.querySelector('.close-button').addEventListener('click', () => {
@@ -1386,16 +1355,10 @@
             document.body.classList.remove('modal-open');
             setTimeout(() => {
               modal.remove();
-              updateCalendars(); // Обновляем календарь после записи
+              updateCalendars();
             }, 600);
           });
-          modal.querySelector('.tg-link').addEventListener('click', (e) => {
-            e.preventDefault();
-            if (tg) tg.openLink(e.target.href);
-            else window.open(e.target.href, '_blank');
-          });
         } catch (error) {
-          console.error('Error submitting booking:', error);
           modal.innerHTML = `
             <p style="text-align: center; font-size: 18px; color: #EF4444;">Ошибка: ${error.message}</p>
             <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
@@ -1430,17 +1393,15 @@
             <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
           </div>
         `);
-        modal.querySelector('.apply-form').addEventListener('click', async (e) => {
-          if (e.target.type !== 'submit') return;
+        modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
           e.preventDefault();
-          const formData = new FormData(modal.querySelector('.apply-form'));
+          const formData = new FormData(e.target);
           const data = {
             event: 'payment_submit',
             user_id: user_id || 'unknown',
             username: username || 'unknown',
             first_name: first_name || 'unknown',
             last_name: last_name || 'unknown',
-            timestamp: new Date().toISOString(),
             childName: formData.get('childName'),
             amount: formData.get('amount'),
             plan: formData.get('plan'),
@@ -1448,13 +1409,10 @@
           };
           modal.innerHTML = `<div class="spinner"></div>`;
           try {
-            const result = await sendToSheet(data);
+            await sendToSheet(data);
             modal.innerHTML = `
               <p style="text-align: center; font-size: 18px; color: #14B8A6;">Оплата успешна!</p>
-              <p style="text-align: center; font-size: 15px; color: #6B7280;">Подтверждение придёт в Telegram.</p>
-              <a href="https://t.me/${BOT_USERNAME}?start=payment" class="bot-button tg-link">
-                <i class="fab fa-telegram-plane"></i> Перейти в чат
-              </a>
+              <p style="text-align: center; font-size: 15px; color: #6B7280;">Данные сохранены в Google Sheets.</p>
               <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
             `;
             modal.querySelector('.close-button').addEventListener('click', () => {
@@ -1462,13 +1420,7 @@
               document.body.classList.remove('modal-open');
               setTimeout(() => modal.remove(), 600);
             });
-            modal.querySelector('.tg-link').addEventListener('click', (e) => {
-              e.preventDefault();
-              if (tg) tg.openLink(e.target.href);
-              else window.open(e.target.href, '_blank');
-            });
           } catch (error) {
-            console.error('Error submitting payment:', error);
             modal.innerHTML = `
               <p style="text-align: center; font-size: 18px; color: #EF4444;">Ошибка: ${error.message}</p>
               <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
@@ -1501,17 +1453,15 @@
           <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
         </div>
       `);
-      modal.querySelector('.apply-form').addEventListener('click', async (e) => {
-        if (e.target.type !== 'submit') return;
+      modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formData = new FormData(modal.querySelector('.apply-form'));
+        const formData = new FormData(e.target);
         const data = {
           event: 'expense_submit',
           user_id: user_id || 'unknown',
           username: username || 'unknown',
           first_name: first_name || 'unknown',
           last_name: last_name || 'unknown',
-          timestamp: new Date().toISOString(),
           name: formData.get('name'),
           amount: formData.get('amount'),
           description: formData.get('description'),
@@ -1519,10 +1469,10 @@
         };
         modal.innerHTML = `<div class="spinner"></div>`;
         try {
-          const result = await sendToSheet(data);
+          await sendToSheet(data);
           modal.innerHTML = `
             <p style="text-align: center; font-size: 18px; color: #14B8A6;">Расход добавлен!</p>
-            <p style="text-align: center; font-size: 15px; color: #6B7280;">Подробности в Google Sheet.</p>
+            <p style="text-align: center; font-size: 15px; color: #6B7280;">Данные сохранены в Google Sheets.</p>
             <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
           `;
           modal.querySelector('.close-button').addEventListener('click', () => {
@@ -1531,7 +1481,6 @@
             setTimeout(() => modal.remove(), 600);
           });
         } catch (error) {
-          console.error('Error submitting expense:', error);
           modal.innerHTML = `
             <p style="text-align: center; font-size: 18px; color: #EF4444;">Ошибка: ${error.message}</p>
             <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
