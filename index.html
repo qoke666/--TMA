@@ -53,32 +53,12 @@
       transition: color 0.3s ease;
     }
 
-    .address:hover {
-      color: #14B8A6;
-    }
+    .address:hover { color: #14B8A6; }
 
-    .social-links {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .social-title {
-      font-size: 12px;
-      font-weight: 500;
-      color: #6B7280;
-    }
-
-    .social-link {
-      color: #14B8A6;
-      font-size: 16px;
-      transition: color 0.3s ease, transform 0.3s ease;
-    }
-
-    .social-link:hover {
-      color: #F28C38;
-      transform: scale(1.1);
-    }
+    .social-links { display: flex; align-items: center; gap: 8px; }
+    .social-title { font-size: 12px; font-weight: 500; color: #6B7280; }
+    .social-link { color: #14B8A6; font-size: 16px; transition: color 0.3s ease, transform 0.3s ease; }
+    .social-link:hover { color: #F28C38; transform: scale(1.1); }
 
     .carousel {
       position: relative;
@@ -105,59 +85,13 @@
       background-position: center;
     }
 
-    .carousel div.active {
-      opacity: 1;
-      z-index: 1;
-      transform: scale(1.02);
-    }
-
-    .carousel .content {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 6px;
-      z-index: 2;
-      color: #F3F4F6;
-    }
-
-    .carousel .content h3 {
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 13px;
-      font-weight: 600;
-      margin: 0;
-      color: #14B8A6;
-    }
-
-    .carousel .content p {
-      font-size: 11px;
-      color: #6B7280;
-      margin: 0;
-    }
-
-    .carousel-dots {
-      position: absolute;
-      bottom: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 5px;
-      z-index: 2;
-    }
-
-    .carousel-dots .dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: rgba(243, 244, 246, 0.3);
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .carousel-dots .dot.active {
-      background: #14B8A6;
-    }
+    .carousel div.active { opacity: 1; z-index: 1; transform: scale(1.02); }
+    .carousel .content { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.7); padding: 6px; z-index: 2; color: #F3F4F6; }
+    .carousel .content h3 { font-family: 'Noto Sans JP', sans-serif; font-size: 13px; font-weight: 600; margin: 0; color: #14B8A6; }
+    .carousel .content p { font-size: 11px; color: #6B7280; margin: 0; }
+    .carousel-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 2; }
+    .carousel-dots .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(243, 244, 246, 0.3); cursor: pointer; transition: background 0.3s; }
+    .carousel-dots .dot.active { background: #14B8A6; }
 
     .menu {
       display: flex;
@@ -170,258 +104,39 @@
       z-index: 10;
     }
 
-    .menu ul {
-      display: inline-flex;
-      gap: 10px;
-      padding: 0 16px;
-      overflow-x: auto;
-      white-space: nowrap;
-      scroll-behavior: smooth;
-      touch-action: pan-x;
-      -webkit-overflow-scrolling: touch;
-    }
-
+    .menu ul { display: inline-flex; gap: 10px; padding: 0 16px; overflow-x: auto; white-space: nowrap; }
     .menu ul::-webkit-scrollbar { display: none; }
+    .menu-item { padding: 6px 12px; border-radius: 6px; font-family: 'Noto Sans JP', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; color: #6B7280; transition: background 0.3s, color 0.3s, transform 0.3s; }
+    .menu-item.active, .menu-item:hover { background: #14B8A6; color: #F3F4F6; transform: scale(1.05); }
 
-    .menu-item {
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-family: 'Noto Sans JP', sans-serif;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      color: #6B7280;
-      transition: background 0.3s, color 0.3s, transform 0.3s;
-    }
+    .section { display: none; padding: 8px 16px; }
+    .section.active { display: block; }
+    .section-title { font-family: 'Noto Sans JP', sans-serif; font-size: 24px; font-weight: 700; margin: 8px 0; color: #14B8A6; text-align: center; }
 
-    .menu-item.active,
-    .menu-item:hover {
-      background: #14B8A6;
-      color: #F3F4F6;
-      transform: scale(1.05);
-    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 0 auto; }
+    .card { background: linear-gradient(135deg, rgba(31, 41, 55, 0.5), rgba(55, 65, 81, 0.3)); backdrop-filter: blur(8px); border: 1px solid rgba(20, 184, 166, 0.3); border-radius: 12px; color: #6B7280; transition: transform 0.3s ease, box-shadow 0.3s ease; padding: 12px; }
+    .card:hover { transform: scale(1.03); box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4); }
 
-    .scroll-indicator {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      height: 4px;
-      background: #14B8A6;
-      transition: width 0.3s;
-      z-index: 2;
-    }
+    .trainer-card { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .trainer-card img { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #14B8A6; }
+    .trainer-card h3 { font-family: 'Noto Sans JP', sans-serif; font-size: 16px; font-weight: 600; color: #F3F4F6; margin: 0; }
+    .trainer-card p { font-size: 12px; color: #6B7280; margin: 0; }
 
-    @keyframes scroll-hint {
-      0% { transform: translateX(0); }
-      50% { transform: translateX(-60px); }
-      100% { transform: translateX(0); }
-    }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+    .calendar-day { padding: 8px; border-radius: 6px; text-align: center; font-size: 12px; font-weight: 500; cursor: pointer; transition: transform 0.3s ease, background 0.3s ease; background: rgba(243, 244, 246, 0.1); border: 1px solid rgba(243, 244, 246, 0.2); }
+    .calendar-day.available { background: #34d399; border: none; color: #1F2937; }
+    .calendar-day.limited { background: #f59e0b; border: none; color: #1F2937; }
+    .calendar-day.full { background: rgba(243, 244, 246, 0.05); border: 1px solid rgba(243, 244, 246, 0.2); color: #6B7280; cursor: not-allowed; opacity: 0.6; }
+    .calendar-day:hover:not(.full) { transform: scale(1.1); box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3); }
+    .calendar-header { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; text-align: center; font-size: 12px; font-weight: 600; color: #6B7280; }
 
-    .menu ul.scroll-hint {
-      animation: scroll-hint 1.5s ease-in-out 1;
-    }
-
-    .section {
-      display: none;
-      padding: 8px 16px;
-      box-sizing: border-box;
-      min-height: 100px;
-    }
-
-    .section.active {
-      display: block;
-      opacity: 1;
-    }
-
-    .section-title {
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 24px;
-      font-weight: 700;
-      margin: 8px 0;
-      color: #14B8A6;
-      text-align: center;
-      position: relative;
-    }
-
-    .section-title::before {
-      content: '空手';
-      font-size: 12px;
-      color: #F3F4F6;
-      opacity: 0.3;
-      position: absolute;
-      top: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .card {
-      background: linear-gradient(135deg, rgba(31, 41, 55, 0.5), rgba(55, 65, 81, 0.3));
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(20, 184, 166, 0.3);
-      border-radius: 12px;
-      color: #6B7280;
-      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      padding: 12px;
-    }
-
-    .card:hover {
-      transform: scale(1.03);
-      box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4);
-      border-color: rgba(20, 184, 166, 0.5);
-    }
-
-    .trainer-card {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-    }
-
-    .trainer-card img {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 2px solid #14B8A6;
-    }
-
-    .trainer-card h3 {
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      color: #F3F4F6;
-      margin: 0;
-    }
-
-    .trainer-card p {
-      font-size: 12px;
-      color: #6B7280;
-      margin: 0;
-    }
-
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    .calendar-day {
-      padding: 8px;
-      border-radius: 6px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: transform 0.3s ease, background 0.3s ease;
-      background: rgba(243, 244, 246, 0.1);
-      border: 1px solid rgba(243, 244, 246, 0.2);
-    }
-
-    .calendar-day.available {
-      background: #34d399;
-      border: none;
-      color: #1F2937;
-    }
-
-    .calendar-day.limited {
-      background: #f59e0b;
-      border: none;
-      color: #1F2937;
-    }
-
-    .calendar-day.full {
-      background: rgba(243, 244, 246, 0.05);
-      border: 1px solid rgba(243, 244, 246, 0.2);
-      color: #6B7280;
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-
-    .calendar-day:hover:not(.full) {
-      transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
-    }
-
-    .calendar-header {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 8px;
-      margin-bottom: 12px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 600;
-      color: #6B7280;
-    }
-
-    .payment-card {
-      background: linear-gradient(135deg, rgba(31, 41, 55, 0.7), rgba(55, 65, 81, 0.5));
-    }
-
-    .payment-card.popular {
-      border: 2px solid #14B8A6;
-      box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4);
-    }
-
-    .payment-card .header {
-      background: linear-gradient(135deg, #14B8A6, #F28C38);
-      padding: 10px;
-      border-radius: 12px 12px 0 0;
-      color: #F3F4F6;
-    }
-
-    .payment-card .header h3 {
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 16px;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .payment-card .header .price {
-      font-size: 24px;
-      font-weight: 500;
-      margin: 4px 0;
-    }
-
-    .payment-card ul {
-      margin: 8px 0;
-      padding-left: 20px;
-    }
-
-    .payment-card li {
-      font-size: 12px;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .payment-card button {
-      width: 100%;
-      padding: 8px;
-      background: #14B8A6;
-      color: #F3F4F6;
-      border: none;
-      border-radius: 6px;
-      font-family: 'Noto Sans JP', sans-serif;
-      font-weight: 600;
-      font-size: 12px;
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.3s ease;
-    }
-
-    .payment-card button:hover {
-      background: #F28C38;
-      transform: scale(1.05);
-    }
+    .payment-card .header { background: linear-gradient(135deg, #14B8A6, #F28C38); padding: 10px; border-radius: 12px 12px 0 0; color: #F3F4F6; }
+    .payment-card .header h3 { font-family: 'Noto Sans JP', sans-serif; font-size: 16px; font-weight: 600; margin: 0; }
+    .payment-card .header .price { font-size: 24px; font-weight: 500; margin: 4px 0; }
+    .payment-card ul { margin: 8px 0; padding-left: 20px; }
+    .payment-card li { font-size: 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .payment-card button { width: 100%; padding: 8px; background: #14B8A6; color: #F3F4F6; border: none; border-radius: 6px; font-family: 'Noto Sans JP', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; transition: background 0.3s ease, transform 0.3s ease; }
+    .payment-card button:hover { background: #F28C38; transform: scale(1.05); }
 
     .modal {
       position: fixed;
@@ -432,30 +147,24 @@
       backdrop-filter: blur(12px);
       border: 1px solid rgba(20, 184, 166, 0.4);
       border-radius: 16px;
-      padding: clamp(12px, 3vw, 16px);
+      padding: 16px;
       z-index: 9999;
       color: #F3F4F6;
       max-width: 95%;
       min-width: 300px;
-      max-height: 98vh;
-      overflow-y: auto;
-      scroll-behavior: smooth;
-      box-sizing: border-box;
       opacity: 0;
-      transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.6s ease, box-shadow 0.6s ease;
+      transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.4s ease;
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+      visibility: hidden;
     }
 
     .modal.active {
       transform: translate(-50%, -50%) scale(1);
       opacity: 1;
-      box-shadow: 0 20px 48px rgba(20, 184, 166, 0.4);
+      visibility: visible;
     }
 
-    body.modal-open {
-      overflow: hidden;
-    }
-
+    body.modal-open { overflow: hidden; }
     body.modal-open::before {
       content: '';
       position: fixed;
@@ -464,247 +173,33 @@
       width: 100%;
       height: 100%;
       background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(5px);
       z-index: 9998;
       opacity: 0;
-      transition: opacity 0.6s ease;
+      transition: opacity 0.4s ease;
+      visibility: hidden;
     }
-
     body.modal-open::before {
-      opacity: 1;
+        opacity: 1;
+        visibility: visible;
     }
 
-    .modal h3 {
-      font-family: 'Noto Sans JP', sans-serif;
-      margin: 0 0 10px;
-      color: #14B8A6;
-      font-size: clamp(16px, 4vw, 18px);
-      text-align: center;
-    }
+    .modal h3 { font-family: 'Noto Sans JP', sans-serif; margin: 0 0 10px; color: #14B8A6; font-size: 18px; text-align: center; }
+    .modal p { font-size: 13px; color: #6B7280; margin: 6px 0; text-align: center; }
+    .modal .apply-form { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+    .modal .apply-form label { font-size: 13px; color: #6B7280; }
+    .modal .apply-form input, .modal .apply-form select, .modal .apply-form textarea { padding: 8px; border: 1px solid #4B5563; border-radius: 5px; background: #374151; color: #F3F4F6; font-family: 'Inter', sans-serif; font-size: 13px; width: 100%; }
+    .modal .apply-form button { padding: 8px 12px; background: #14B8A6; color: #F3F4F6; border: none; border-radius: 5px; font-family: 'Noto Sans JP', sans-serif; font-weight: 600; font-size: 13px; cursor: pointer; transition: background 0.3s ease, transform 0.3s ease; }
+    .modal .apply-form button:hover { background: #F28C38; transform: scale(1.05); }
+    .modal .apply-form button:disabled { background: #4B5563; cursor: not-allowed; }
+    .modal .close-button { padding: 8px 12px; background: #4B5563; color: #F3F4F6; border: 1px solid #6B7280; border-radius: 5px; font-weight: 600; font-size: 13px; margin-top: 5px; transition: background 0.3s ease; }
+    .modal .close-button:hover { background: #6B7280; }
+    .modal .spinner { border: 3px solid rgba(20, 184, 166, 0.2); border-top: 3px solid #14B8A6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 12px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .modal p {
-      font-size: clamp(12px, 3.5vw, 13px);
-      color: #6B7280;
-      margin: 6px 0;
-      text-align: center;
-    }
-
-    .modal .apply-form {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 10px;
-      max-height: calc(98vh - 80px);
-      overflow-y: auto;
-      scroll-behavior: smooth;
-      padding-bottom: 40px;
-      scroll-margin-bottom: 40px;
-      padding-right: 5px;
-      box-sizing: border-box;
-    }
-
-    .modal .apply-form::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    .modal .apply-form::-webkit-scrollbar-thumb {
-      background: rgba(20, 184, 166, 0.4);
-      border-radius: 2px;
-    }
-
-    .modal .apply-form::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .modal .apply-form label {
-      font-size: clamp(12px, 3.5vw, 13px);
-      color: #6B7280;
-    }
-
-    .modal .apply-form input,
-    .modal .apply-form select,
-    .modal .apply-form textarea {
-      padding: 5px;
-      border: 1px solid #4B5563;
-      border-radius: 5px;
-      background: #374151;
-      color: #F3F4F6;
-      font-family: 'Inter', sans-serif;
-      font-size: clamp(12px, 3.5vw, 13px);
-      box-sizing: border-box;
-      width: 100%;
-    }
-
-    .modal .apply-form select {
-      appearance: none;
-      background-image: url('data:image/svg+xml;utf8,<svg fill="%236B7280" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>');
-      background-repeat: no-repeat;
-      background-position: right 5px center;
-      background-size: 12px;
-    }
-
-    .modal .apply-form textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-
-    .modal .apply-form button {
-      padding: 5px 12px;
-      background: #14B8A6;
-      color: #F3F4F6;
-      border: none;
-      border-radius: 5px;
-      font-family: 'Noto Sans JP', sans-serif;
-      font-weight: 600;
-      font-size: clamp(12px, 3.5vw, 13px);
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.3s ease;
-    }
-
-    .modal .apply-form button:hover {
-      background: #F28C38;
-      transform: scale(1.05);
-    }
-
-    .modal .close-button {
-      padding: 5px 12px;
-      background: #4B5563;
-      color: #F3F4F6;
-      border: 1px solid #6B7280;
-      border-radius: 5px;
-      font-weight: 600;
-      font-size: clamp(12px, 3.5vw, 13px);
-      margin-top: 5px;
-      transition: background 0.3s ease, transform 0.3s ease;
-    }
-
-    .modal .close-button:hover {
-      background: #6B7280;
-      transform: scale(1.05);
-    }
-
-    .modal .spinner {
-      border: 3px solid rgba(20, 184, 166, 0.2);
-      border-top: 3px solid #14B8A6;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      animation: spin 1s linear infinite;
-      margin: 12px auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .rating-list .item {
-      padding: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-bottom: 1px solid rgba(243, 244, 246, 0.1);
-    }
-
-    .rating-list .item:last-child {
-      border-bottom: none;
-    }
-
-    .rating-list .item:hover {
-      background: rgba(243, 244, 246, 0.05);
-    }
-
-    .group-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      background: rgba(243, 244, 246, 0.05);
-      border-radius: 6px;
-      padding: 4px;
-    }
-
-    .group-tab {
-      flex: 1;
-      padding: 6px;
-      text-align: center;
-      font-family: 'Noto Sans JP', sans-serif;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      color: #6B7280;
-      border-radius: 4px;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    .group-tab.active,
-    .group-tab:hover {
-      background: #14B8A6;
-      color: #F3F4F6;
-    }
-
-    @media (max-width: 360px) {
-      .carousel {
-        width: 100%;
-        height: 120px;
-      }
-
-      .section-title {
-        font-size: 20px;
-      }
-
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .modal {
-        padding: 10px;
-        max-height: 95vh;
-        min-width: 280px;
-      }
-
-      .modal .apply-form {
-        max-height: calc(95vh - 60px);
-        gap: 6px;
-        padding-bottom: 30px;
-        scroll-margin-bottom: 30px;
-      }
-
-      .modal h3 {
-        font-size: 14px;
-      }
-
-      .modal p {
-        font-size: 11px;
-      }
-
-      .modal .apply-form input,
-      .modal .apply-form select,
-      .modal .apply-form textarea,
-      .modal .apply-form button,
-      .modal .close-button {
-        font-size: 11px;
-        padding: 4px;
-      }
-
-      .address {
-        font-size: 14px;
-      }
-    }
-
-    @media (max-width: 320px) {
-      .modal {
-        padding: 8px;
-        max-height: 92vh;
-        min-width: 260px;
-      }
-
-      .modal .apply-form {
-        max-height: calc(92vh - 50px);
-        gap: 5px;
-        padding-bottom: 25px;
-        scroll-margin-bottom: 25px;
-      }
-    }
+    .group-tabs { display: flex; gap: 8px; margin-bottom: 12px; background: rgba(243, 244, 246, 0.05); border-radius: 6px; padding: 4px; }
+    .group-tab { flex: 1; padding: 6px; text-align: center; font-family: 'Noto Sans JP', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; color: #6B7280; border-radius: 4px; transition: background 0.3s, color 0.3s; }
+    .group-tab.active, .group-tab:hover { background: #14B8A6; color: #F3F4F6; }
   </style>
 </head>
 <body>
@@ -714,39 +209,22 @@
     <div class="address">Красноярск, ул. Сакура, 12</div>
     <div class="social-links">
       <span class="social-title">Наши соцсети</span>
-      <a href="https://t.me/karate_dojo" class="social-link tg-link" data-social="telegram">
-        <i class="fab fa-telegram-plane"></i>
-      </a>
-      <a href="https://www.instagram.com/karate_dojo" class="social-link" data-social="instagram">
-        <i class="fab fa-instagram"></i>
-      </a>
+      <a href="#" class="social-link"><i class="fab fa-telegram-plane"></i></a>
+      <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
     </div>
   </div>
 
   <div class="carousel">
-    <div class="active" data-id="1" style="background-image: url('https://images.unsplash.com/photo-1612790121424-fb7170d7e58b')">
-      <div class="content">
-        <h3>Скидка 20% на первый месяц!</h3>
-        <p>Для новых учеников</p>
-      </div>
+    <div class="active" style="background-image: url('https://images.unsplash.com/photo-1612790121424-fb7170d7e58b?w=400&auto=format&fit=crop')">
+      <div class="content"><h3>Скидка 20% на первый месяц!</h3><p>Для новых учеников</p></div>
     </div>
-    <div data-id="2" style="background-image: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438')">
-      <div class="content">
-        <h3>Открытый урок</h3>
-        <p>Каждую субботу в 10:00</p>
-      </div>
+    <div style="background-image: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&auto=format&fit=crop')">
+      <div class="content"><h3>Открытый урок</h3><p>Каждую субботу в 10:00</p></div>
     </div>
-    <div data-id="3" style="background-image: url('https://images.unsplash.com/photo-1554772279-0953d0193e86')">
-      <div class="content">
-        <h3>Турнир в марте</h3>
-        <p>Регистрация открыта</p>
-      </div>
+    <div style="background-image: url('https://images.unsplash.com/photo-1554772279-0953d0193e86?w=400&auto=format&fit=crop')">
+      <div class="content"><h3>Турнир в марте</h3><p>Регистрация открыта</p></div>
     </div>
-    <div class="carousel-dots">
-      <div class="dot active"></div>
-      <div class="dot"></div>
-      <div class="dot"></div>
-    </div>
+    <div class="carousel-dots"><div class="dot active"></div><div class="dot"></div><div class="dot"></div></div>
   </div>
 
   <nav class="menu">
@@ -755,180 +233,53 @@
       <li class="menu-item" data-section="booking">Запись</li>
       <li class="menu-item" data-section="payment">Оплата</li>
       <li class="menu-item" data-section="rating">Рейтинг</li>
-      <li class="menu-item" data-section="expenses">Расходы</li>
     </ul>
-    <div class="scroll-indicator"></div>
   </nav>
 
   <section id="home" class="section active">
     <h2 class="section-title">Наш тренер</h2>
     <div class="grid">
-      <div class="card trainer-card" data-telegram="https://t.me/anachoretes" data-aos="fade-up" data-aos-delay="100">
-        <img src="https://via.placeholder.com/48?text=Павел" alt="Павел Шистеров">
-        <div>
-          <h3>Павел Шистеров</h3>
-          <p>Главный тренер</p>
-        </div>
+      <div class="card trainer-card" data-aos="fade-up">
+        <img src="https://placehold.co/96x96/374151/F3F4F6?text=ПШ" alt="Павел Шистеров">
+        <div><h3>Павел Шистеров</h3><p>Главный тренер</p></div>
       </div>
     </div>
     <h2 class="section-title">Расписание занятий</h2>
-    <div class="card" data-aos="fade-up" data-aos-delay="150">
+    <div class="card" data-aos="fade-up" data-aos-delay="100">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold text-white" id="home-calendar-title"></h3>
         <div class="flex space-x-2">
-          <button class="prev-month p-2 rounded-full bg-transparent hover:bg-white/10 border border-white/20">
-            <i class="fas fa-chevron-left text-white"></i>
-          </button>
-          <button class="next-month p-2 rounded-full bg-transparent hover:bg-white/10 border border-white/20">
-            <i class="fas fa-chevron-right text-white"></i>
-          </button>
+          <button class="prev-month p-2 rounded-full bg-transparent hover:bg-white/10 border border-white/20"><i class="fas fa-chevron-left text-white"></i></button>
+          <button class="next-month p-2 rounded-full bg-transparent hover:bg-white/10 border border-white/20"><i class="fas fa-chevron-right text-white"></i></button>
         </div>
       </div>
-      <div class="calendar-header">
-        <div>Пн</div>
-        <div>Вт</div>
-        <div>Ср</div>
-        <div>Чт</div>
-        <div>Пт</div>
-        <div>Сб</div>
-        <div>Вс</div>
-      </div>
+      <div class="calendar-header"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>
       <div class="calendar-grid" id="calendar-grid"></div>
-      <div class="mt-4 text-sm text-gray-400">
-        <div class="flex items-center gap-2">
-          <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
-          <span>Есть места</span>
-        </div>
-        <div class="flex items-center gap-2 mt-2">
-          <div class="w-3 h-3 bg-amber-500 rounded-full"></div>
-          <span>Мало мест</span>
-        </div>
-        <div class="flex items-center gap-2 mt-2">
-          <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
-          <span>Мест нет</span>
-        </div>
-      </div>
-    </div>
-    <h2 class="section-title">Важная информация</h2>
-    <div class="grid">
-      <div class="card" data-aos="fade-up" data-aos-delay="200">
-        <div class="flex items-center gap-3">
-          <i class="fas fa-exclamation-circle text-xl text-red-500"></i>
-          <p class="text-sm">Приходите на 10 минут раньше</p>
-        </div>
-      </div>
-      <div class="card" data-aos="fade-up" data-aos-delay="250">
-        <div class="flex items-center gap-3">
-          <i class="fas fa-tshirt text-xl text-blue-500"></i>
-          <p class="text-sm">Форма обязательна</p>
-        </div>
-      </div>
-      <div class="card" data-aos="fade-up" data-aos-delay="300">
-        <div class="flex items-center gap-3">
-          <i class="fas fa-phone text-xl text-green-500"></i>
-          <p class="text-sm">Сообщайте о пропуске заранее</p>
-        </div>
-      </div>
     </div>
   </section>
 
   <section id="booking" class="section">
     <h2 class="section-title">Запись на занятия</h2>
-    <div class="card" data-aos="fade-up" data-aos-delay="100">
+    <div class="card" data-aos="fade-up">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold text-white" id="booking-calendar-title"></h3>
         <div class="flex space-x-2">
-          <button class="prev-month p-2 rounded-full bg-transparent hover:bg-white/10 border border-white/20">
-            <i class="fas fa-chevron-left text-white"></i>
-          </button>
-          <button class="next-month p-2 rounded-full bg-transparent hover:bg-white/10 border border-white/20">
-            <i class="fas fa-chevron-right text-white"></i>
-          </button>
+          <button class="prev-month p-2 rounded-full bg-transparent hover:bg-white/10 border border-white/20"><i class="fas fa-chevron-left text-white"></i></button>
+          <button class="next-month p-2 rounded-full bg-transparent hover:bg-white/10 border border-white/20"><i class="fas fa-chevron-right text-white"></i></button>
         </div>
       </div>
-      <div class="calendar-header">
-        <div>Пн</div>
-        <div>Вт</div>
-        <div>Ср</div>
-        <div>Чт</div>
-        <div>Пт</div>
-        <div>Сб</div>
-        <div>Вс</div>
-      </div>
+      <div class="calendar-header"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>
       <div class="calendar-grid" id="booking-calendar-grid"></div>
-    </div>
-    <div class="card" data-aos="fade-up" data-aos-delay="150">
-      <h3 class="text-lg font-semibold mb-4 text-white">Расписание групп</h3>
-      <div class="space-y-2">
-        <div class="flex justify-between items-center p-2 bg-white/5 rounded">
-          <span class="text-sm">Младшая (4-6 лет)</span>
-          <span class="text-xs text-gray-400">16:00 - 17:00</span>
-        </div>
-        <div class="flex justify-between items-center p-2 bg-white/5 rounded">
-          <span class="text-sm">Средняя (7-10 лет)</span>
-          <span class="text-xs text-gray-400">17:00 - 18:00</span>
-        </div>
-        <div class="flex justify-between items-center p-2 bg-white/5 rounded">
-          <span class="text-sm">Старшая (11-14 лет)</span>
-          <span class="text-xs text-gray-400">18:00 - 19:00</span>
-        </div>
-      </div>
+      <p class="text-center text-sm text-gray-400 mt-4">Нажмите на доступный день, чтобы записаться.</p>
     </div>
   </section>
 
   <section id="payment" class="section">
     <h2 class="section-title">Выберите абонемент</h2>
     <div class="grid">
-      <div class="card payment-card" data-plan="trial" data-aos="fade-up" data-aos-delay="100">
-        <div class="header">
-          <h3>Пробное занятие</h3>
-          <div class="price">500 ₽</div>
-        </div>
-        <ul>
-          <li><i class="fas fa-check text-emerald-400"></i> Знакомство с тренером</li>
-          <li><i class="fas fa-check text-emerald-400"></i> Базовые техники</li>
-          <li><i class="fas fa-check text-emerald-400"></i> Оценка уровня</li>
-        </ul>
-        <button>Оплатить</button>
-      </div>
-      <div class="card payment-card" data-plan="basic" data-aos="fade-up" data-aos-delay="150">
-        <div class="header">
-          <h3>Базовый</h3>
-          <div class="price">3000 ₽</div>
-        </div>
-        <ul>
-          <li><i class="fas fa-check text-emerald-400"></i> 4 занятия в месяц</li>
-          <li><i class="fas fa-check text-emerald-400"></i> Персональные рекомендации</li>
-          <li><i class="fas fa-check text-emerald-400"></i> Доступ к материалам</li>
-        </ul>
-        <button>Оплатить</button>
-      </div>
-      <div class="card payment-card popular" data-plan="standard" data-aos="fade-up" data-aos-delay="200">
-        <div class="header">
-          <h3>Стандартный</h3>
-          <div class="price">5000 ₽</div>
-        </div>
-        <ul>
-          <li><i class="fas fa-check text-emerald-400"></i> 8 занятий в месяц</li>
-          <li><i class="fas fa-check text-emerald-400"></i> Участие в соревнованиях</li>
-          <li><i class="fas fa-check text-emerald-400"></i> Индивидуальные консультации</li>
-          <li><i class="fas fa-check text-emerald-400"></i> Сертификат прогресса</li>
-        </ul>
-        <button>Оплатить</button>
-      </div>
-      <div class="card payment-card" data-plan="premium" data-aos="fade-up" data-aos-delay="250">
-        <div class="header">
-          <h3>Премиум</h3>
-          <div class="price">8000 ₽</div>
-        </div>
-        <ul>
-          <li><i class="fas fa-check text-emerald-400"></i> 12 занятий в месяц</li>
-          <li><i class="fas fa-check text-emerald-400"></i> Персональный тренинг</li>
-          <li><i class="fas fa-check text-emerald-400"></i> Экипировка в подарок</li>
-          <li><i class="fas fa-check text-emerald-400"></i> Приоритетная запись</li>
-        </ul>
-        <button>Оплатить</button>
-      </div>
+      <div class="card payment-card" data-aos="fade-up"><div class="header"><h3>Пробное занятие</h3><div class="price">500 ₽</div></div><ul><li><i class="fas fa-check text-emerald-400"></i> Знакомство с тренером</li></ul><button>Оплатить</button></div>
+      <div class="card payment-card" data-aos="fade-up" data-aos-delay="100"><div class="header"><h3>Базовый</h3><div class="price">3000 ₽</div></div><ul><li><i class="fas fa-check text-emerald-400"></i> 4 занятия в месяц</li></ul><button>Оплатить</button></div>
+      <div class="card payment-card" data-aos="fade-up" data-aos-delay="200"><div class="header"><h3>Стандартный</h3><div class="price">5000 ₽</div></div><ul><li><i class="fas fa-check text-emerald-400"></i> 8 занятий в месяц</li></ul><button>Оплатить</button></div>
     </div>
   </section>
 
@@ -939,612 +290,215 @@
       <button class="group-tab" data-group="middle">Средняя</button>
       <button class="group-tab" data-group="senior">Старшая</button>
     </div>
-    <div class="card" data-aos="fade-up" data-aos-delay="100">
-      <div class="rating-list" id="rating-list"></div>
-    </div>
-    <div class="card" data-aos="fade-up" data-aos-delay="150">
-      <h3 class="text-lg font-semibold mb-4 text-white">Система поясов</h3>
-      <div class="grid grid-cols-2 gap-2">
-        <div class="flex items-center gap-2">
-          <div class="w-4 h-2 bg-gray-100 border border-gray-300 rounded"></div>
-          <span class="text-xs">Белый</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="w-4 h-2 bg-yellow-400 border border-yellow-500 rounded"></div>
-          <span class="text-xs">Жёлтый</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="w-4 h-2 bg-orange-400 border border-orange-500 rounded"></div>
-          <span class="text-xs">Оранжевый</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="w-4 h-2 bg-emerald-400 border border-emerald-500 rounded"></div>
-          <span class="text-xs">Зелёный</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="w-4 h-2 bg-blue-400 border border-blue-500 rounded"></div>
-          <span class="text-xs">Синий</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <div class="w-4 h-2 bg-amber-600 border border-amber-700 rounded"></div>
-          <span class="text-xs">Коричневый</span>
-        </div>
-      </div>
-    </div>
+    <div class="card" data-aos="fade-up"><p class="text-center">Рейтинг скоро появится...</p></div>
   </section>
 
-  <section id="expenses" class="section">
-    <h2 class="section-title">Расходы</h2>
-    <div class="grid">
-      <div class="card" data-aos="fade-up" data-aos-delay="100">
-        <h3 class="text-lg font-semibold mb-4 text-white">Добавить расход</h3>
-        <button class="w-full p-2 bg-teal-500 text-white rounded hover:bg-orange-500 transition-transform transform hover:scale-105" onclick="openExpenseModal()">Добавить</button>
-      </div>
-    </div>
-  </section>
+  <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ЗАПИСИ -->
+  <div id="booking-modal" class="modal">
+    <h3>Запись на занятие</h3>
+    <p id="modal-date"></p>
+    <form id="booking-form" class="apply-form" autocomplete="off">
+      <input type="hidden" id="selected-date" name="selectedDate">
+      
+      <label for="child-name">Имя и фамилия ребенка</label>
+      <input type="text" id="child-name" name="childName" required>
+
+      <label for="child-age">Возраст ребенка</label>
+      <input type="number" id="child-age" name="childAge" required>
+      
+      <label for="group-select">Выберите группу</label>
+      <select id="group-select" name="selectedGroup" required>
+        <option value="Младшая (4-6 лет)">Младшая (4-6 лет)</option>
+        <option value="Средняя (7-10 лет)">Средняя (7-10 лет)</option>
+        <option value="Старшая (11-14 лет)">Старшая (11-14 лет)</option>
+      </select>
+      
+      <label for="contact-info">Ваш контакт (Телефон или Telegram)</label>
+      <input type="text" id="contact-info" name="contactInfo" required>
+      
+      <label for="comments">Комментарии</label>
+      <textarea id="comments" name="comments" placeholder="Например, есть ли у ребенка опыт..."></textarea>
+      
+      <button type="submit" id="submit-booking">Записаться</button>
+      <button type="button" class="close-button" id="close-modal-button">Отмена</button>
+      <div id="modal-spinner" class="spinner" style="display: none;"></div>
+    </form>
+  </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script>
-    AOS.init({
-      duration: 800,
-      once: true,
-      offset: 100
-    });
-
-    window.addEventListener('load', () => {
-      AOS.refresh();
-    });
-
+    // --- ИНИЦИАЛИЗАЦИЯ БИБЛИОТЕК ---
+    AOS.init({ duration: 800, once: true, offset: 50 });
     if (typeof tsParticles !== 'undefined') {
-      tsParticles.load("tsparticles", {
-        fpsLimit: 60,
-        particles: {
-          number: { value: 100, density: { enable: true, value_area: 800 } },
-          color: { value: "#14B8A6" },
-          shape: { type: "circle" },
-          opacity: { value: 0.5, random: true },
-          size: { value: 2, random: { enable: true, minimumValue: 0.5 } },
-          links: { enable: false },
-          move: {
-            enable: true,
-            speed: 0.5,
-            direction: "none",
-            random: true,
-            outModes: { default: "out" }
-          }
-        },
-        interactivity: { events: { onHover: { enable: false } }, resize: { enable: true } },
-        retina_detect: true
-      });
+      tsParticles.load("tsparticles", { fpsLimit: 60, particles: { number: { value: 80 }, color: { value: "#14B8A6" }, shape: { type: "circle" }, opacity: { value: 0.4, random: true }, size: { value: 2, random: { enable: true, minimumValue: 0.5 } }, move: { enable: true, speed: 0.5, direction: "none", random: true, outModes: { default: "out" } } } });
     }
 
+    // --- ИНТЕГРАЦИЯ С TELEGRAM WEB APP ---
     const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.expand();
-      if (!tg.isExpanded) console.log('Failed to expand Telegram Web App');
-    }
-
+    if (tg) tg.expand();
     let user_id = null, username = null, first_name = null, last_name = null;
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
       ({ id: user_id, username, first_name, last_name } = tg.initDataUnsafe.user);
-      console.log('Telegram User:', { user_id, username, first_name, last_name });
-    } else {
-      console.log('No Telegram user data available');
     }
 
-    const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzU_-6GKMZpZwhDEoExEgOqpSNzuUPiXWrec5hKs5u8-q_qCX0GeOa0vloyCcRCrl3o8g/exec'; // Замените на URL из Apps Script после развертывания
+    // --- СВЯЗЬ С GOOGLE SHEETS ---
+    // !!! ЗАМЕНИТЕ URL НИЖЕ НА ВАШ URL, ПОЛУЧЕННЫЙ ПОСЛЕ РАЗВЕРТЫВАНИЯ APPS SCRIPT !!!
+    const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxPUI3eUTJXEfcGQnAlKKYyLK8vhtEm2OAvIHU4y6h8Twtk7wFYYh8jjqSQ8Mt3cd_M3w/exec';
 
-    function showError(message) {
+    // --- УВЕДОМЛЕНИЯ ---
+    function showPopup(title, message) {
       if (tg && tg.showPopup) {
-        tg.showPopup({ title: 'Ошибка', message, buttons: [{ type: 'ok' }] });
+        tg.showPopup({ title, message, buttons: [{ type: 'ok' }] });
       } else {
-        alert(message);
+        alert(`${title}\n${message}`);
       }
     }
 
+    // --- ОТПРАВКА ДАННЫХ ---
     async function sendToSheet(data) {
-      console.log('Sending to sheet:', JSON.stringify(data, null, 2));
       try {
         const response = await fetch(SHEET_ENDPOINT, {
           method: 'POST',
+          mode: 'cors', // Важно для кросс-доменных запросов
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
+        if (!response.ok) throw new Error(`Ошибка сети: ${response.statusText}`);
         const result = await response.json();
-        console.log('Server response:', result);
-        if (result.status !== 'success') {
-          throw new Error(result.message || 'Неизвестная ошибка сервера');
-        }
+        if (result.status !== 'success') throw new Error(result.message || 'Неизвестная ошибка сервера');
         return result;
       } catch (error) {
-        console.error('Fetch error:', error.message);
+        console.error('Fetch error:', error);
         throw error;
       }
     }
-
-    function trackEvent(eventName, additional = {}) {
-      const data = {
-        event: eventName,
-        user_id: user_id || 'unknown',
-        username: username || 'unknown',
-        first_name: first_name || 'unknown',
-        last_name: last_name || 'unknown',
-        timestamp: new Date().toISOString(),
-        additional
-      };
-      console.log('Tracking event:', data);
-      return sendToSheet(data);
-    }
-
-    trackEvent('webapp_open').catch(error => console.error('Failed to track webapp_open:', error));
-
-    function updateScrollIndicator(list) {
-      const indicator = list.parentElement.querySelector('.scroll-indicator');
-      if (!indicator) return;
-      const maxScroll = list.scrollWidth - list.clientWidth;
-      const scrollPercent = list.scrollLeft / maxScroll;
-      indicator.style.width = `${scrollPercent * 100}%`;
-    }
-
-    document.querySelector('.menu ul').addEventListener('scroll', () => {
-      updateScrollIndicator(document.querySelector('.menu ul'));
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const menuList = document.querySelector('.menu ul');
-      if (menuList.scrollWidth > menuList.clientWidth) {
-        menuList.classList.add('scroll-hint');
-        setTimeout(() => menuList.classList.remove('scroll-hint'), 1500);
-      }
-      updateScrollIndicator(menuList);
-    });
-
-    function startCarousel() {
-      const slides = document.querySelectorAll('.carousel div');
-      const dots = document.querySelectorAll('.carousel-dots .dot');
-      let currentIndex = 0;
-
-      function showSlide(index) {
-        slides.forEach((slide, i) => {
-          slide.classList.toggle('active', i === index);
-        });
-        dots.forEach((dot, i) => {
-          dot.classList.toggle('active', i === index);
-        });
-        currentIndex = index;
-      }
-
-      dots.forEach((dot, i) => {
-        dot.addEventListener('click', () => showSlide(i));
-      });
-
-      setInterval(() => {
-        currentIndex = (currentIndex + 1) % slides.length;
-        showSlide(currentIndex);
-      }, 3000);
-
-      showSlide(currentIndex);
-    }
-
-    startCarousel();
-
+    
+    // --- НАВИГАЦИЯ ПО СЕКЦИЯМ ---
     document.querySelectorAll('.menu-item').forEach(item => {
-      item.addEventListener('click', () => {
-        trackEvent('nav_click', { section: item.dataset.section });
-        document.querySelectorAll('.section').forEach(section => {
-          section.classList.toggle('active', section.id === item.dataset.section);
+        item.addEventListener('click', () => {
+            document.querySelector('.menu-item.active').classList.remove('active');
+            item.classList.add('active');
+            document.querySelector('.section.active').classList.remove('active');
+            document.getElementById(item.dataset.section).classList.add('active');
+            window.scrollTo(0, 0);
+            AOS.refresh();
         });
-        document.querySelectorAll('.menu-item').forEach(i => {
-          i.classList.toggle('active', i === item);
-        });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        if (item.dataset.section === 'rating') fetchRatings('junior');
-      });
     });
 
-    document.querySelectorAll('.social-link').forEach(link => {
-      link.addEventListener('click', () => {
-        trackEvent('social_click', { platform: link.dataset.social });
-        if (link.classList.contains('tg-link') && tg) {
-          tg.openLink(link.href);
-        } else {
-          window.open(link.href, '_blank');
+    // --- КАЛЕНДАРЬ ---
+    let currentDate = new Date();
+    const availableWeekdays = [1, 3, 5]; // 1=Пн, 3=Ср, 5=Пт
+
+    function generateCalendar(gridId, titleId, date, isBooking) {
+        const grid = document.getElementById(gridId);
+        const title = document.getElementById(titleId);
+        if (!grid || !title) return;
+
+        grid.innerHTML = '';
+        const month = date.getMonth();
+        const year = date.getFullYear();
+        title.textContent = `${date.toLocaleString('ru', { month: 'long' })} ${year}`;
+
+        const firstDayOfMonth = new Date(year, month, 1);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7; // 0=Пн, 1=Вт...
+
+        for (let i = 0; i < startDayOfWeek; i++) {
+            grid.insertAdjacentHTML('beforeend', '<div></div>');
         }
-      });
-    });
 
-    document.querySelector('.trainer-card').addEventListener('click', () => {
-      trackEvent('trainer_contact');
-      const link = 'https://t.me/anachoretes';
-      if (tg && /^https:\/\/t\.me\//.test(link)) {
-        tg.openLink(link);
-      } else {
-        window.open(link, '_blank');
-      }
-    });
+        for (let day = 1; day <= daysInMonth; day++) {
+            const currentDayDate = new Date(year, month, day);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-    async function fetchCalendarData(month, year) {
-      const cacheKey = `calendar_${year}_${month}`;
-      const cachedData = localStorage.getItem(cacheKey);
-      const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
-      const now = Date.now();
-      const cacheDuration = 60 * 60 * 1000; // 1 час
+            const dayElement = document.createElement('div');
+            dayElement.textContent = day;
+            dayElement.classList.add('calendar-day');
 
-      if (cachedData && cacheTimestamp && now - parseInt(cacheTimestamp) < cacheDuration) {
-        console.log('Using cached calendar data for:', cacheKey);
-        return JSON.parse(cachedData);
-      }
-
-      try {
-        console.log('Fetching calendar data for:', { month: month + 1, year });
-        const response = await fetch(SHEET_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            event: 'get_calendar_data',
-            month: month + 1,
-            year
-          })
-        });
-        const data = await response.json();
-        console.log('Calendar data response:', data);
-        if (data.status === 'success') {
-          const calendar = data.calendar || {};
-          localStorage.setItem(cacheKey, JSON.stringify(calendar));
-          localStorage.setItem(`${cacheKey}_timestamp`, now.toString());
-          return calendar;
-        } else {
-          throw new Error(data.message || 'Ошибка загрузки данных календаря');
-        }
-      } catch (error) {
-        console.error('Error fetching calendar data:', error.message);
-        localStorage.removeItem(cacheKey);
-        localStorage.removeItem(`${cacheKey}_timestamp`);
-        showError('Не удалось загрузить данные календаря: ' + error.message);
-        return {};
-      }
-    }
-
-    function generateCalendar(month, year, containerId) {
-      const container = document.getElementById(containerId);
-      if (!container) {
-        console.error('Container not found:', containerId);
-        return;
-      }
-      container.innerHTML = ''; // Очищаем контейнер
-
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const firstDay = new Date(year, month, 1).getDay();
-      const offset = firstDay === 0 ? 6 : firstDay - 1;
-
-      // Рендерим пустые ячейки для смещения
-      for (let i = 0; i < offset; i++) {
-        const empty = document.createElement('div');
-        container.appendChild(empty);
-      }
-
-      // Рендерим дни месяца
-      for (let i = 1; i <= daysInMonth; i++) {
-        const date = `${year}-${(month + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
-        const day = document.createElement('div');
-        day.className = 'calendar-day full'; // По умолчанию все дни "full"
-        day.textContent = i;
-        day.dataset.date = date;
-        container.appendChild(day);
-      }
-
-      // Асинхронно обновляем статусы дней
-      fetchCalendarData(month, year).then(calendarData => {
-        const totalSpots = 10; // Максимум мест на день
-        const days = container.querySelectorAll('.calendar-day');
-        days.forEach(day => {
-          if (day.dataset.date) {
-            const bookedSpots = calendarData[day.dataset.date]?.bookedSpots || 0;
-            const status = bookedSpots >= totalSpots ? 'full' : bookedSpots >= totalSpots * 0.7 ? 'limited' : 'available';
-            day.className = `calendar-day ${status}`;
-            if (status !== 'full' && containerId === 'booking-calendar-grid') {
-              day.addEventListener('click', () => openBookingModal(day.dataset.date));
+            if (currentDayDate < today) {
+                dayElement.classList.add('full');
+            } else if (availableWeekdays.includes(currentDayDate.getDay())) {
+                dayElement.classList.add('available');
+                if (isBooking) {
+                    dayElement.addEventListener('click', () => openModal(currentDayDate));
+                }
+            } else {
+                dayElement.classList.add('full');
             }
-          }
-        });
-      }).catch(error => {
-        console.error('Failed to update calendar statuses:', error.message);
-        // Календарь уже отрендерен, просто показываем ошибку
-        showError('Не удалось обновить статусы календаря: ' + error.message);
-      });
+            grid.appendChild(dayElement);
+        }
     }
-
-    let currentMonth = new Date().getMonth();
-    let currentYear = new Date().getFullYear();
 
     function updateCalendars() {
-      generateCalendar(currentMonth, currentYear, 'calendar-grid');
-      generateCalendar(currentMonth, currentYear, 'booking-calendar-grid');
-      const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-      document.querySelectorAll('#home-calendar-title, #booking-calendar-title').forEach(title => {
-        title.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-      });
+        generateCalendar('calendar-grid', 'home-calendar-title', currentDate, false);
+        generateCalendar('booking-calendar-grid', 'booking-calendar-title', currentDate, true);
+    }
+    
+    document.querySelectorAll('.prev-month').forEach(btn => btn.addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        updateCalendars();
+    }));
+
+    document.querySelectorAll('.next-month').forEach(btn => btn.addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        updateCalendars();
+    }));
+
+    // --- МОДАЛЬНОЕ ОКНО ---
+    const modal = document.getElementById('booking-modal');
+    const bookingForm = document.getElementById('booking-form');
+    const modalSpinner = document.getElementById('modal-spinner');
+    const submitButton = document.getElementById('submit-booking');
+    const overlay = document.body;
+
+    function openModal(date) {
+        const formattedDate = date.toLocaleDateString('ru');
+        document.getElementById('modal-date').textContent = `на ${formattedDate}`;
+        document.getElementById('selected-date').value = formattedDate;
+        modal.classList.add('active');
+        overlay.classList.add('modal-open');
     }
 
-    document.querySelectorAll('.prev-month').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentMonth--;
-        if (currentMonth < 0) {
-          currentMonth = 11;
-          currentYear--;
-        }
-        updateCalendars();
-      });
-    });
-
-    document.querySelectorAll('.next-month').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentMonth++;
-        if (currentMonth > 11) {
-          currentMonth = 0;
-          currentYear++;
-        }
-        updateCalendars();
-      });
-    });
-
-    updateCalendars();
-
-    function openModal(content) {
-      const modal = document.createElement('div');
-      modal.className = 'modal';
-      modal.innerHTML = content;
-      document.body.appendChild(modal);
-      setTimeout(() => modal.classList.add('active'), 10);
-      document.body.classList.add('modal-open');
-      modal.querySelector('.close-button')?.addEventListener('click', () => {
+    function closeModal() {
         modal.classList.remove('active');
-        document.body.classList.remove('modal-open');
-        setTimeout(() => modal.remove(), 600);
-      });
-      return modal;
+        overlay.classList.remove('modal-open');
+        bookingForm.reset();
     }
-
-    function openBookingModal(date) {
-      trackEvent('booking_form_open');
-      const modal = openModal(`
-        <h3>Запись на занятие</h3>
-        <p>${new Date(date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-        <div class="apply-form">
-          <label>Имя ребёнка</label>
-          <input type="text" name="childName" placeholder="Введите имя ребёнка" required>
-          <label>Группа</label>
-          <select name="group" required>
-            <option value="" disabled selected>Выберите группу</option>
-            <option value="junior">Младшая группа (4-6 лет)</option>
-            <option value="middle">Средняя группа (7-10 лет)</option>
-            <option value="senior">Старшая группа (11-14 лет)</option>
-          </select>
-          <button type="submit"><i class="fas fa-paper-plane"></i> Записаться</button>
-          <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-        </div>
-      `);
-      modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = {
-          event: 'booking_submit',
-          user_id: user_id || 'unknown',
-          username: username || 'unknown',
-          first_name: first_name || 'unknown',
-          last_name: last_name || 'unknown',
-          date: date,
-          childName: formData.get('childName'),
-          group: formData.get('group')
-        };
-        modal.innerHTML = `<div class="spinner"></div>`;
-        try {
-          await sendToSheet(data);
-          const cacheKey = `calendar_${currentYear}_${currentMonth}`;
-          localStorage.removeItem(cacheKey);
-          localStorage.removeItem(`${cacheKey}_timestamp`);
-          modal.innerHTML = `
-            <p style="text-align: center; font-size: 18px; color: #14B8A6;">Запись успешна!</p>
-            <p style="text-align: center; font-size: 15px; color: #6B7280;">Данные сохранены в Google Sheets.</p>
-            <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-          `;
-          modal.querySelector('.close-button').addEventListener('click', () => {
-            modal.classList.remove('active');
-            document.body.classList.remove('modal-open');
-            setTimeout(() => {
-              modal.remove();
-              updateCalendars();
-            }, 600);
-          });
-        } catch (error) {
-          modal.innerHTML = `
-            <p style="text-align: center; font-size: 18px; color: #EF4444;">Ошибка: ${error.message}</p>
-            <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-          `;
-          modal.querySelector('.close-button').addEventListener('click', () => {
-            modal.classList.remove('active');
-            document.body.classList.remove('modal-open');
-            setTimeout(() => modal.remove(), 600);
-          });
-          showError('Не удалось отправить запись: ' + error.message);
+    
+    document.getElementById('close-modal-button').addEventListener('click', closeModal);
+    document.body.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-open')) {
+            closeModal();
         }
-      });
-    }
+    });
 
-    document.querySelectorAll('.payment-card button').forEach(button => {
-      button.addEventListener('click', () => {
-        trackEvent('payment_form_open');
-        const plan = button.closest('.payment-card').dataset.plan;
-        const amount = plan === 'trial' ? 500 : plan === 'basic' ? 3000 : plan === 'standard' ? 5000 : 8000;
-        const modal = openModal(`
-          <h3>Оплата абонемента</h3>
-          <div class="apply-form">
-            <label>Имя ребёнка</label>
-            <input type="text" name="childName" placeholder="Введите имя ребёнка" required>
-            <label>Сумма (₽)</label>
-            <input type="number" name="amount" value="${amount}" readonly>
-            <label>План</label>
-            <input type="text" name="plan" value="${plan}" readonly>
-            <label>Дата</label>
-            <input type="date" name="date" value="${new Date().toISOString().split('T')[0]}" required>
-            <button type="submit"><i class="fas fa-credit-card"></i> Оплатить</button>
-            <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-          </div>
-        `);
-        modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const formData = new FormData(e.target);
-          const data = {
-            event: 'payment_submit',
-            user_id: user_id || 'unknown',
-            username: username || 'unknown',
-            first_name: first_name || 'unknown',
-            last_name: last_name || 'unknown',
-            childName: formData.get('childName'),
-            amount: formData.get('amount'),
-            plan: formData.get('plan'),
-            date: formData.get('date')
-          };
-          modal.innerHTML = `<div class="spinner"></div>`;
-          try {
+    // --- ОТПРАВКА ФОРМЫ ---
+    bookingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        modalSpinner.style.display = 'block';
+        submitButton.disabled = true;
+
+        const formData = new FormData(bookingForm);
+        const data = Object.fromEntries(formData.entries());
+        Object.assign(data, { user_id, username, first_name, last_name });
+
+        try {
             await sendToSheet(data);
-            modal.innerHTML = `
-              <p style="text-align: center; font-size: 18px; color: #14B8A6;">Оплата успешна!</p>
-              <p style="text-align: center; font-size: 15px; color: #6B7280;">Данные сохранены в Google Sheets.</p>
-              <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-            `;
-            modal.querySelector('.close-button').addEventListener('click', () => {
-              modal.classList.remove('active');
-              document.body.classList.remove('modal-open');
-              setTimeout(() => modal.remove(), 600);
-            });
-          } catch (error) {
-            modal.innerHTML = `
-              <p style="text-align: center; font-size: 18px; color: #EF4444;">Ошибка: ${error.message}</p>
-              <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-            `;
-            modal.querySelector('.close-button').addEventListener('click', () => {
-              modal.classList.remove('active');
-              document.body.classList.remove('modal-open');
-              setTimeout(() => modal.remove(), 600);
-            });
-            showError('Не удалось отправить платёж: ' + error.message);
-          }
-        });
-      });
-    });
-
-    function openExpenseModal() {
-      trackEvent('expense_form_open');
-      const modal = openModal(`
-        <h3>Добавить расход</h3>
-        <div class="apply-form">
-          <label>Имя ребёнка</label>
-          <input type="text" name="name" placeholder="Введите имя ребёнка" required>
-          <label>Сумма (₽)</label>
-          <input type="number" name="amount" placeholder="Введите сумму" required>
-          <label>Описание</label>
-          <textarea name="description" placeholder="Например, покупка кимоно" required></textarea>
-          <label>Дата</label>
-          <input type="date" name="date" value="${new Date().toISOString().split('T')[0]}" required>
-          <button type="submit"><i class="fas fa-money-bill"></i> Добавить</button>
-          <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-        </div>
-      `);
-      modal.querySelector('.apply-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = {
-          event: 'expense_submit',
-          user_id: user_id || 'unknown',
-          username: username || 'unknown',
-          first_name: first_name || 'unknown',
-          last_name: last_name || 'unknown',
-          name: formData.get('name'),
-          amount: formData.get('amount'),
-          description: formData.get('description'),
-          date: formData.get('date')
-        };
-        modal.innerHTML = `<div class="spinner"></div>`;
-        try {
-          await sendToSheet(data);
-          modal.innerHTML = `
-            <p style="text-align: center; font-size: 18px; color: #14B8A6;">Расход добавлен!</p>
-            <p style="text-align: center; font-size: 15px; color: #6B7280;">Данные сохранены в Google Sheets.</p>
-            <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-          `;
-          modal.querySelector('.close-button').addEventListener('click', () => {
-            modal.classList.remove('active');
-            document.body.classList.remove('modal-open');
-            setTimeout(() => modal.remove(), 600);
-          });
+            showPopup('Успешно!', 'Вы записаны! Мы скоро с вами свяжемся.');
+            closeModal();
         } catch (error) {
-          modal.innerHTML = `
-            <p style="text-align: center; font-size: 18px; color: #EF4444;">Ошибка: ${error.message}</p>
-            <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
-          `;
-          modal.querySelector('.close-button').addEventListener('click', () => {
-            modal.classList.remove('active');
-            document.body.classList.remove('modal-open');
-            setTimeout(() => modal.remove(), 600);
-          });
-          showError('Не удалось добавить расход: ' + error.message);
+            showPopup('Ошибка', `Не удалось отправить заявку. ${error.message}`);
+        } finally {
+            modalSpinner.style.display = 'none';
+            submitButton.disabled = false;
         }
-      });
-    }
-
-    async function fetchRatings(group) {
-      trackEvent('ratings_view', { group });
-      const container = document.getElementById('rating-list');
-      container.innerHTML = `<div class="spinner"></div>`;
-      try {
-        const response = await fetch(SHEET_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            event: 'get_data',
-            type: 'ratings',
-            group
-          })
-        });
-        const data = await response.json();
-        console.log('Ratings response:', data);
-        if (data.status === 'success' && data.ratings) {
-          container.innerHTML = '';
-          if (data.ratings.length === 0) {
-            container.innerHTML = '<p class="text-center text-sm text-gray-400">Рейтинг пуст</p>';
-            return;
-          }
-          data.ratings.forEach(r => {
-            const item = document.createElement('div');
-            item.className = 'item';
-            item.innerHTML = `
-              <div class="flex-1 text-sm">${r.name}</div>
-              <div class="text-xs text-gray-400">${r.belt}</div>
-              <div class="text-xs text-gray-400">${r.points} баллов</div>
-              <div class="text-xs text-teal-400">${r.rank}</div>
-            `;
-            container.appendChild(item);
-          });
-        } else {
-          throw new Error(data.message || 'Ошибка загрузки рейтинга');
-        }
-      } catch (error) {
-        console.error('Error fetching ratings:', error);
-        container.innerHTML = '<p class="text-center text-sm text-red-400">Ошибка загрузки рейтинга</p>';
-        showError('Не удалось загрузить рейтинг: ' + error.message);
-      }
-    }
-
-    document.querySelectorAll('.group-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.group-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        fetchRatings(tab.dataset.group);
-      });
     });
+
+    // --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ---
+    document.addEventListener('DOMContentLoaded', updateCalendars);
   </script>
 </body>
 </html>
