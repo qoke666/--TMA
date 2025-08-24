@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Детская школа карате</title>
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" defer>
+  <script src="https://cdn.tailwindcss.com" defer></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;700&display=swap');
     body { margin: 0; font-family: 'Inter', sans-serif; background: #1F2937; color: #F3F4F6; }
@@ -118,21 +118,21 @@
       <div id="modal-spinner" class="spinner" style="display: none;"></div>
     </form>
   </div>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js" defer></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       console.log('Страница загружена, инициализация начата');
-      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbysJxowCL4FiPooWHw4APxlGhO4CxAgb_9b8hU3HtNfGcYSgjD5_84sRp-xYpUHEmaUwg/exec'; // Убедитесь, что это правильный URL
+      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbysJxowCL4FiPooWHw4APxlGhO4CxAgb_9b8hU3HtNfGcYSgjD5_84sRp-xYpUHEmaUwg/exec'; // Замените на ваш URL Google Apps Script
       const tg = window.Telegram?.WebApp;
       if (tg) {
         console.log('Telegram Web App инициализирован', tg.initDataUnsafe);
         tg.expand();
       } else {
-        console.warn('Telegram Web App не доступен');
+        console.warn('Telegram Web App не доступен, используется резервный режим');
       }
-      const userData = (tg?.initDataUnsafe?.user) ? { id: tg.initDataUnsafe.user.id, username: tg.initDataUnsafe.user.username } : {};
+      const userData = (tg?.initDataUnsafe?.user) ? { id: tg.initDataUnsafe.user.id, username: tg.initDataUnsafe.user.username } : { id: 'N/A', username: 'N/A' };
       console.log('Данные пользователя:', userData);
       let currentDate = new Date();
       let bookingsData = {};
@@ -141,7 +141,9 @@
 
       AOS.init({ duration: 600, once: true, offset: 20 });
       if (typeof tsParticles !== 'undefined') {
-        tsParticles.load("tsparticles", { particles: { number: { value: 50 }, color: { value: "#14B8A6" }, opacity: { value: 0.4 }, size: { value: 2 }, move: { enable: true, speed: 0.5 } } });
+        tsParticles.load("tsparticles", { particles: { number: { value: 30 }, color: { value: "#14B8A6" }, opacity: { value: 0.3 }, size: { value: 2 }, move: { enable: true, speed: 0.3 } } });
+      } else {
+        console.warn('tsParticles не загружен');
       }
 
       async function trackEvent(eventName, additionalData = {}) {
@@ -150,13 +152,12 @@
         try {
           const response = await fetch(WEB_APP_URL, {
             method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            headers: { 'Content-Type': 'application/json' }, // Изменено на application/json
             body: JSON.stringify(payload)
           });
           if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
           const result = await response.json();
-          if (result.status !== 'success') throw new Error(result.message);
+          if (result.status !== 'success') throw new Error(result.message || 'Неизвестная ошибка сервера');
           console.log('Событие успешно отправлено:', result);
           return result;
         } catch (error) {
@@ -175,11 +176,11 @@
             bookingsData = result.data;
             console.log('Данные о записях загружены:', bookingsData);
           } else {
-            throw new Error(result.message);
+            throw new Error(result.message || 'Неизвестная ошибка сервера');
           }
         } catch (error) {
           console.error('Не удалось загрузить записи:', error);
-          alert('Ошибка: не удалось загрузить расписание. Попробуйте обновить страницу.');
+          alert('Ошибка: не удалось загрузить расписание. Проверьте соединение и попробуйте снова.');
         } finally {
           updateCalendar();
         }
@@ -260,7 +261,8 @@
         simpleForm.style.display = isReturningUser ? 'block' : 'none';
         modal.classList.add('active');
         modalOverlay.classList.add('active');
-        submitButton.disabled = false; // Убедимся, что кнопка активна
+        submitButton.disabled = false;
+        console.log('Кнопка "Записаться" активирована');
       }
 
       function closeModal() {
@@ -289,6 +291,11 @@
       bookingForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         console.log('Форма отправлена');
+        if (!bookingForm.checkValidity()) {
+          console.warn('Форма не прошла валидацию');
+          alert('Пожалуйста, заполните все обязательные поля.');
+          return;
+        }
         modalSpinner.style.display = 'block';
         submitButton.disabled = true;
         const data = Object.fromEntries(new FormData(bookingForm).entries());
@@ -317,6 +324,8 @@
         }
       });
 
+      // Инициализация
+      console.log('Инициализация приложения...');
       fetchBookings();
       trackEvent('webapp_open');
     });
