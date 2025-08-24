@@ -123,10 +123,17 @@
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbysJxowCL4FiPooWHw4APxlGhO4CxAgb_9b8hU3HtNfGcYSgjD5_84sRp-xYpUHEmaUwg/exec';
+      console.log('Страница загружена, инициализация начата');
+      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbysJxowCL4FiPooWHw4APxlGhO4CxAgb_9b8hU3HtNfGcYSgjD5_84sRp-xYpUHEmaUwg/exec'; // Убедитесь, что это правильный URL
       const tg = window.Telegram?.WebApp;
-      if (tg) tg.expand();
+      if (tg) {
+        console.log('Telegram Web App инициализирован', tg.initDataUnsafe);
+        tg.expand();
+      } else {
+        console.warn('Telegram Web App не доступен');
+      }
       const userData = (tg?.initDataUnsafe?.user) ? { id: tg.initDataUnsafe.user.id, username: tg.initDataUnsafe.user.username } : {};
+      console.log('Данные пользователя:', userData);
       let currentDate = new Date();
       let bookingsData = {};
       const MAX_SPOTS = 10;
@@ -138,26 +145,35 @@
       }
 
       async function trackEvent(eventName, additionalData = {}) {
+        console.log('Отправка события:', eventName, additionalData);
         const payload = { event: eventName, ...userData, timestamp: new Date().toISOString(), additional: additionalData };
-        const response = await fetch(WEB_APP_URL, {
-          method: 'POST',
-          mode: 'cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const result = await response.json();
-        if (result.status !== 'success') throw new Error(result.message);
-        return result;
+        try {
+          const response = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          const result = await response.json();
+          if (result.status !== 'success') throw new Error(result.message);
+          console.log('Событие успешно отправлено:', result);
+          return result;
+        } catch (error) {
+          console.error('Ошибка при отправке события:', error);
+          throw error;
+        }
       }
 
       async function fetchBookings() {
+        console.log('Загрузка данных о записях...');
         try {
           const response = await fetch(WEB_APP_URL);
           if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
           const result = await response.json();
           if (result.status === 'success') {
             bookingsData = result.data;
+            console.log('Данные о записях загружены:', bookingsData);
           } else {
             throw new Error(result.message);
           }
@@ -170,10 +186,17 @@
       }
 
       async function checkUserExists(username) {
-        const response = await fetch(WEB_APP_URL + '?action=checkUser&username=' + encodeURIComponent(username));
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const result = await response.json();
-        return result.exists;
+        console.log('Проверка существования пользователя:', username);
+        try {
+          const response = await fetch(WEB_APP_URL + '?action=checkUser&username=' + encodeURIComponent(username));
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          const result = await response.json();
+          console.log('Результат проверки пользователя:', result);
+          return result.exists;
+        } catch (error) {
+          console.error('Ошибка при проверке пользователя:', error);
+          return false;
+        }
       }
 
       const modal = document.getElementById('booking-modal');
@@ -185,6 +208,7 @@
       const simpleForm = bookingForm.querySelector('.simple-form');
 
       function updateCalendar() {
+        console.log('Обновление календаря...');
         const grid = document.getElementById('booking-calendar-grid');
         const title = document.getElementById('booking-calendar-title');
         grid.innerHTML = '';
@@ -222,31 +246,39 @@
           }
           grid.appendChild(dayElement);
         }
+        console.log('Календарь обновлен');
       }
 
       async function openModal(date) {
+        console.log('Открытие модального окна для даты:', date);
         document.getElementById('modal-date').textContent = `на ${date.toLocaleDateString('ru')}`;
         document.getElementById('selected-date').value = date.toLocaleDateString('ru');
         document.getElementById('username').value = userData.username || 'N/A';
         const isReturningUser = userData.username ? await checkUserExists(userData.username) : false;
+        console.log('Пользователь возвращающийся:', isReturningUser);
         fullForm.style.display = isReturningUser ? 'none' : 'block';
         simpleForm.style.display = isReturningUser ? 'block' : 'none';
         modal.classList.add('active');
         modalOverlay.classList.add('active');
+        submitButton.disabled = false; // Убедимся, что кнопка активна
       }
 
       function closeModal() {
+        console.log('Закрытие модального окна');
         modal.classList.remove('active');
         modalOverlay.classList.remove('active');
         bookingForm.reset();
+        submitButton.disabled = false;
       }
 
       document.querySelector('.prev-month').addEventListener('click', () => {
+        console.log('Переключение на предыдущий месяц');
         currentDate.setMonth(currentDate.getMonth() - 1);
         updateCalendar();
       });
 
       document.querySelector('.next-month').addEventListener('click', () => {
+        console.log('Переключение на следующий месяц');
         currentDate.setMonth(currentDate.getMonth() + 1);
         updateCalendar();
       });
@@ -256,19 +288,32 @@
 
       bookingForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        console.log('Форма отправлена');
         modalSpinner.style.display = 'block';
         submitButton.disabled = true;
         const data = Object.fromEntries(new FormData(bookingForm).entries());
+        console.log('Данные формы:', data);
         try {
-          await trackEvent('booking_request', data);
-          tg?.showPopup({ title: 'Успешно!', message: 'Вы записаны! Мы скоро с вами свяжемся.' });
+          const result = await trackEvent('booking_request', data);
+          console.log('Успешная отправка:', result);
+          if (tg) {
+            tg.showPopup({ title: 'Успешно!', message: 'Вы записаны! Мы скоро с вами свяжемся.' });
+          } else {
+            alert('Вы записаны! Мы скоро с вами свяжемся.');
+          }
           closeModal();
           fetchBookings();
         } catch (error) {
-          tg?.showPopup({ title: 'Ошибка', message: `Не удалось отправить заявку. ${error.message}` });
+          console.error('Ошибка при отправке формы:', error);
+          if (tg) {
+            tg.showPopup({ title: 'Ошибка', message: `Не удалось отправить заявку. ${error.message}` });
+          } else {
+            alert(`Не удалось отправить заявку. ${error.message}`);
+          }
         } finally {
           modalSpinner.style.display = 'none';
           submitButton.disabled = false;
+          console.log('Отправка формы завершена');
         }
       });
 
