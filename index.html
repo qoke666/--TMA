@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -171,179 +170,259 @@
     }
 
     .section-title {
-        font-size: 20px;
-        font-weight: 600;
-        margin-bottom: 16px;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 16px;
     }
 
-    /* Calendar styles */
     .calendar-container {
-        background-color: var(--bg-secondary);
-        border-radius: 16px;
-        padding: 20px;
+      background-color: var(--bg-secondary);
+      border-radius: 16px;
+      padding: 20px;
     }
 
     .week-selector {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
     }
 
     .week-selector__arrow {
-        cursor: pointer;
-        padding: 8px;
+      cursor: pointer;
+      padding: 8px;
     }
+
     .week-selector__arrow svg {
-        width: 24px;
-        height: 24px;
-        stroke: var(--text-secondary);
+      width: 24px;
+      height: 24px;
+      stroke: var(--text-secondary);
     }
-    
+
     .week-selector__date {
-        font-size: 18px;
-        font-weight: 600;
+      font-size: 18px;
+      font-weight: 600;
     }
-    
+
     .days-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 10px;
-        margin-bottom: 20px;
-        text-align: center;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+      text-align: center;
     }
 
     .day {
-        padding: 10px 5px;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: background-color 0.2s;
+      padding: 10px 5px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
     }
-    
+
     .day.active {
-        background-color: var(--accent-blue);
+      background-color: var(--accent-blue);
     }
 
     .day__name {
-        font-size: 12px;
-        color: var(--text-secondary);
-        margin-bottom: 4px;
-    }
-    
-    .day__date {
-        font-weight: 600;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
     }
 
-    .slots-list .slot-card {
-        background-color: var(--bg-main);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 12px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .day__date {
+      font-weight: 600;
+    }
+
+    .slots-list .rukovoditel-card {
+      background-color: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .slot-card__info {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
-    
+
     .slot-card__time {
-        font-size: 18px;
-        font-weight: 600;
+      font-size: 18px;
+      font-weight: 600;
     }
 
     .slot-card__details {
-        font-size: 14px;
-        color: var(--text-secondary);
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .slot-card__action {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slot-card__action select {
+      background-color: var(--bg-secondary);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 14px;
     }
 
     .slot-card__action .btn {
-        background-color: var(--accent-blue);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: opacity 0.2s;
-    }
-    
-    .slot-card__action .btn:hover {
-        opacity: 0.8;
+      background-color: var(--accent-blue);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
     }
 
-    /* Trainers styles */
+    .slot-card__action .btn:hover {
+      opacity: 0.8;
+    }
+
+    .slot-card__action .btn:disabled {
+      background-color: var(--text-secondary);
+      cursor: not-allowed;
+    }
+
     .trainers-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
     }
 
     .trainer-card {
-        background-color: var(--bg-secondary);
-        border-radius: 16px;
-        padding: 20px;
-        text-align: center;
+      background-color: var(--bg-secondary);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
     }
-    
+
     .trainer-card__avatar img {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 12px;
-        border: 2px solid var(--border-color);
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 12px;
+      border: 2px solid var(--border-color);
     }
 
     .trainer-card__name {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 4px;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
     }
 
     .trainer-card__speciality {
-        color: var(--text-secondary);
-        margin-bottom: 16px;
-    }
-    
-    .trainer-card__contact-btn {
-        display: inline-block;
-        background-color: var(--bg-main);
-        color: var(--text-main);
-        border: 1px solid var(--border-color);
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-weight: 500;
-        text-decoration: none;
-    }
-    
-    /* Profile styles */
-    .profile-section {
-        background-color: var(--bg-secondary);
-        border-radius: 16px;
-        padding: 20px;
-    }
-    
-    .profile-section p {
-        color: var(--text-secondary);
-        line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
     }
 
+    .trainer-card__contact-btn {
+      display: inline-block;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .profile-section {
+      background-color: var(--bg-secondary);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .profile-section p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .child-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .child-form input {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .child-form button {
+      background-color: var(--accent-blue);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .child-form button:hover {
+      opacity: 0.8;
+    }
+
+    .child-selector {
+      margin-bottom: 20px;
+    }
+
+    .child-selector select {
+      background-color: var(--bg-secondary);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 16px;
+      width: 100%;
+    }
+
+    .child-info {
+      margin-bottom: 20px;
+    }
+
+    .child-info__balance {
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    .child-info__history {
+      margin-top: 16px;
+    }
+
+    .child-info__history-item {
+      padding: 10px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
   </style>
 </head>
-
 <body>
   <div class="container">
     <header class="header">
       <div class="header__logo">
         <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="20" cy="20" r="20" fill="white"/>
-            <path d="M20 31.6667C26.4435 31.6667 31.6667 26.4435 31.6667 20C31.6667 13.5565 26.4435 8.33334 20 8.33334C13.5565 8.33334 8.33337 13.5565 8.33337 20C8.33337 26.4435 13.5565 31.6667 20 31.6667Z" fill="#007AFF"/>
-        </svg>          
+          <circle cx="20" cy="20" r="20" fill="white"/>
+          <path d="M20 31.6667C26.4435 31.6667 31.6667 26.4435 31.6667 20C31.6667 13.5565 26.4435 8.33334 20 8.33334C13.5565 8.33334 8.33337 13.5565 8.33337 20C8.33337 26.4435 13.5565 31.6667 20 31.6667Z" fill="#007AFF"/>
+        </svg>
       </div>
       <div class="header__user">
         <div class="header__user-avatar"><img id="user-avatar" src="" alt=""></div>
@@ -370,99 +449,52 @@
 
       <div class="tab-content active" id="schedule">
         <div class="calendar-container">
-            <div class="week-selector">
-                <div class="week-selector__arrow" id="prev-week">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
-                </div>
-                <div class="week-selector__date">3 – 9 сентября</div>
-                <div class="week-selector__arrow" id="next-week">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
-                </div>
+          <div class="child-selector">
+            <select id="child-select-schedule">
+              <option value="">Выберите ребенка</option>
+            </select>
+          </div>
+          <div class="week-selector">
+            <div class="week-selector__arrow" id="prev-week">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
             </div>
-
-            <div class="days-grid">
-                <div class="day">
-                    <div class="day__name">ПН</div>
-                    <div class="day__date">3</div>
-                </div>
-                <div class="day active">
-                    <div class="day__name">ВТ</div>
-                    <div class="day__date">4</div>
-                </div>
-                <div class="day">
-                    <div class="day__name">СР</div>
-                    <div class="day__date">5</div>
-                </div>
-                <div class="day">
-                    <div class="day__name">ЧТ</div>
-                    <div class="day__date">6</div>
-                </div>
-                <div class="day">
-                    <div class="day__name">ПТ</div>
-                    <div class="day__date">7</div>
-                </div>
-                <div class="day">
-                    <div class="day__name">СБ</div>
-                    <div class="day__date">8</div>
-                </div>
-                <div class="day">
-                    <div class="day__name">ВС</div>
-                    <div class="day__date">9</div>
-                </div>
+            <div class="week-selector__date" id="week-date"></div>
+            <div class="week-selector__arrow" id="next-week">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
             </div>
-
-            <div class="slots-list">
-                <div class="section-title">Свободные слоты на Вторник, 4 сентября</div>
-                <div class="slot-card">
-                    <div class="slot-card__info">
-                        <div class="slot-card__time">10:00 - 11:00</div>
-                        <div class="slot-card__details">Тренер: Иванова Мария | Свободно: 3/8</div>
-                    </div>
-                    <div class="slot-card__action">
-                        <button class="btn">Записаться</button>
-                    </div>
-                </div>
-                <div class="slot-card">
-                    <div class="slot-card__info">
-                        <div class="slot-card__time">12:00 - 13:00</div>
-                        <div class="slot-card__details">Тренер: Петров Алексей | Свободно: 1/8</div>
-                    </div>
-                    <div class="slot-card__action">
-                        <button class="btn">Записаться</button>
-                    </div>
-                </div>
-                <div class="slot-card">
-                    <div class="slot-card__info">
-                        <div class="slot-card__time">15:00 - 16:00</div>
-                        <div class="slot-card__details">Тренер: Иванова Мария | Мест нет</div>
-                    </div>
-                    <div class="slot-card__action">
-                        <button class="btn" disabled>Записаться</button>
-                    </div>
-                </div>
-            </div>
+          </div>
+          <div class="days-grid" id="days-grid"></div>
+          <div class="slots-list">
+            <div class="section-title" id="slots-title"></div>
+          </div>
         </div>
       </div>
 
       <div class="tab-content" id="trainers">
         <div class="section-title">Наши тренеры</div>
-        <div class="trainers-grid">
-            <div class="trainer-card">
-                <div class="trainer-card__avatar">
-                    <img src="https://i.pravatar.cc/150?u=maria" alt="Павел">
-                </div>
-                <div class="trainer-card__name">Пашел</div>
-                <div class="trainer-card__speciality">тренер</div>
-                <a href="#" class="trainer-card__contact-btn">Написать</a>
-            </div>
-        </div>
+        <div class="trainers-grid" id="trainers-grid"></div>
       </div>
 
       <div class="tab-content" id="profile">
         <div class="section-title">Профиль</div>
         <div class="profile-section">
-            <h3 id="profile-parent-name">Имя Родителя</h3>
-            <p>Здесь будет отображаться информация о ваших детях, их балансе занятий и истории посещений.</p>
+          <div class="child-form">
+            <input type="text" id="child-name" placeholder="Имя ребенка" required>
+            <input type="date" id="child-birthdate" placeholder="Дата рождения" required>
+            <button id="add-child">Добавить ребенка</button>
+          </div>
+          <div class="child-selector">
+            <select id="child-select-profile">
+              <option value="">Выберите ребенка</option>
+            </select>
+          </div>
+          <div class="child-info" id="child-info" style="display: none;">
+            <h3 id="child-info-name">Имя ребенка</h3>
+            <p class="child-info__balance" id="child-info-balance">Остаток занятий: 0</p>
+            <div class="child-info__history" id="child-info-history">
+              <div class="section-title">История записей</div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -473,46 +505,305 @@
       const tg = window.Telegram.WebApp;
       tg.expand();
 
+      // API endpoint (replace with your Google Apps Script Web App URL)
+      const API_URL = 'YOUR_APPS_SCRIPT_URL'; // Замените на реальный URL вашего Google Apps Script
+
       // User info
       const user = tg.initDataUnsafe?.user;
+      let telegramId = null;
       if (user) {
         document.getElementById('user-name').textContent = user.first_name || 'Пользователь';
-        // You can add logic for user photo if available
-        // document.getElementById('user-avatar').src = user.photo_url || '';
+        telegramId = user.id;
       } else {
-         document.getElementById('user-name').textContent = 'Гость';
+        document.getElementById('user-name').textContent = 'Гость';
       }
 
+      // State
+      let children = [];
+      let balances = [];
+      let trainers = [];
+      let currentWeekStart = new Date('2025-09-01'); // Начало текущей недели (понедельник)
+      let selectedChildId = null;
+      let selectedDate = '2025-09-03'; // Текущая дата по умолчанию
+
+      // Helper: Format date to YYYY-MM-DD
+      const formatDate = (date) => {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      };
+
+      // Helper: Get Monday of the week
+      const getMonday = (date) => {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = day === 0 ? 6 : day - 1;
+        d.setDate(d.getDate() - diff);
+        return d;
+      };
+
+      // Helper: API request
+      const apiRequest = async (action, payload = {}) => {
+        try {
+          const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, initData: tg.initData, ...payload })
+          });
+          const data = await response.json();
+          if (!data.success) throw new Error(data.message || 'API error');
+          return data;
+        } catch (error) {
+          console.error('API Error:', error);
+          alert(`Ошибка: ${error.message}`);
+          throw error;
+        }
+      };
+
+      // Update child selectors
+      const updateChildSelectors = () => {
+        const scheduleSelect = document.getElementById('child-select-schedule');
+        const profileSelect = document.getElementById('child-select-profile');
+        scheduleSelect.innerHTML = '<option value="">Выберите ребенка</option>';
+        profileSelect.innerHTML = '<option value="">Выберите ребенка</option>';
+        
+        children.forEach(child => {
+          const option = document.createElement('option');
+          option.value = child.child_id;
+          option.textContent = child.child_name;
+          scheduleSelect.appendChild(option.cloneNode(true));
+          profileSelect.appendChild(option);
+        });
+
+        if (selectedChildId) {
+          scheduleSelect.value = selectedChildId;
+          profileSelect.value = selectedChildId;
+          updateChildInfo(selectedChildId);
+        }
+      };
+
+      // Update child info
+      const updateChildInfo = async (childId) => {
+        const childInfo = document.getElementById('child-info');
+        const child = children.find(c => c.child_id === childId);
+        if (child) {
+          document.getElementById('child-info-name').textContent = child.child_name;
+          const balance = balances.find(b => b.child_id === childId);
+          document.getElementById('child-info-balance').textContent = `Остаток занятий: ${balance ? balance.remaining : 0}`;
+          
+          // Fetch bookings
+          const bookings = await apiRequest('bookings', { child_id: childId });
+          const historyContainer = document.getElementById('child-info-history');
+          historyContainer.innerHTML = '<div class="section-title">История записей</div>';
+          if (!bookings || bookings.length === 0) {
+            historyContainer.innerHTML += '<p>Нет записей</p>';
+          } else {
+            bookings.forEach(booking => {
+              const slot = slots.find(s => s.slot_id === booking.slot_id);
+              if (slot) {
+                const item = document.createElement('div');
+                item.className = 'child-info__history-item';
+                item.textContent = `Занятие: ${slot.time} | ${slot.date} | Тренер: ${trainers.find(t => t.trainer_id === slot.trainer_id)?.name || 'Неизвестно'}`;
+                historyContainer.appendChild(item);
+              }
+            });
+          }
+          childInfo.style.display = 'block';
+        } else {
+          childInfo.style.display = 'none';
+        }
+      };
+
+      // Update calendar
+      const updateCalendar = () => {
+        const daysGrid = document.getElementById('days-grid');
+        daysGrid.innerHTML = '';
+        const weekDays = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+        const weekStart = getMonday(currentWeekStart);
+        document.getElementById('week-date').textContent = `${weekStart.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })} – ${new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}`;
+
+        for (let i = 0; i < 7; i++) {
+          const day = new Date(weekStart.getTime() + i * 24 * 60 * 60 * 1000);
+          const dateStr = formatDate(day);
+          const isActive = dateStr === selectedDate;
+          const dayDiv = document.createElement('div');
+          dayDiv.className = `day ${isActive ? 'active' : ''}`;
+          dayDiv.setAttribute('data-date', dateStr);
+          dayDiv.innerHTML = `
+            <div class="day__name">${weekDays[i]}</div>
+            <div class="day__date">${day.getDate()}</div>
+          `;
+          daysGrid.appendChild(dayDiv);
+        }
+
+        // Attach day click listeners
+        document.querySelectorAll('.day').forEach(day => {
+          day.addEventListener('click', () => {
+            document.querySelectorAll('.day').forEach(d => d.classList.remove('active'));
+            day.classList.add('active');
+            selectedDate = day.getAttribute('data-date');
+            updateSlots(selectedDate);
+          });
+        });
+      };
+
+      // Update slots
+      const updateSlots = async (date) => {
+        const slotsList = document.querySelector('.slots-list');
+        const slotsTitle = document.getElementById('slots-title');
+        const dateObj = new Date(date);
+        slotsTitle.textContent = `Свободные слоты на ${dateObj.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}`;
+        
+        const weekStart = formatDate(getMonday(dateObj));
+        const weekEnd = formatDate(new Date(getMonday(dateObj).getTime() + 6 * 24 * 60 * 60 * 1000));
+        const slots = await apiRequest('slots', { from: weekStart, to: weekEnd });
+        
+        slotsList.innerHTML = `<div class="section-title">${slotsTitle.textContent}</div>`;
+        const daySlots = slots.filter(slot => slot.date === date);
+        if (daySlots.length === 0) {
+          slotsList.innerHTML += '<p>Нет доступных слотов</p>';
+        } else {
+          daySlots.forEach(slot => {
+            const trainer = trainers.find(t => t.trainer_id === slot.trainer_id);
+            const slotCard = document.createElement('div');
+            slotCard.className = 'slot-card';
+            slotCard.setAttribute('data-slot-id', slot.slot_id);
+            slotCard.innerHTML = `
+              <div class="slot-card__info">
+                <div class="slot-card__time">${slot.time}</div>
+                <div class="slot-card__details">Тренер: ${trainer ? trainer.name : 'Неизвестно'} | Свободно: <span class="slot-availability">${slot.capacity - slot.booked}/${slot.capacity}</span></div>
+              </div>
+              <div class="slot-card__action">
+                <button class="btn" data-action="register" ${slot.booked >= slot.capacity ? 'disabled' : ''}>Записаться</button>
+              </div>
+            `;
+            slotsList.appendChild(slotCard);
+          });
+        }
+
+        // Attach register button listeners
+        document.querySelectorAll('[data-action="register"]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const slotCard = btn.closest('.slot-card');
+            const slotId = slotCard.getAttribute('data-slot-id');
+            if (!selectedChildId) {
+              alert('Выберите ребенка для записи');
+              return;
+            }
+            const balance = balances.find(b => b.child_id === selectedChildId);
+            if (!balance || balance.remaining <= 0) {
+              alert('У ребенка недостаточно занятий');
+              return;
+            }
+            try {
+              await apiRequest('book', { slot_id: slotId, child_id: selectedChildId });
+              // Refresh data
+              const bootstrapData = await apiRequest('bootstrap');
+              children = bootstrapData.children;
+              balances = bootstrapData.balances;
+              updateChildSelectors();
+              updateChildInfo(selectedChildId);
+              updateSlots(selectedDate);
+            } catch (error) {
+              // Error already handled in apiRequest
+            }
+          });
+        });
+      };
+
+      // Bootstrap data
+      const bootstrap = async () => {
+        const data = await apiRequest('bootstrap');
+        children = data.children || [];
+        balances = data.balances || [];
+        trainers = data.trainers || [];
+        
+        // Update trainers
+        const trainersGrid = document.getElementById('trainers-grid');
+        trainersGrid.innerHTML = '';
+        trainers.forEach(trainer => {
+          const trainerCard = document.createElement('div');
+          trainerCard.className = 'trainer-card';
+          trainerCard.innerHTML = `
+            <div class="trainer-card__avatar">
+              <img src="${trainer.avatar_url}" alt="${trainer.name}">
+            </div>
+            <div class="trainer-card__name">${trainer.name}</div>
+            <div class="trainer-card__speciality">${trainer.speciality}</div>
+            <a href="#" class="trainer-card__contact-btn">Написать</a>
+          `;
+          trainersGrid.appendChild(trainerCard);
+        });
+
+        updateChildSelectors();
+        updateCalendar();
+        updateSlots(selectedDate);
+      };
+
+      // Add child
+      document.getElementById('add-child').addEventListener('click', async () => {
+        const name = document.getElementById('child-name').value.trim();
+        const birthdate = document.getElementById('child-birthdate').value;
+        if (name && birthdate) {
+          try {
+            await apiRequest('register_parent', {
+              parent: { full_name: user.first_name, phone: 'unknown', email: '' },
+              children: [{ child_name: name, birthdate }]
+            });
+            const bootstrapData = await apiRequest('bootstrap');
+            children = bootstrapData.children;
+            balances = bootstrapData.balances;
+            updateChildSelectors();
+            document.getElementById('child-name').value = '';
+            document.getElementById('child-birthdate').value = '';
+          } catch (error) {
+            // Error handled in apiRequest
+          }
+        } else {
+          alert('Введите имя ребенка и дату рождения');
+        }
+      });
+
+      // Child selection
+      document.getElementById('child-select-profile').addEventListener('change', (e) => {
+        selectedChildId = e.target.value;
+        document.getElementById('child-select-schedule').value = selectedChildId;
+        updateChildInfo(selectedChildId);
+      });
+
+      document.getElementById('child-select-schedule').addEventListener('change', (e) => {
+        selectedChildId = e.target.value;
+        document.getElementById('child-select-profile').value = selectedChildId;
+        updateChildInfo(selectedChildId);
+      });
 
       // Tabs logic
       const tabs = document.querySelectorAll('.tab');
       const tabContents = document.querySelectorAll('.tab-content');
-
       tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-          // Remove active class from all tabs and contents
           tabs.forEach(item => item.classList.remove('active'));
           tabContents.forEach(content => content.classList.remove('active'));
-
-          // Add active class to clicked tab and corresponding content
           tab.classList.add('active');
           const contentId = tab.getAttribute('data-tab');
           document.getElementById(contentId).classList.add('active');
         });
       });
-      
-      // Calendar day selection logic (visual only)
-      const days = document.querySelectorAll('.day');
-      days.forEach(day => {
-        day.addEventListener('click', () => {
-            days.forEach(d => d.classList.remove('active'));
-            day.classList.add('active');
-            // Here you would typically load slots for the selected day
-        });
+
+      // Week navigation
+      document.getElementById('prev-week').addEventListener('click', () => {
+        currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+        updateCalendar();
+        updateSlots(selectedDate);
       });
 
+      document.getElementById('next-week').addEventListener('click', () => {
+        currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+        updateCalendar();
+        updateSlots(selectedDate);
+      });
+
+      // Initialize
+      bootstrap();
     });
   </script>
 </body>
-
 </html>
