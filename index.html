@@ -222,13 +222,14 @@
                 }
                 loadBootstrap();
             } else {
-                alert('Это приложение должно открываться в Telegram WebApp');
+                console.warn('Не в Telegram WebApp — тестирование без аутентификации. Запросы могут не пройти валидацию.');
+                loadBootstrap(); // Для тестирования в браузере, но backend может отклонить без initData
             }
         });
 
         async function loadBootstrap() {
             try {
-                const response = await fetch(`${SCRIPT_URL}/bootstrap?initData=${encodeURIComponent(initData)}`);
+                const response = await fetch(`${SCRIPT_URL}/bootstrap?initData=${encodeURIComponent(initData || '')}`);
                 const data = await response.json();
                 if (data.error) {
                     alert(data.error);
@@ -281,7 +282,7 @@
             nextWeek.setDate(nextWeek.getDate() + 7);
             const to = nextWeek.toISOString().split('T')[0];
             try {
-                const response = await fetch(`${SCRIPT_URL}/slots?from=${from}&to=${to}&initData=${encodeURIComponent(initData)}`);
+                const response = await fetch(`${SCRIPT_URL}/slots?from=${from}&to=${to}&initData=${encodeURIComponent(initData || '')}`);
                 const data = await response.json();
                 slots = data.slots;
                 renderCalendar(slots);
@@ -479,7 +480,9 @@
                 closeModal();
                 showSuccess();
                 setTimeout(() => {
-                    Telegram.WebApp.close();
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        Telegram.WebApp.close();
+                    }
                 }, 2000);
             } catch (err) {
                 console.error(err);
