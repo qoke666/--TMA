@@ -233,7 +233,7 @@
       font-weight: 600;
     }
 
-    .slots-list .rukovoditel-card {
+    .slots-list .slot-card {
       background-color: var(--bg-main);
       border: 1px solid var(--border-color);
       border-radius: 12px;
@@ -479,6 +479,7 @@
         <div class="section-title">Профиль</div>
         <div class="profile-section">
           <div class="child-form">
+            <input type="text" id="parent-phone" placeholder="Телефон родителя" required>
             <input type="text" id="child-name" placeholder="Имя ребенка" required>
             <input type="date" id="child-birthdate" placeholder="Дата рождения" required>
             <button id="add-child">Добавить ребенка</button>
@@ -516,12 +517,15 @@
         telegramId = user.id;
       } else {
         document.getElementById('user-name').textContent = 'Гость';
+        alert('Ошибка: Не удалось получить данные пользователя Telegram');
+        return;
       }
 
       // State
       let children = [];
       let balances = [];
       let trainers = [];
+      let slots = [];
       let currentWeekStart = new Date('2025-09-01'); // Начало текущей недели (понедельник)
       let selectedChildId = null;
       let selectedDate = '2025-09-03'; // Текущая дата по умолчанию
@@ -542,17 +546,27 @@
 
       // Helper: API request
       const apiRequest = async (action, payload = {}) => {
+        if (!tg.initData) {
+          throw new Error('Telegram initData is missing');
+        }
+        console.log(`Sending ${action} request:`, { action, initData: tg.initData, ...payload });
         try {
           const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action, initData: tg.initData, ...payload })
           });
+          if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+          }
           const data = await response.json();
-          if (!data.success) throw new Error(data.message || 'API error');
+          if (!data.success) {
+            throw new Error(data.message || 'API request failed');
+          }
+          console.log(`Received ${action} response:`, data);
           return data;
         } catch (error) {
-          console.error('API Error:', error);
+          console.error(`API Error (${action}):`, error);
           alert(`Ошибка: ${error.message}`);
           throw error;
         }
@@ -589,24 +603,27 @@
           const balance = balances.find(b => b.child_id === childId);
           document.getElementById('child-info-balance').textContent = `Остаток занятий: ${balance ? balance.remaining : 0}`;
           
-          // Fetch bookings
-          const bookings = await apiRequest('bookings', { child_id: childId });
-          const historyContainer = document.getElementById('child-info-history');
-          historyContainer.innerHTML = '<div class="section-title">История записей</div>';
-          if (!bookings || bookings.length === 0) {
-            historyContainer.innerHTML += '<p>Нет записей</p>';
-          } else {
-            bookings.forEach(booking => {
-              const slot = slots.find(s => s.slot_id === booking.slot_id);
-              if (slot) {
-                const item = document.createElement('div');
-                item.className = 'child-info__history-item';
-                item.textContent = `Занятие: ${slot.time} | ${slot.date} | Тренер: ${trainers.find(t => t.trainer_id === slot.trainer_id)?.name || 'Неизвестно'}`;
-                historyContainer.appendChild(item);
-              }
-            });
+          try {
+            const bookings = await apiRequest('bookings', { child_id: childId });
+            const historyContainer = document.getElementById('child-info-history');
+            historyContainer.innerHTML = '<div class="section-title">История записей</div>';
+            if (!bookings || bookings.length === 0) {
+              historyContainer.innerHTML += '<p>Нет записей</p>';
+            } else {
+              bookings.forEach(booking => {
+                const slot = slots.find(s => s.slot_id === booking.slot_id);
+                if (slot) {
+                  const item = document.createElement('div');
+                  item.className = 'child-info__history-item';
+                  item.textContent = `Занятие: ${slot.time} | ${slot.date} | Тренер: ${trainers.find(t => t.trainer_id === slot.trainer_id)?.name || 'Неизвестно'}`;
+                  historyContainer.appendChild(item);
+                }
+              });
+            }
+            childInfo.style.display = 'block';
+          } catch (error) {
+            console.error('Error fetching bookings:', error);
           }
-          childInfo.style.display = 'block';
         } else {
           childInfo.style.display = 'none';
         }
@@ -654,111 +671,127 @@
         
         const weekStart = formatDate(getMonday(dateObj));
         const weekEnd = formatDate(new Date(getMonday(dateObj).getTime() + 6 * 24 * 60 * 60 * 1000));
-        const slots = await apiRequest('slots', { from: weekStart, to: weekEnd });
-        
-        slotsList.innerHTML = `<div class="section-title">${slotsTitle.textContent}</div>`;
-        const daySlots = slots.filter(slot => slot.date === date);
-        if (daySlots.length === 0) {
-          slotsList.innerHTML += '<p>Нет доступных слотов</p>';
-        } else {
-          daySlots.forEach(slot => {
-            const trainer = trainers.find(t => t.trainer_id === slot.trainer_id);
-            const slotCard = document.createElement('div');
-            slotCard.className = 'slot-card';
-            slotCard.setAttribute('data-slot-id', slot.slot_id);
-            slotCard.innerHTML = `
-              <div class="slot-card__info">
-                <div class="slot-card__time">${slot.time}</div>
-                <div class="slot-card__details">Тренер: ${trainer ? trainer.name : 'Неизвестно'} | Свободно: <span class="slot-availability">${slot.capacity - slot.booked}/${slot.capacity}</span></div>
-              </div>
-              <div class="slot-card__action">
-                <button class="btn" data-action="register" ${slot.booked >= slot.capacity ? 'disabled' : ''}>Записаться</button>
-              </div>
-            `;
-            slotsList.appendChild(slotCard);
-          });
-        }
+        try {
+          slots = await apiRequest('slots', { from: weekStart, to: weekEnd });
+          slotsList.innerHTML = `<div class="section-title">${slotsTitle.textContent}</div>`;
+          const daySlots = slots.filter(slot => slot.date === date);
+          if (daySlots.length === 0) {
+            slotsList.innerHTML += '<p>Нет доступных слотов</p>';
+          } else {
+            daySlots.forEach(slot => {
+              const trainer = trainers.find(t => t.trainer_id === slot.trainer_id);
+              const slotCard = document.createElement('div');
+              slotCard.className = 'slot-card';
+              slotCard.setAttribute('data-slot-id', slot.slot_id);
+              slotCard.innerHTML = `
+                <div class="slot-card__info">
+                  <div class="slot-card__time">${slot.time}</div>
+                  <div class="slot-card__details">Тренер: ${trainer ? trainer.name : 'Неизвестно'} | Свободно: <span class="slot-availability">${slot.capacity - slot.booked}/${slot.capacity}</span></div>
+                </div>
+                <div class="slot-card__action">
+                  <button class="btn" data-action="register" ${slot.booked >= slot.capacity ? 'disabled' : ''}>Записаться</button>
+                </div>
+              `;
+              slotsList.appendChild(slotCard);
+            });
+          }
 
-        // Attach register button listeners
-        document.querySelectorAll('[data-action="register"]').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const slotCard = btn.closest('.slot-card');
-            const slotId = slotCard.getAttribute('data-slot-id');
-            if (!selectedChildId) {
-              alert('Выберите ребенка для записи');
-              return;
-            }
-            const balance = balances.find(b => b.child_id === selectedChildId);
-            if (!balance || balance.remaining <= 0) {
-              alert('У ребенка недостаточно занятий');
-              return;
-            }
-            try {
-              await apiRequest('book', { slot_id: slotId, child_id: selectedChildId });
-              // Refresh data
-              const bootstrapData = await apiRequest('bootstrap');
-              children = bootstrapData.children;
-              balances = bootstrapData.balances;
-              updateChildSelectors();
-              updateChildInfo(selectedChildId);
-              updateSlots(selectedDate);
-            } catch (error) {
-              // Error already handled in apiRequest
-            }
+          // Attach register button listeners
+          document.querySelectorAll('[data-action="register"]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const slotCard = btn.closest('.slot-card');
+              const slotId = slotCard.getAttribute('data-slot-id');
+              if (!selectedChildId) {
+                alert('Выберите ребенка для записи');
+                return;
+              }
+              const balance = balances.find(b => b.child_id === selectedChildId);
+              if (!balance || balance.remaining <= 0) {
+                alert('У ребенка недостаточно занятий');
+                return;
+              }
+              try {
+                console.log('Attempting to book slot:', { slot_id: slotId, child_id: selectedChildId });
+                await apiRequest('book', { slot_id: slotId, child_id: selectedChildId, comment: '' });
+                // Refresh data
+                const bootstrapData = await apiRequest('bootstrap');
+                children = bootstrapData.children;
+                balances = bootstrapData.balances;
+                trainers = bootstrapData.trainers;
+                updateChildSelectors();
+                updateChildInfo(selectedChildId);
+                updateSlots(selectedDate);
+                alert('Запись успешна!');
+              } catch (error) {
+                console.error('Booking error:', error);
+                // Error already handled in apiRequest
+              }
+            });
           });
-        });
+        } catch (error) {
+          console.error('Error updating slots:', error);
+        }
       };
 
       // Bootstrap data
       const bootstrap = async () => {
-        const data = await apiRequest('bootstrap');
-        children = data.children || [];
-        balances = data.balances || [];
-        trainers = data.trainers || [];
-        
-        // Update trainers
-        const trainersGrid = document.getElementById('trainers-grid');
-        trainersGrid.innerHTML = '';
-        trainers.forEach(trainer => {
-          const trainerCard = document.createElement('div');
-          trainerCard.className = 'trainer-card';
-          trainerCard.innerHTML = `
-            <div class="trainer-card__avatar">
-              <img src="${trainer.avatar_url}" alt="${trainer.name}">
-            </div>
-            <div class="trainer-card__name">${trainer.name}</div>
-            <div class="trainer-card__speciality">${trainer.speciality}</div>
-            <a href="#" class="trainer-card__contact-btn">Написать</a>
-          `;
-          trainersGrid.appendChild(trainerCard);
-        });
+        try {
+          const data = await apiRequest('bootstrap');
+          children = data.children || [];
+          balances = data.balances || [];
+          trainers = data.trainers || [];
+          
+          // Update trainers
+          const trainersGrid = document.getElementById('trainers-grid');
+          trainersGrid.innerHTML = '';
+          trainers.forEach(trainer => {
+            const trainerCard = document.createElement('div');
+            trainerCard.className = 'trainer-card';
+            trainerCard.innerHTML = `
+              <div class="trainer-card__avatar">
+                <img src="${trainer.avatar_url}" alt="${trainer.name}">
+              </div>
+              <div class="trainer-card__name">${trainer.name}</div>
+              <div class="trainer-card__speciality">${trainer.speciality}</div>
+              <a href="#" class="trainer-card__contact-btn">Написать</a>
+            `;
+            trainersGrid.appendChild(trainerCard);
+          });
 
-        updateChildSelectors();
-        updateCalendar();
-        updateSlots(selectedDate);
+          updateChildSelectors();
+          updateCalendar();
+          updateSlots(selectedDate);
+        } catch (error) {
+          console.error('Bootstrap error:', error);
+        }
       };
 
       // Add child
       document.getElementById('add-child').addEventListener('click', async () => {
+        const phone = document.getElementById('parent-phone').value.trim();
         const name = document.getElementById('child-name').value.trim();
         const birthdate = document.getElementById('child-birthdate').value;
-        if (name && birthdate) {
+        if (phone && name && birthdate) {
           try {
+            console.log('Adding child:', { parent: { full_name: user.first_name, phone, email: '' }, children: [{ child_name: name, birthdate }] });
             await apiRequest('register_parent', {
-              parent: { full_name: user.first_name, phone: 'unknown', email: '' },
+              parent: { full_name: user.first_name || 'Пользователь', phone, email: '' },
               children: [{ child_name: name, birthdate }]
             });
             const bootstrapData = await apiRequest('bootstrap');
             children = bootstrapData.children;
             balances = bootstrapData.balances;
             updateChildSelectors();
+            document.getElementById('parent-phone').value = '';
             document.getElementById('child-name').value = '';
             document.getElementById('child-birthdate').value = '';
+            alert('Ребенок добавлен успешно!');
           } catch (error) {
+            console.error('Add child error:', error);
             // Error handled in apiRequest
           }
         } else {
-          alert('Введите имя ребенка и дату рождения');
+          alert('Введите телефон родителя, имя ребенка и дату рождения');
         }
       });
 
