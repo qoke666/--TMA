@@ -2,511 +2,833 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Запись на занятия</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
+        :root {
+            --tg-theme-bg-color: var(--tg-bg-color, #ffffff);
+            --tg-theme-text-color: var(--tg-text-color, #000000);
+            --tg-theme-hint-color: var(--tg-hint-color, #999999);
+            --tg-theme-link-color: var(--tg-link-color, #2481cc);
+            --tg-theme-button-color: var(--tg-button-color, #2481cc);
+            --tg-theme-button-text-color: var(--tg-button-text-color, #ffffff);
+            --tg-theme-secondary-bg-color: var(--tg-secondary-bg-color, #f4f4f4);
+
+            --accent-color: #007AFF;
+            --disabled-color: #c7c7c7;
+            --bg-color-light: #F8F9FA;
+            --text-color-dark: #212529;
+            --text-color-light: #6C757D;
+            --card-border-color: #E9ECEF;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
         }
-        header {
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            background-color: #fff;
-            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
         }
-        .address {
+        .header .address {
             font-size: 14px;
-            color: #007bff;
+            font-weight: 500;
+            color: var(--tg-theme-link-color);
             text-decoration: none;
         }
-        .tg-icon {
-            width: 30px;
-            height: 30px;
-            background: url('https://telegram.org/img/t_logo.png') no-repeat center/cover;
-            cursor: pointer;
+        .header .tg-icon {
+            font-size: 24px;
+            color: var(--tg-theme-link-color);
+            text-decoration: none;
         }
-        #banner {
-            height: 200px;
-            background-color: #eee;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
+        .tg-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: currentColor;
+        }
+
+        /* Slider */
+        .slider {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 8;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            background-color: var(--tg-theme-secondary-bg-color);
+        }
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            background-size: cover;
+            background-position: center;
+        }
+        .slide.active {
+            opacity: 1;
+        }
+        .slide-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
             padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            color: white;
         }
-        #banner img {
-            max-width: 100%;
-            max-height: 150px;
+        .slide-content h3 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
         }
-        #calendar {
-            padding: 10px;
+        .slide-content p {
+            margin: 0;
+            font-size: 14px;
         }
-        .day {
+
+        /* Section Title */
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--tg-theme-text-color);
+        }
+
+        /* Calendar / Slots */
+        .slots-container .date-group {
             margin-bottom: 20px;
         }
-        .slot {
+        .date-header {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--tg-theme-text-color);
+        }
+        .slot-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--tg-theme-secondary-bg-color);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--card-border-color);
+        }
+        .slot-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .slot-card[disabled] {
+            cursor: not-allowed;
+            background-color: #f0f0f0;
+            color: var(--disabled-color);
+            opacity: 0.6;
+        }
+        .slot-card[disabled]:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        .slot-time {
+            font-size: 20px;
+            font-weight: 700;
+            width: 70px;
+        }
+        .slot-details {
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+        .slot-trainer {
+            font-weight: 500;
+        }
+        .slot-availability {
+            font-size: 13px;
+            color: var(--tg-theme-hint-color);
+        }
+        .slot-availability .available { color: var(--success-color); font-weight: 500; }
+        .slot-availability .full { color: var(--danger-color); font-weight: 500; }
+
+        /* Trainer Card */
+        .trainer-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .trainer-avatar img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .trainer-info {
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+        .trainer-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 16px;
+        }
+        .trainer-info p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color);
+        }
+        .trainer-contact-btn {
+            padding: 8px 12px;
+            border-radius: 8px;
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* News */
+        .news-card {
+            background-color: var(--tg-theme-secondary-bg-color);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        .news-card h4 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+        .news-card p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--tg-theme-hint-color);
+            line-height: 1.5;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: var(--tg-theme-bg-color);
+            margin: auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slide-up 0.3s ease-out;
+        }
+        @keyframes slide-up {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--card-border-color);
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .close-btn {
+            color: var(--tg-theme-hint-color);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border-color);
+            font-size: 16px;
+            box-sizing: border-box;
+            background-color: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+        }
+        .children-list .child-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .child-item input { flex-grow: 1; }
+        .add-child-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: none;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .submit-btn:disabled {
+            background-color: var(--disabled-color);
+            cursor: not-allowed;
+        }
+        .child-selector-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-            cursor: pointer;
+            background-color: var(--bg-color-light);
+            border-radius: 8px;
+            margin-top: 10px;
         }
-        .slot.disabled {
-            background-color: #eee;
-            cursor: not-allowed;
-            color: #aaa;
+        .balance-info {
+            font-weight: 500;
         }
-        #trainer-section {
-            padding: 10px;
+        .balance-info .no-balance { color: var(--danger-color); }
+        .error-message {
+            color: var(--danger-color);
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
         }
-        .trainer-card {
-            background-color: #fff;
-            padding: 10px;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-        .trainer-card img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        .trainer-info {
-            flex: 1;
-        }
-        .tg-button {
-            background-color: #0088cc;
-            color: #fff;
-            padding: 5px 10px;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        #news-section {
-            padding: 10px;
-        }
-        .news-card {
-            background-color: #fff;
-            padding: 10px;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-        }
-        .modal {
-            display: none;
+        
+        /* Loader */
+        .loader-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
             justify-content: center;
             align-items: center;
+            z-index: 9999;
         }
-        .modal-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 400px;
+        .loader {
+            border: 4px solid var(--tg-theme-secondary-bg-color);
+            border-top: 4px solid var(--tg-theme-button-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
         }
-        input, select, textarea {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 5px;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        button {
-            background-color: #28a745;
-            color: #fff;
-            padding: 10px;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-        }
-        .error {
-            color: red;
-        }
-        #success-message {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #28a745;
-            color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-        }
+
     </style>
 </head>
 <body>
-    <header>
-        <a id="address" class="address" href="#" target="_blank"></a>
-        <div id="tg-icon" class="tg-icon"></div>
-    </header>
-    <div id="banner">
-        <h2 id="banner-title"></h2>
-        <p id="banner-subtitle"></p>
-        <img id="banner-img" src="" alt="">
+
+    <div id="loader" class="loader-overlay">
+        <div class="loader"></div>
     </div>
-    <div id="calendar">
-        <!-- Slots will be rendered here -->
+
+    <div class="container" id="app-container" style="display: none;">
+        <header class="header">
+            <a href="#" id="studio-address" target="_blank" class="address">Загрузка адреса...</a>
+            <a href="#" id="channel-link" target="_blank" class="tg-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.84c-.15.45-.45.86-.82 1.22-.37.36-.82.66-1.32.9-.5.24-1.03.42-1.58.54-.55.12-1.11.18-1.67.18-.75 0-1.46-.11-2.12-.33-.66-.22-1.26-.53-1.8-.93-.54-.4-.98-.88-1.32-1.44s-.58-1.18-.7-1.86c-.12-.68-.18-1.38-.18-2.11 0-.73.06-1.44.18-2.13.12-.68.34-1.32.65-1.91s.72-1.12 1.2-1.6c.48-.48 1.03-.87 1.64-1.18.6-.3 1.25-.51 1.94-.61.69-.1 1.39-.15 2.1-.15.79 0 1.54.06 2.25.19s1.37.35 1.98.64c.61.29 1.15.68 1.61 1.15.46.47.83.99 1.11 1.57.28.58.48 1.2.59 1.85.11.65.17 1.32.17 2 0 .79-.07 1.55-.21 2.28-.14.73-.36 1.43-.66 2.09zm-1.5-6.09c0-.4-.06-.78-.18-1.14s-.29-.69-.51-1-.48-.56-.8-.75-.7-.32-1.14-.38c-.44-.06-.9-.09-1.37-.09s-.92.03-1.36.09c-.44.06-.83.18-1.17.38-.34.19-.64.44-.89.75-.25.31-.45.64-.59 1-.14.36-.25.74-.31 1.14-.07.4-.1.81-.1 1.23s.03.83.1 1.24c.06.4.17.78.31 1.14.14.36.34.69.59 1s.55.56.89.75c.34.19.73.32 1.17.38.44.06.89.09 1.36.09s.93-.03 1.37-.09c.44-.06.84-.18 1.14-.38.3-.19.56-.44.8-.75s.42-.64.51-1c.09-.36.18-.74.18-1.14s-.06-.79-.18-1.23zM9.5 12.03c.53 0 1.05.02 1.56.05.51.03 1.01.1 1.5.2.49.1.97.24 1.43.43.46.19.9.42 1.32.7.42.28.8.6 1.12.98.32.38.58.8.77 1.25.19.45.31.92.38 1.41.06.49.09.98.09 1.48 0 .5-.03 1-.09 1.48-.06.49-.19.96-.38 1.41-.19.45-.45.87-.77 1.25-.32.38-.7.7-1.12.98-.42.28-.86.51-1.32.7-.46.19-.94.33-1.43.43-.49.1-1 .17-1.5.2-.51.03-1.03.05-1.56.05-.53 0-1.05-.02-1.56-.05-.51-.03-1.01-.1-1.5-.2-.49-.1-.97-.24-1.43-.43-.46-.19-.9-.42-1.32-.7-.42-.28-.8-.6-1.12-.98-.32-.38-.58-.8-.77-1.25-.19-.45-.31-.92-.38-1.41-.06-.49-.09-.98-.09-1.48 0-.5.03-1 .09-1.48.06-.49.19-.96.38-1.41.19-.45.45-.87.77-1.25.32.38.7.7 1.12.98.42.28.86.51 1.32.7.46.19.94.33 1.43.43.49.1 1 .17 1.5.2.51.03 1.03.05 1.56.05z"></path></svg>
+            </a>
+        </header>
+
+        <div class="slider" id="slider"></div>
+
+        <section id="calendar-section">
+            <h2 class="section-title">Расписание</h2>
+            <div id="slots-container"></div>
+        </section>
+
+        <section id="trainer-section">
+            <h2 class="section-title">Тренер</h2>
+            <div id="trainer-card-container"></div>
+        </section>
+
+        <section id="news-section">
+            <h2 class="section-title">Важная информация</h2>
+            <div id="news-container"></div>
+        </section>
+
     </div>
-    <div id="trainer-section">
-        <!-- Trainers will be rendered here -->
-    </div>
-    <div id="news-section">
-        <!-- News will be rendered here -->
-    </div>
-    <div id="modal" class="modal">
+
+    <div id="booking-modal" class="modal">
         <div class="modal-content">
-            <form id="registration-form" style="display: none;">
-                <h3>Регистрация</h3>
-                <input type="text" id="parent-name" placeholder="ФИО родителя" required>
-                <input type="tel" id="parent-phone" placeholder="Телефон" required>
-                <input type="email" id="parent-email" placeholder="Email (опционально)">
-                <div id="children-forms">
-                    <div class="child-form">
-                        <input type="text" class="child-name" placeholder="Имя ребёнка" required>
-                        <input type="date" class="child-birthdate" required>
-                        <textarea class="child-notes" placeholder="Заметки"></textarea>
+            <div class="modal-header">
+                <h3 class="modal-title">Запись на занятие</h3>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="booking-slot-info"></p>
+                <div id="existing-user-form">
+                    <div class="form-group">
+                        <label for="child-select">Выберите ребенка</label>
+                        <select id="child-select" class="form-group"></select>
                     </div>
+                    <div class="child-selector-info">
+                        <span>Осталось занятий:</span>
+                        <span id="balance-info" class="balance-info"></span>
+                    </div>
+                     <div class="form-group">
+                        <label for="booking-comment">Комментарий (необязательно)</label>
+                        <textarea id="booking-comment" rows="2"></textarea>
+                    </div>
+                    <button id="confirm-booking-btn" class="submit-btn">Подтвердить запись</button>
+                    <p id="booking-error" class="error-message"></p>
                 </div>
-                <button type="button" onclick="addChildForm()">Добавить ребёнка</button>
-                <button type="submit">Зарегистрироваться и записаться</button>
-                <p class="error" id="reg-error"></p>
-            </form>
-            <form id="booking-form" style="display: none;">
-                <h3>Запись</h3>
-                <select id="child-selector"></select>
-                <p>Остаток занятий: <span id="remaining"></span></p>
-                <textarea id="comment" placeholder="Комментарий (опционально)"></textarea>
-                <button type="submit">Подтвердить запись</button>
-                <p class="error" id="book-error"></p>
-            </form>
+            </div>
         </div>
     </div>
-    <div id="success-message">✅ Запись успешна</div>
+
+    <div id="registration-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Регистрация</h3>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="registration-form">
+                    <h4>Данные родителя</h4>
+                    <div class="form-group">
+                        <label for="parent-name">ФИО</label>
+                        <input type="text" id="parent-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="parent-phone">Телефон</label>
+                        <input type="tel" id="parent-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="parent-email">Email (необязательно)</label>
+                        <input type="email" id="parent-email">
+                    </div>
+                    <h4>Данные детей</h4>
+                    <div id="children-list">
+                        <div class="child-item">
+                            <input type="text" placeholder="Имя ребенка" class="child-name" required>
+                            <input type="date" class="child-dob" required>
+                        </div>
+                    </div>
+                    <button type="button" class="add-child-btn">+ Добавить ребенка</button>
+                    <button type="submit" class="submit-btn">Зарегистрироваться и записаться</button>
+                    <p id="registration-error" class="error-message"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec'; // Замените на ваш deploy URL
-        let initData = null;
-        let telegramId = null;
-        let parent = null;
-        let children = [];
-        let balances = {};
-        let trainers = {};
-        let config = {};
-        let news = [];
-        let slots = [];
-        let currentSlot = null;
-        let bannerIndex = 0;
-        let bannerInterval = null;
+    document.addEventListener('DOMContentLoaded', () => {
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-        window.addEventListener('load', () => {
-            if (window.Telegram && window.Telegram.WebApp) {
-                Telegram.WebApp.ready();
-                initData = Telegram.WebApp.initData;
-                const user = Telegram.WebApp.initDataUnsafe.user;
-                if (user) {
-                    telegramId = user.id;
-                }
-                loadBootstrap();
-            } else {
-                console.warn('Не в Telegram WebApp — тестирование без аутентификации. Запросы могут не пройти валидацию.');
-                loadBootstrap(); // Для тестирования в браузере, но backend может отклонить без initData
+        // --- CONFIG ---
+        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec';
+        const tgInitData = tg.initData;
+        // For testing in browser:
+        // const tgInitData = 'query_id=AAHd1234AB...&user=%7B%22id%22%3A123456789%2C%22first_name%22%3A%22Test%22%2C%22last_name%22%3A%22User%22%2C%22username%22%3A%22testuser%22%2C%22language_code%22%3A%22en%22%7D&auth_date=1672531200&hash=...';
+
+        // --- STATE ---
+        const appState = {
+            config: null,
+            user: null,
+            children: [],
+            balances: {},
+            trainers: {},
+            slots: [],
+            news: [],
+            selectedSlot: null,
+        };
+
+        // --- DOM ELEMENTS ---
+        const loader = document.getElementById('loader');
+        const appContainer = document.getElementById('app-container');
+        const sliderEl = document.getElementById('slider');
+        const slotsContainer = document.getElementById('slots-container');
+        const trainerContainer = document.getElementById('trainer-card-container');
+        const newsContainer = document.getElementById('news-container');
+        const studioAddressEl = document.getElementById('studio-address');
+        const channelLinkEl = document.getElementById('channel-link');
+        
+        // Modals
+        const bookingModal = document.getElementById('booking-modal');
+        const registrationModal = document.getElementById('registration-modal');
+        const modals = [bookingModal, registrationModal];
+
+        // --- API HELPERS ---
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Telegram-Init-Data': tgInitData,
+                },
+            };
+            if (body) {
+                options.body = JSON.stringify(body);
             }
-        });
-
-        async function loadBootstrap() {
             try {
-                const response = await fetch(`${SCRIPT_URL}/bootstrap?initData=${encodeURIComponent(initData || '')}`);
-                const data = await response.json();
-                if (data.error) {
-                    alert(data.error);
-                    return;
+                const response = await fetch(`${API_BASE_URL}?endpoint=${endpoint}`, options);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Ошибка сети');
                 }
-                parent = data.parent;
-                children = data.children || [];
-                balances = data.balances || {};
-                trainers = data.trainers.reduce((acc, t) => { acc[t.trainer_id] = t; return acc; }, {});
-                config = data.config;
-                news = data.news;
-
-                document.getElementById('address').innerText = config.studio_address;
-                document.getElementById('address').href = config.studio_map_link;
-                document.getElementById('tg-icon').addEventListener('click', () => {
-                    window.open(config.channel_url, '_blank');
-                });
-
-                startBannerSlider(config.banner_items);
-
-                renderTrainers(data.trainers);
-                renderNews(news);
-                loadSlots();
-            } catch (err) {
-                console.error(err);
+                return await response.json();
+            } catch (error) {
+                console.error(`API Error (${endpoint}):`, error);
+                tg.showAlert(`Ошибка: ${error.message}`);
+                throw error;
             }
         }
 
-        function startBannerSlider(items) {
-            if (bannerInterval) clearInterval(bannerInterval);
-            if (!items || items.length === 0) return;
-            const title = document.getElementById('banner-title');
-            const subtitle = document.getElementById('banner-subtitle');
-            const img = document.getElementById('banner-img');
-            function updateBanner() {
-                const item = items[bannerIndex];
-                title.innerText = item.title;
-                subtitle.innerText = item.subtitle;
-                img.src = item.img;
-                bannerIndex = (bannerIndex + 1) % items.length;
-            }
-            updateBanner();
-            bannerInterval = setInterval(updateBanner, 6000);
+        // --- RENDER FUNCTIONS ---
+        function renderHeader() {
+            studioAddressEl.textContent = appState.config.studio_address;
+            studioAddressEl.href = appState.config.studio_map_link;
+            channelLinkEl.href = appState.config.channel_url;
         }
 
-        async function loadSlots() {
-            const today = new Date();
-            const from = today.toISOString().split('T')[0];
-            const nextWeek = new Date(today);
-            nextWeek.setDate(nextWeek.getDate() + 7);
-            const to = nextWeek.toISOString().split('T')[0];
-            try {
-                const response = await fetch(`${SCRIPT_URL}/slots?from=${from}&to=${to}&initData=${encodeURIComponent(initData || '')}`);
-                const data = await response.json();
-                slots = data.slots;
-                renderCalendar(slots);
-            } catch (err) {
-                console.error(err);
-            }
+        function renderSlider() {
+            const banners = JSON.parse(appState.config.banner_items);
+            if (!banners || banners.length === 0) return;
+            sliderEl.innerHTML = banners.map((banner, index) => `
+                <div class="slide ${index === 0 ? 'active' : ''}" style="background-image: url('${banner.img}')">
+                    <div class="slide-content">
+                        <h3>${banner.title}</h3>
+                        <p>${banner.subtitle}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            let currentSlide = 0;
+            const slides = sliderEl.querySelectorAll('.slide');
+            setInterval(() => {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }, 6000);
         }
 
-        function renderCalendar(slots) {
-            const calendarDiv = document.getElementById('calendar');
-            calendarDiv.innerHTML = '';
-            const grouped = slots.reduce((acc, slot) => {
-                if (!acc[slot.date]) acc[slot.date] = [];
-                acc[slot.date].push(slot);
+        function renderSlots() {
+            const groupedSlots = appState.slots.reduce((acc, slot) => {
+                const date = new Date(slot.date).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+                if (!acc[date]) acc[date] = [];
+                acc[date].push(slot);
                 return acc;
             }, {});
-            Object.keys(grouped).sort().forEach(date => {
-                const dayDiv = document.createElement('div');
-                dayDiv.className = 'day';
-                dayDiv.innerHTML = `<h3>${date}</h3>`;
-                grouped[date].forEach(slot => {
-                    const available = slot.capacity - slot.booked;
-                    const disabled = slot.status !== 'OPEN' || available <= 0;
-                    const slotDiv = document.createElement('div');
-                    slotDiv.className = `slot ${disabled ? 'disabled' : ''}`;
-                    slotDiv.innerHTML = `
-                        <span>${slot.time} - ${trainers[slot.trainer_id].name}</span>
-                        <span>Мест осталось: ${available}</span>
-                    `;
-                    if (!disabled) {
-                        slotDiv.addEventListener('click', () => openModal(slot));
-                    }
-                    dayDiv.appendChild(slotDiv);
-                });
-                calendarDiv.appendChild(dayDiv);
-            });
+
+            slotsContainer.innerHTML = Object.keys(groupedSlots).map(date => `
+                <div class="date-group">
+                    <h3 class="date-header">${date}</h3>
+                    ${groupedSlots[date].map(slot => {
+                        const trainer = appState.trainers[slot.trainer_id] || { name: 'Неизвестный тренер' };
+                        const remaining = slot.capacity - slot.booked;
+                        const isDisabled = remaining <= 0;
+                        return `
+                        <div class="slot-card" data-slot-id="${slot.slot_id}" ${isDisabled ? 'disabled' : ''}>
+                            <div class="slot-time">${slot.time}</div>
+                            <div class="slot-details">
+                                <div class="slot-trainer">${trainer.name}</div>
+                                <div class="slot-availability">
+                                    ${isDisabled 
+                                        ? `<span class="full">Мест нет</span>` 
+                                        : `Осталось мест: <span class="available">${remaining}</span>`
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        `
+                    }).join('')}
+                </div>
+            `).join('');
         }
 
-        function renderTrainers(trainersList) {
-            const section = document.getElementById('trainer-section');
-            section.innerHTML = '<h2>Тренеры</h2>';
-            trainersList.forEach(t => {
-                const card = document.createElement('div');
-                card.className = 'trainer-card';
-                card.innerHTML = `
-                    <img src="${t.avatar_url}" alt="${t.name}">
+        function renderTrainer() {
+             const firstTrainer = Object.values(appState.trainers)[0];
+             if(!firstTrainer) return;
+             trainerContainer.innerHTML = `
+                <div class="trainer-card">
+                    <div class="trainer-avatar">
+                        <img src="${firstTrainer.avatar_url}" alt="${firstTrainer.name}">
+                    </div>
                     <div class="trainer-info">
-                        <h3>${t.name}</h3>
-                        <p>${t.speciality}</p>
+                        <h4>${firstTrainer.name}</h4>
+                        <p>${firstTrainer.speciality}</p>
                     </div>
-                    <a href="https://t.me/${t.tg_username}" class="tg-button" target="_blank">Написать в Telegram</a>
-                `;
-                section.appendChild(card);
-            });
+                    <a href="https://t.me/${firstTrainer.tg_username}" target="_blank" class="trainer-contact-btn">Написать</a>
+                </div>`;
+        }
+        
+        function renderNews() {
+            newsContainer.innerHTML = appState.news
+                .filter(item => item.is_important)
+                .map(item => `
+                    <div class="news-card">
+                        <h4>${item.title}</h4>
+                        <p>${item.text}</p>
+                    </div>
+                `).join('');
         }
 
-        function renderNews(newsList) {
-            const section = document.getElementById('news-section');
-            section.innerHTML = '<h2>Важная информация</h2>';
-            newsList.forEach(n => {
-                const card = document.createElement('div');
-                card.className = 'news-card';
-                card.innerHTML = `
-                    <h3>${n.title}</h3>
-                    <p>${n.text}</p>
-                    <small>${n.published_at}</small>
-                `;
-                section.appendChild(card);
-            });
-        }
-
-        function openModal(slot) {
-            currentSlot = slot;
-            const modal = document.getElementById('modal');
-            const regForm = document.getElementById('registration-form');
-            const bookForm = document.getElementById('booking-form');
-            if (!parent) {
-                regForm.style.display = 'block';
-                bookForm.style.display = 'none';
-                document.getElementById('children-forms').innerHTML = `
-                    <div class="child-form">
-                        <input type="text" class="child-name" placeholder="Имя ребёнка" required>
-                        <input type="date" class="child-birthdate" required>
-                        <textarea class="child-notes" placeholder="Заметки"></textarea>
-                    </div>
-                `;
-            } else {
-                regForm.style.display = 'none';
-                bookForm.style.display = 'block';
-                const selector = document.getElementById('child-selector');
-                selector.innerHTML = '';
-                children.forEach(child => {
-                    const option = document.createElement('option');
-                    option.value = child.child_id;
-                    option.innerText = child.child_name;
-                    selector.appendChild(option);
-                });
-                updateRemaining(selector.value);
-                selector.addEventListener('change', (e) => updateRemaining(e.target.value));
-            }
+        // --- MODAL LOGIC ---
+        function showModal(modal) {
             modal.style.display = 'flex';
-            setupFormListeners();
         }
 
-        function updateRemaining(childId) {
-            const bal = balances[childId] || { remaining: 0 };
-            document.getElementById('remaining').innerText = bal.remaining;
+        function hideModal(modal) {
+            modal.style.display = 'none';
         }
 
-        function addChildForm() {
-            const container = document.getElementById('children-forms');
-            const form = document.createElement('div');
-            form.className = 'child-form';
-            form.innerHTML = `
-                <input type="text" class="child-name" placeholder="Имя ребёнка" required>
-                <input type="date" class="child-birthdate" required>
-                <textarea class="child-notes" placeholder="Заметки"></textarea>
-            `;
-            container.appendChild(form);
-        }
-
-        function setupFormListeners() {
-            const regForm = document.getElementById('registration-form');
-            regForm.onsubmit = async (e) => {
-                e.preventDefault();
-                const name = document.getElementById('parent-name').value;
-                const phone = document.getElementById('parent-phone').value;
-                const email = document.getElementById('parent-email').value;
-                const childForms = document.querySelectorAll('.child-form');
-                const childrenData = Array.from(childForms).map(form => ({
-                    child_name: form.querySelector('.child-name').value,
-                    birthdate: form.querySelector('.child-birthdate').value,
-                    notes: form.querySelector('.child-notes').value
-                }));
-                if (childrenData.length === 0 || !name || !phone) {
-                    document.getElementById('reg-error').innerText = 'Заполните все обязательные поля';
-                    return;
-                }
-                try {
-                    const response = await fetch(`${SCRIPT_URL}/register_parent`, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            telegram_id: telegramId,
-                            full_name: name,
-                            phone,
-                            email,
-                            children: childrenData,
-                            initData
-                        })
-                    });
-                    const data = await response.json();
-                    if (data.error) {
-                        document.getElementById('reg-error').innerText = data.error;
-                        return;
-                    }
-                    // Now book
-                    const childId = data.children[0].child_id; // Use first child
-                    await bookSlot(childId, '');
-                } catch (err) {
-                    console.error(err);
-                }
-            };
-
-            const bookForm = document.getElementById('booking-form');
-            bookForm.onsubmit = async (e) => {
-                e.preventDefault();
-                const childId = document.getElementById('child-selector').value;
-                const comment = document.getElementById('comment').value;
-                await bookSlot(childId, comment);
-            };
-        }
-
-        async function bookSlot(childId, comment) {
-            const remaining = balances[childId].remaining;
-            if (remaining <= 0) {
-                document.getElementById('book-error').innerText = 'Пополните баланс';
-                return;
+        function openBookingFlow(slotId) {
+            appState.selectedSlot = appState.slots.find(s => s.slot_id === slotId);
+            if (appState.user && appState.user.telegram_id) {
+                setupBookingModal();
+                showModal(bookingModal);
+            } else {
+                setupRegistrationModal();
+                showModal(registrationModal);
             }
+        }
+
+        function setupBookingModal() {
+            const slot = appState.selectedSlot;
+            document.getElementById('booking-slot-info').textContent = 
+                `Время: ${new Date(slot.date).toLocaleDateString('ru-RU')} в ${slot.time}`;
+
+            const childSelect = document.getElementById('child-select');
+            childSelect.innerHTML = appState.children.map(c => 
+                `<option value="${c.child_id}">${c.child_name}</option>`
+            ).join('');
+            
+            updateBalanceInfo();
+            childSelect.addEventListener('change', updateBalanceInfo);
+        }
+
+        function updateBalanceInfo() {
+            const childId = document.getElementById('child-select').value;
+            const balance = appState.balances[childId]?.remaining || 0;
+            const balanceInfoEl = document.getElementById('balance-info');
+            const confirmBtn = document.getElementById('confirm-booking-btn');
+
+            balanceInfoEl.textContent = balance;
+            if (balance <= 0) {
+                balanceInfoEl.classList.add('no-balance');
+                confirmBtn.disabled = true;
+                document.getElementById('booking-error').textContent = 'Недостаточно занятий на балансе. Пожалуйста, пополните счет.';
+            } else {
+                balanceInfoEl.classList.remove('no-balance');
+                confirmBtn.disabled = false;
+                 document.getElementById('booking-error').textContent = '';
+            }
+        }
+        
+        function setupRegistrationModal() {
+            // Reset form
+            document.getElementById('registration-form').reset();
+            const extraChildren = document.querySelectorAll('.child-item:not(:first-child)');
+            extraChildren.forEach(child => child.remove());
+        }
+
+        // --- EVENT HANDLERS ---
+        function handleSlotClick(event) {
+            const card = event.target.closest('.slot-card');
+            if (card && !card.hasAttribute('disabled')) {
+                openBookingFlow(card.dataset.slotId);
+            }
+        }
+        
+        async function handleBookingSubmit() {
+            const btn = document.getElementById('confirm-booking-btn');
+            btn.disabled = true;
+            btn.textContent = 'Записываем...';
+            document.getElementById('booking-error').textContent = '';
+
             try {
-                const response = await fetch(`${SCRIPT_URL}/book`, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        slot_id: currentSlot.slot_id,
-                        child_id: childId,
-                        telegram_id: telegramId,
-                        comment,
-                        initData
-                    })
+                const childId = document.getElementById('child-select').value;
+                const comment = document.getElementById('booking-comment').value;
+
+                await apiCall('book', 'POST', {
+                    slot_id: appState.selectedSlot.slot_id,
+                    child_id: childId,
+                    comment: comment
                 });
-                const data = await response.json();
-                if (data.error) {
-                    document.getElementById('book-error').innerText = data.error;
-                    return;
-                }
-                closeModal();
-                showSuccess();
-                setTimeout(() => {
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        Telegram.WebApp.close();
+
+                tg.showPopup({
+                    title: 'Успех!',
+                    message: 'Вы успешно записаны на занятие.',
+                    buttons: [{ type: 'ok', text: 'Закрыть' }]
+                }, () => tg.close());
+
+            } catch (error) {
+                document.getElementById('booking-error').textContent = error.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Подтвердить запись';
+            }
+        }
+
+        async function handleRegistrationSubmit(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Регистрация...';
+            document.getElementById('registration-error').textContent = '';
+
+            try {
+                const parentData = {
+                    full_name: document.getElementById('parent-name').value,
+                    phone: document.getElementById('parent-phone').value,
+                    email: document.getElementById('parent-email').value,
+                };
+                
+                const childrenData = Array.from(document.querySelectorAll('.child-item')).map(item => ({
+                    child_name: item.querySelector('.child-name').value,
+                    birthdate: item.querySelector('.child-dob').value
+                }));
+
+                const registrationResponse = await apiCall('register_parent', 'POST', { parent: parentData, children: childrenData });
+                
+                // Update local state after registration
+                appState.user = registrationResponse.parent;
+                appState.children = registrationResponse.children;
+                registrationResponse.balances.forEach(b => { appState.balances[b.child_id] = b });
+
+                // Proceed to booking
+                const childId = registrationResponse.children[0].child_id;
+                await apiCall('book', 'POST', {
+                    slot_id: appState.selectedSlot.slot_id,
+                    child_id: childId,
+                    comment: ''
+                });
+
+                tg.showPopup({
+                    title: 'Успех!',
+                    message: 'Регистрация прошла успешно и вы записаны на занятие.',
+                    buttons: [{ type: 'ok', text: 'Закрыть' }]
+                }, () => tg.close());
+
+            } catch (error) {
+                 document.getElementById('registration-error').textContent = error.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Зарегистрироваться и записаться';
+            }
+        }
+        
+        function handleAddChild() {
+            const list = document.getElementById('children-list');
+            const newItem = document.createElement('div');
+            newItem.className = 'child-item';
+            newItem.innerHTML = `
+                <input type="text" placeholder="Имя ребенка" class="child-name" required>
+                <input type="date" class="child-dob" required>
+            `;
+            list.appendChild(newItem);
+        }
+
+        // --- INITIALIZATION ---
+        async function init() {
+            try {
+                // Fetch initial data
+                const bootstrapData = await apiCall('bootstrap');
+                appState.config = bootstrapData.config;
+                appState.user = bootstrapData.parent;
+                appState.children = bootstrapData.children;
+                bootstrapData.balances.forEach(b => { appState.balances[b.child_id] = b });
+                bootstrapData.trainers.forEach(t => { appState.trainers[t.trainer_id] = t });
+                appState.news = bootstrapData.news;
+                
+                // Fetch slots for the next week
+                const today = new Date();
+                const toDate = new Date();
+                toDate.setDate(today.getDate() + 7);
+                const from = today.toISOString().split('T')[0];
+                const to = toDate.toISOString().split('T')[0];
+                appState.slots = await apiCall(`slots&from=${from}&to=${to}`);
+
+                // Render everything
+                renderHeader();
+                renderSlider();
+                renderTrainer();
+                renderNews();
+                renderSlots();
+
+                // Show app and hide loader
+                appContainer.style.display = 'block';
+                loader.style.display = 'none';
+
+                // Add event listeners
+                slotsContainer.addEventListener('click', handleSlotClick);
+                document.getElementById('confirm-booking-btn').addEventListener('click', handleBookingSubmit);
+                document.getElementById('registration-form').addEventListener('submit', handleRegistrationSubmit);
+                document.querySelector('.add-child-btn').addEventListener('click', handleAddChild);
+
+                modals.forEach(modal => {
+                    modal.querySelector('.close-btn').addEventListener('click', () => hideModal(modal));
+                });
+                window.addEventListener('click', (event) => {
+                    if (event.target.classList.contains('modal')) {
+                        hideModal(event.target);
                     }
-                }, 2000);
-            } catch (err) {
-                console.error(err);
+                });
+
+            } catch (error) {
+                loader.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Не удалось загрузить данные. Попробуйте позже.</p>`;
             }
         }
 
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            document.getElementById('reg-error').innerText = '';
-            document.getElementById('book-error').innerText = '';
-        }
-
-        function showSuccess() {
-            const msg = document.getElementById('success-message');
-            msg.style.display = 'block';
-            setTimeout(() => { msg.style.display = 'none'; }, 2000);
-        }
-
-        // Close modal on outside click
-        document.getElementById('modal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('modal')) {
-                closeModal();
-            }
-        });
+        init();
+    });
     </script>
 </body>
 </html>
