@@ -507,7 +507,7 @@
       tg.expand();
 
       // API endpoint (replace with your Google Apps Script Web App URL)
-      const API_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec'; // Замените на реальный URL вашего Google Apps Script
+      const API_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec'; // Замените на реальный URL
 
       // User info
       let user_id = null, username = null, first_name = null;
@@ -525,25 +525,11 @@
       let balances = [];
       let trainers = [];
       let slots = [];
-      let currentWeekStart = new Date('2025-09-01'); // Начало текущей недели (понедельник)
+      let currentWeekStart = new Date('2025-09-01'); // Начало текущей недели
       let selectedChildId = null;
       let selectedDate = '2025-09-03'; // Текущая дата по умолчанию
 
-      // Helper: Format date to YYYY-MM-DD
-      const formatDate = (date) => {
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      };
-
-      // Helper: Get Monday of the week
-      const getMonday = (date) => {
-        const d = new Date(date);
-        const day = d.getDay();
-        const diff = day === 0 ? 6 : day - 1;
-        d.setDate(d.getDate() - diff);
-        return d;
-      };
-
-      // Helper: Generate UUID
+      // Generate UUID
       const generateUUID = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
           const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -551,42 +537,42 @@
         });
       };
 
-      // Helper: API request
-      const apiRequest = async (action, payload = {}, noCors = false) => {
-        if (!tg.initData) {
-          throw new Error('Telegram initData is missing');
-        }
-        console.log(`Sending ${action} request:`, { action, initData: tg.initData, ...payload });
-        try {
-          const options = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action, initData: tg.initData, user_id, username, first_name, ...payload })
-          };
-          if (noCors) {
-            options.mode = 'no-cors';
-          }
-          const response = await fetch(API_URL, options);
-          if (noCors) {
-            console.log(`Sent ${action} request in no-cors mode`);
-            return { success: true }; // В no-cors режиме response.json() недоступен
-          }
-          if (!response.ok) {
-            throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
-          }
-          const data = await response.json();
-          if (!data.success) {
-            throw new Error(data.message || 'API request failed');
-          }
-          console.log(`Received ${action} response:`, data);
-          return data;
-        } catch (error) {
-          console.error(`API Error (${action}):`, error);
-          if (!noCors) {
-            alert(`Ошибка: ${error.message}`);
-          }
-          throw error;
-        }
+      // Track event
+      const trackEvent = (event, payload = {}) => {
+        const data = {
+          action: event,
+          initData: tg.initData,
+          user_id,
+          username,
+          first_name,
+          response_id: generateUUID(),
+          ...payload
+        };
+        console.log(`Tracking event: ${event}`, data);
+        fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+          mode: 'no-cors'
+        }).then(() => {
+          console.log(`Event ${event} sent successfully`);
+        }).catch(error => {
+          console.error(`Error tracking ${event}:`, error);
+        });
+      };
+
+      // Format date
+      const formatDate = (date) => {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      };
+
+      // Get Monday of the week
+      const getMonday = (date) => {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = day === 0 ? 6 : day - 1;
+        d.setDate(d.getDate() - diff);
+        return d;
       };
 
       // Update child selectors
@@ -612,7 +598,7 @@
       };
 
       // Update child info
-      const updateChildInfo = async (childId) => {
+      const updateChildInfo = (childId) => {
         const childInfo = document.getElementById('child-info');
         const child = children.find(c => c.child_id === childId);
         if (child) {
@@ -620,27 +606,41 @@
           const balance = balances.find(b => b.child_id === childId);
           document.getElementById('child-info-balance').textContent = `Остаток занятий: ${balance ? balance.remaining : 0}`;
           
-          try {
-            const bookings = await apiRequest('bookings', { child_id: childId });
-            const historyContainer = document.getElementById('child-info-history');
-            historyContainer.innerHTML = '<div class="section-title">История записей</div>';
-            if (!bookings || bookings.length === 0) {
-              historyContainer.innerHTML += '<p>Нет записей</p>';
-            } else {
-              bookings.forEach(booking => {
-                const slot = slots.find(s => s.slot_id === booking.slot_id);
-                if (slot) {
-                  const item = document.createElement('div');
-                  item.className = 'child-info__history-item';
-                  item.textContent = `Занятие: ${slot.time} | ${slot.date} | Тренер: ${trainers.find(t => t.trainer_id === slot.trainer_id)?.name || 'Неизвестно'}`;
-                  historyContainer.appendChild(item);
-                }
-              });
+          const historyContainer = document.getElementById('child-info-history');
+          historyContainer.innerHTML = '<div class="section-title">История записей</div>';
+          const payload = {
+            action: 'bookings',
+            initData: tg.initData,
+            user_id,
+            username,
+            first_name,
+            child_id: childId
+          };
+          fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).then(response => response.json()).then(data => {
+            if (data.success && data.bookings) {
+              if (data.bookings.length === 0) {
+                historyContainer.innerHTML += '<p>Нет записей</p>';
+              } else {
+                data.bookings.forEach(booking => {
+                  const slot = slots.find(s => s.slot_id === booking.slot_id);
+                  if (slot) {
+                    const item = document.createElement('div');
+                    item.className = 'child-info__history-item';
+                    item.textContent = `Занятие: ${slot.time} | ${slot.date} | Тренер: ${trainers.find(t => t.trainer_id === slot.trainer_id)?.name || 'Неизвестно'}`;
+                    historyContainer.appendChild(item);
+                  }
+                });
+              }
             }
             childInfo.style.display = 'block';
-          } catch (error) {
+          }).catch(error => {
             console.error('Error fetching bookings:', error);
-          }
+            historyContainer.innerHTML += '<p>Ошибка загрузки</p>';
+          });
         } else {
           childInfo.style.display = 'none';
         }
@@ -668,19 +668,19 @@
           daysGrid.appendChild(dayDiv);
         }
 
-        // Attach day click listeners
         document.querySelectorAll('.day').forEach(day => {
           day.addEventListener('click', () => {
             document.querySelectorAll('.day').forEach(d => d.classList.remove('active'));
             day.classList.add('active');
             selectedDate = day.getAttribute('data-date');
             updateSlots(selectedDate);
+            trackEvent('select_date', { date: selectedDate });
           });
         });
       };
 
       // Update slots
-      const updateSlots = async (date) => {
+      const updateSlots = (date) => {
         const slotsList = document.querySelector('.slots-list');
         const slotsTitle = document.getElementById('slots-title');
         const dateObj = new Date(date);
@@ -688,103 +688,142 @@
         
         const weekStart = formatDate(getMonday(dateObj));
         const weekEnd = formatDate(new Date(getMonday(dateObj).getTime() + 6 * 24 * 60 * 60 * 1000));
-        try {
-          slots = await apiRequest('slots', { from: weekStart, to: weekEnd });
+        const payload = {
+          action: 'slots',
+          initData: tg.initData,
+          user_id,
+          username,
+          first_name,
+          from: weekStart,
+          to: weekEnd
+        };
+        fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(response => response.json()).then(data => {
           slotsList.innerHTML = `<div class="section-title">${slotsTitle.textContent}</div>`;
-          const daySlots = slots.filter(slot => slot.date === date);
-          if (daySlots.length === 0) {
-            slotsList.innerHTML += '<p>Нет доступных слотов</p>';
-          } else {
-            daySlots.forEach(slot => {
-              const trainer = trainers.find(t => t.trainer_id === slot.trainer_id);
-              const slotCard = document.createElement('div');
-              slotCard.className = 'slot-card';
-              slotCard.setAttribute('data-slot-id', slot.slot_id);
-              slotCard.innerHTML = `
-                <div class="slot-card__info">
-                  <div class="slot-card__time">${slot.time}</div>
-                  <div class="slot-card__details">Тренер: ${trainer ? trainer.name : 'Неизвестно'} | Свободно: <span class="slot-availability">${slot.capacity - slot.booked}/${slot.capacity}</span></div>
-                </div>
-                <div class="slot-card__action">
-                  <button class="btn" data-action="register" ${slot.booked >= slot.capacity ? 'disabled' : ''}>Записаться</button>
-                </div>
-              `;
-              slotsList.appendChild(slotCard);
-            });
-          }
+          if (data.success && data.slots) {
+            slots = data.slots;
+            const daySlots = slots.filter(slot => slot.date === date);
+            if (daySlots.length === 0) {
+              slotsList.innerHTML += '<p>Нет доступных слотов</p>';
+            } else {
+              daySlots.forEach(slot => {
+                const trainer = trainers.find(t => t.trainer_id === slot.trainer_id);
+                const slotCard = document.createElement('div');
+                slotCard.className = 'slot-card';
+                slotCard.setAttribute('data-slot-id', slot.slot_id);
+                slotCard.innerHTML = `
+                  <div class="slot-card__info">
+                    <div class="slot-card__time">${slot.time}</div>
+                    <div class="slot-card__details">Тренер: ${trainer ? trainer.name : 'Неизвестно'} | Свободно: <span class="slot-availability">${slot.capacity - slot.booked}/${slot.capacity}</span></div>
+                  </div>
+                  <div class="slot-card__action">
+                    <button class="btn" data-action="register" ${slot.booked >= slot.capacity ? 'disabled' : ''}>Записаться</button>
+                  </div>
+                `;
+                slotsList.appendChild(slotCard);
+              });
+            }
 
-          // Attach register button listeners
-          document.querySelectorAll('[data-action="register"]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-              const slotCard = btn.closest('.slot-card');
-              const slotId = slotCard.getAttribute('data-slot-id');
-              if (!selectedChildId) {
-                alert('Выберите ребенка для записи');
-                return;
-              }
-              const balance = balances.find(b => b.child_id === selectedChildId);
-              if (!balance || balance.remaining <= 0) {
-                alert('У ребенка недостаточно занятий');
-                return;
-              }
-              try {
-                console.log('Attempting to book slot:', { slot_id: slotId, child_id: selectedChildId });
-                await apiRequest('book', { slot_id: slotId, child_id: selectedChildId, comment: '' }, true);
-                // Refresh data
-                const bootstrapData = await apiRequest('bootstrap');
-                children = bootstrapData.children;
-                balances = bootstrapData.balances;
-                trainers = bootstrapData.trainers;
-                updateChildSelectors();
-                updateChildInfo(selectedChildId);
-                updateSlots(selectedDate);
-                alert('Запись успешна!');
-              } catch (error) {
-                console.error('Booking error:', error);
-                // Error already handled in apiRequest
-              }
+            document.querySelectorAll('[data-action="register"]').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const slotCard = btn.closest('.slot-card');
+                const slot_id = slotCard.getAttribute('data-slot-id');
+                if (!selectedChildId) {
+                  alert('Выберите ребенка для записи');
+                  return;
+                }
+                const balance = balances.find(b => b.child_id === selectedChildId);
+                if (!balance || balance.remaining <= 0) {
+                  alert('У ребенка недостаточно занятий');
+                  return;
+                }
+                const response_id = generateUUID();
+                const payload = {
+                  action: 'book',
+                  initData: tg.initData,
+                  user_id,
+                  username,
+                  first_name,
+                  slot_id,
+                  child_id: selectedChildId,
+                  response_id
+                };
+                fetch(API_URL, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload),
+                  mode: 'no-cors'
+                }).then(() => {
+                  console.log('Booking request sent');
+                  alert('Запись успешна!');
+                  trackEvent('book_slot', { slot_id, child_id: selectedChildId, response_id });
+                  bootstrap(); // Refresh data
+                }).catch(error => {
+                  console.error('Error booking slot:', error);
+                  alert('Ошибка при записи');
+                });
+              });
             });
-          });
-        } catch (error) {
+          } else {
+            slotsList.innerHTML += '<p>Нет доступных слотов</p>';
+          }
+        }).catch(error => {
           console.error('Error updating slots:', error);
-        }
+          slotsList.innerHTML += '<p>Ошибка загрузки</p>';
+        });
       };
 
       // Bootstrap data
-      const bootstrap = async () => {
-        try {
-          const data = await apiRequest('bootstrap');
-          children = data.children || [];
-          balances = data.balances || [];
-          trainers = data.trainers || [];
-          
-          // Update trainers
-          const trainersGrid = document.getElementById('trainers-grid');
-          trainersGrid.innerHTML = '';
-          trainers.forEach(trainer => {
-            const trainerCard = document.createElement('div');
-            trainerCard.className = 'trainer-card';
-            trainerCard.innerHTML = `
-              <div class="trainer-card__avatar">
-                <img src="${trainer.avatar_url}" alt="${trainer.name}">
-              </div>
-              <div class="trainer-card__name">${trainer.name}</div>
-              <div class="trainer-card__speciality">${trainer.speciality}</div>
-              <a href="#" class="trainer-card__contact-btn">Написать</a>
-            `;
-            trainersGrid.appendChild(trainerCard);
-          });
+      const bootstrap = () => {
+        const payload = {
+          action: 'bootstrap',
+          initData: tg.initData,
+          user_id,
+          username,
+          first_name
+        };
+        fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(response => response.json()).then(data => {
+          if (data.success) {
+            children = data.children || [];
+            balances = data.balances || [];
+            trainers = data.trainers || [];
+            
+            const trainersGrid = document.getElementById('trainers-grid');
+            trainersGrid.innerHTML = '';
+            trainers.forEach(trainer => {
+              const trainerCard = document.createElement('div');
+              trainerCard.className = 'trainer-card';
+              trainerCard.innerHTML = `
+                <div class="trainer-card__avatar">
+                  <img src="${trainer.avatar_url}" alt="${trainer.name}">
+                </div>
+                <div class="trainer-card__name">${trainer.name}</div>
+                <div class="trainer-card__speciality">${trainer.speciality}</div>
+                <a href="#" class="trainer-card__contact-btn">Написать</a>
+              `;
+              trainersGrid.appendChild(trainerCard);
+            });
 
-          updateChildSelectors();
-          updateCalendar();
-          updateSlots(selectedDate);
-        } catch (error) {
+            updateChildSelectors();
+            updateCalendar();
+            updateSlots(selectedDate);
+            trackEvent('bootstrap');
+          }
+        }).catch(error => {
           console.error('Bootstrap error:', error);
-        }
+          alert('Ошибка загрузки данных');
+        });
       };
 
       // Add child
-      document.getElementById('add-child').addEventListener('click', async () => {
+      document.getElementById('add-child').addEventListener('click', () => {
         const telegram = document.getElementById('parent-telegram').value.trim();
         const name = document.getElementById('child-name').value.trim();
         const birthdate = document.getElementById('child-birthdate').value;
@@ -792,30 +831,38 @@
           alert('Введите корректный Telegram-ник (например, @username)');
           return;
         }
-        if (name && birthdate) {
-          try {
-            const response_id = generateUUID();
-            console.log('Adding child:', { parent: { full_name: first_name, telegram }, children: [{ child_name: name, birthdate }], response_id });
-            await apiRequest('register_parent', {
-              parent: { full_name: first_name || 'Пользователь', telegram },
-              children: [{ child_name: name, birthdate }],
-              response_id
-            }, true);
-            const bootstrapData = await apiRequest('bootstrap');
-            children = bootstrapData.children;
-            balances = bootstrapData.balances;
-            updateChildSelectors();
-            document.getElementById('parent-telegram').value = '';
-            document.getElementById('child-name').value = '';
-            document.getElementById('child-birthdate').value = '';
-            alert('Ребенок добавлен успешно! Мы свяжемся с вами через Telegram.');
-          } catch (error) {
-            console.error('Add child error:', error);
-            // Error handled in apiRequest
-          }
-        } else {
+        if (!name || !birthdate) {
           alert('Введите имя ребенка и дату рождения');
+          return;
         }
+        const response_id = generateUUID();
+        const payload = {
+          action: 'register_parent',
+          initData: tg.initData,
+          user_id,
+          username,
+          first_name,
+          parent: { full_name: first_name || 'Пользователь', telegram },
+          children: [{ child_name: name, birthdate }],
+          response_id
+        };
+        fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          mode: 'no-cors'
+        }).then(() => {
+          console.log('Add child request sent');
+          alert('Ребенок добавлен! Мы свяжемся через Telegram.');
+          document.getElementById('parent-telegram').value = '';
+          document.getElementById('child-name').value = '';
+          document.getElementById('child-birthdate').value = '';
+          trackEvent('add_child', { telegram, child_name: name, birthdate, response_id });
+          bootstrap(); // Refresh data
+        }).catch(error => {
+          console.error('Error adding child:', error);
+          alert('Ошибка при добавлении ребенка');
+        });
       });
 
       // Child selection
@@ -823,12 +870,14 @@
         selectedChildId = e.target.value;
         document.getElementById('child-select-schedule').value = selectedChildId;
         updateChildInfo(selectedChildId);
+        trackEvent('select_child', { child_id: selectedChildId });
       });
 
       document.getElementById('child-select-schedule').addEventListener('change', (e) => {
         selectedChildId = e.target.value;
         document.getElementById('child-select-profile').value = selectedChildId;
         updateChildInfo(selectedChildId);
+        trackEvent('select_child', { child_id: selectedChildId });
       });
 
       // Tabs logic
@@ -841,6 +890,7 @@
           tab.classList.add('active');
           const contentId = tab.getAttribute('data-tab');
           document.getElementById(contentId).classList.add('active');
+          trackEvent('tab_click', { tab: contentId });
         });
       });
 
@@ -849,15 +899,18 @@
         currentWeekStart.setDate(currentWeekStart.getDate() - 7);
         updateCalendar();
         updateSlots(selectedDate);
+        trackEvent('week_nav', { direction: 'prev' });
       });
 
       document.getElementById('next-week').addEventListener('click', () => {
         currentWeekStart.setDate(currentWeekStart.getDate() + 7);
         updateCalendar();
         updateSlots(selectedDate);
+        trackEvent('week_nav', { direction: 'next' });
       });
 
       // Initialize
+      trackEvent('webapp_open');
       bootstrap();
     });
   </script>
