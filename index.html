@@ -479,7 +479,7 @@
         <div class="section-title">Профиль</div>
         <div class="profile-section">
           <div class="child-form">
-            <input type="text" id="parent-phone" placeholder="Телефон родителя" required>
+            <input type="text" id="parent-telegram" placeholder="Telegram родителя (@username)" pattern="@[A-Za-z0-9_]{5,}" required>
             <input type="text" id="child-name" placeholder="Имя ребенка" required>
             <input type="date" id="child-birthdate" placeholder="Дата рождения" required>
             <button id="add-child">Добавить ребенка</button>
@@ -510,11 +510,10 @@
       const API_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec'; // Замените на реальный URL вашего Google Apps Script
 
       // User info
-      const user = tg.initDataUnsafe?.user;
-      let telegramId = null;
-      if (user) {
-        document.getElementById('user-name').textContent = user.first_name || 'Пользователь';
-        telegramId = user.id;
+      let user_id = null, username = null, first_name = null;
+      if (tg.initDataUnsafe?.user) {
+        ({ id: user_id, username, first_name } = tg.initDataUnsafe.user);
+        document.getElementById('user-name').textContent = first_name || 'Пользователь';
       } else {
         document.getElementById('user-name').textContent = 'Гость';
         alert('Ошибка: Не удалось получить данные пользователя Telegram');
@@ -544,18 +543,34 @@
         return d;
       };
 
+      // Helper: Generate UUID
+      const generateUUID = () => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+          const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      };
+
       // Helper: API request
-      const apiRequest = async (action, payload = {}) => {
+      const apiRequest = async (action, payload = {}, noCors = false) => {
         if (!tg.initData) {
           throw new Error('Telegram initData is missing');
         }
         console.log(`Sending ${action} request:`, { action, initData: tg.initData, ...payload });
         try {
-          const response = await fetch(API_URL, {
+          const options = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action, initData: tg.initData, ...payload })
-          });
+            body: JSON.stringify({ action, initData: tg.initData, user_id, username, first_name, ...payload })
+          };
+          if (noCors) {
+            options.mode = 'no-cors';
+          }
+          const response = await fetch(API_URL, options);
+          if (noCors) {
+            console.log(`Sent ${action} request in no-cors mode`);
+            return { success: true }; // В no-cors режиме response.json() недоступен
+          }
           if (!response.ok) {
             throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
           }
@@ -567,7 +582,9 @@
           return data;
         } catch (error) {
           console.error(`API Error (${action}):`, error);
-          alert(`Ошибка: ${error.message}`);
+          if (!noCors) {
+            alert(`Ошибка: ${error.message}`);
+          }
           throw error;
         }
       };
@@ -712,7 +729,7 @@
               }
               try {
                 console.log('Attempting to book slot:', { slot_id: slotId, child_id: selectedChildId });
-                await apiRequest('book', { slot_id: slotId, child_id: selectedChildId, comment: '' });
+                await apiRequest('book', { slot_id: slotId, child_id: selectedChildId, comment: '' }, true);
                 // Refresh data
                 const bootstrapData = await apiRequest('bootstrap');
                 children = bootstrapData.children;
@@ -768,30 +785,36 @@
 
       // Add child
       document.getElementById('add-child').addEventListener('click', async () => {
-        const phone = document.getElementById('parent-phone').value.trim();
+        const telegram = document.getElementById('parent-telegram').value.trim();
         const name = document.getElementById('child-name').value.trim();
         const birthdate = document.getElementById('child-birthdate').value;
-        if (phone && name && birthdate) {
+        if (!telegram || !telegram.startsWith('@')) {
+          alert('Введите корректный Telegram-ник (например, @username)');
+          return;
+        }
+        if (name && birthdate) {
           try {
-            console.log('Adding child:', { parent: { full_name: user.first_name, phone, email: '' }, children: [{ child_name: name, birthdate }] });
+            const response_id = generateUUID();
+            console.log('Adding child:', { parent: { full_name: first_name, telegram }, children: [{ child_name: name, birthdate }], response_id });
             await apiRequest('register_parent', {
-              parent: { full_name: user.first_name || 'Пользователь', phone, email: '' },
-              children: [{ child_name: name, birthdate }]
-            });
+              parent: { full_name: first_name || 'Пользователь', telegram },
+              children: [{ child_name: name, birthdate }],
+              response_id
+            }, true);
             const bootstrapData = await apiRequest('bootstrap');
             children = bootstrapData.children;
             balances = bootstrapData.balances;
             updateChildSelectors();
-            document.getElementById('parent-phone').value = '';
+            document.getElementById('parent-telegram').value = '';
             document.getElementById('child-name').value = '';
             document.getElementById('child-birthdate').value = '';
-            alert('Ребенок добавлен успешно!');
+            alert('Ребенок добавлен успешно! Мы свяжемся с вами через Telegram.');
           } catch (error) {
             console.error('Add child error:', error);
             // Error handled in apiRequest
           }
         } else {
-          alert('Введите телефон родителя, имя ребенка и дату рождения');
+          alert('Введите имя ребенка и дату рождения');
         }
       });
 
