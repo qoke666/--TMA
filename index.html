@@ -1,757 +1,518 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Запись на занятия</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --tg-theme-bg-color: var(--tg-bg-color, #ffffff);
-            --tg-theme-text-color: var(--tg-text-color, #000000);
-            --tg-theme-hint-color: var(--tg-hint-color, #999999);
-            --tg-theme-link-color: var(--tg-link-color, #2481cc);
-            --tg-theme-button-color: var(--tg-button-color, #2481cc);
-            --tg-theme-button-text-color: var(--tg-button-text-color, #ffffff);
-            --tg-theme-secondary-bg-color: var(--tg-secondary-bg-color, #f4f4f4);
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Детская Студия</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-main: #101010;
+      --bg-secondary: #1C1C1C;
+      --text-main: #FFFFFF;
+      --text-secondary: #8E8E93;
+      --accent-blue: #007AFF;
+      --accent-green: #34C759;
+      --accent-red: #FF3B30;
+      --border-color: #2D2D2D;
+    }
 
-            --accent-color: #007AFF;
-            --disabled-color: #c7c7c7;
-            --bg-color-light: #F8F9FA;
-            --text-color-dark: #212529;
-            --text-color-light: #6C757D;
-            --card-border-color: #E9ECEF;
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-        }
+    @font-face {
+      font-family: 'Inter';
+      src: url('https://rsms.me/inter/font-files/Inter-Regular.woff2?v=3.19') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            margin: 0;
-            padding: 15px;
-            background-color: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+    @font-face {
+      font-family: 'Inter';
+      src: url('https://rsms.me/inter/font-files/Inter-Medium.woff2?v=3.19') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+    }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
+    @font-face {
+      font-family: 'Inter';
+      src: url('https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=3.19') format('woff2');
+      font-weight: 600;
+      font-style: normal;
+    }
 
-        /* Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 15px;
-        }
-        .header .address {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--tg-theme-link-color);
-            text-decoration: none;
-        }
-        .header .tg-icon {
-            font-size: 24px;
-            color: var(--tg-theme-link-color);
-            text-decoration: none;
-        }
-        .tg-icon svg {
-            width: 28px;
-            height: 28px;
-            fill: currentColor;
-        }
+    @font-face {
+      font-family: 'Inter';
+      src: url('https://rsms.me/inter/font-files/Inter-Bold.woff2?v=3.19') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+    }
 
-        /* Slider */
-        .slider {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 16 / 8;
-            overflow: hidden;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            background-color: var(--tg-theme-secondary-bg-color);
-        }
-        .slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transition: opacity 0.8s ease-in-out;
-            background-size: cover;
-            background-position: center;
-        }
-        .slide.active {
-            opacity: 1;
-        }
-        .slide-content {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 20px;
-            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-            color: white;
-        }
-        .slide-content h3 {
-            margin: 0 0 5px 0;
-            font-size: 18px;
-        }
-        .slide-content p {
-            margin: 0;
-            font-size: 14px;
-        }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      padding: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
 
-        /* Section Title */
-        .section-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: var(--tg-theme-text-color);
-        }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
 
-        /* Calendar / Slots */
-        .slots-container .date-group {
-            margin-bottom: 20px;
-        }
-        .date-header {
-            font-weight: 600;
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: var(--tg-theme-text-color);
-        }
-        .slot-card {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            background-color: var(--tg-theme-secondary-bg-color);
-            border-radius: 10px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 1px solid var(--card-border-color);
-        }
-        .slot-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        .slot-card[disabled] {
-            cursor: not-allowed;
-            background-color: #f0f0f0;
-            color: var(--disabled-color);
-            opacity: 0.6;
-        }
-        .slot-card[disabled]:hover {
-            transform: none;
-            box-shadow: none;
-        }
-        .slot-time {
-            font-size: 20px;
-            font-weight: 700;
-            width: 70px;
-        }
-        .slot-details {
-            flex-grow: 1;
-            margin-left: 15px;
-        }
-        .slot-trainer {
-            font-weight: 500;
-        }
-        .slot-availability {
-            font-size: 13px;
-            color: var(--tg-theme-hint-color);
-        }
-        .slot-availability .available { color: var(--success-color); font-weight: 500; }
-        .slot-availability .full { color: var(--danger-color); font-weight: 500; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
 
-        /* Trainer Card */
-        .trainer-card {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            background-color: var(--tg-theme-secondary-bg-color);
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        .trainer-avatar img {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        .trainer-info {
-            flex-grow: 1;
-            margin-left: 15px;
-        }
-        .trainer-info h4 {
-            margin: 0 0 4px 0;
-            font-size: 16px;
-        }
-        .trainer-info p {
-            margin: 0;
-            font-size: 14px;
-            color: var(--tg-theme-hint-color);
-        }
-        .trainer-contact-btn {
-            padding: 8px 12px;
-            border-radius: 8px;
-            background-color: var(--accent-color);
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-        }
+    .header__logo svg {
+      width: 40px;
+      height: 40px;
+    }
 
-        /* News */
-        .news-card {
-            background-color: var(--tg-theme-secondary-bg-color);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-        }
-        .news-card h4 {
-            margin: 0 0 8px 0;
-            font-size: 16px;
-        }
-        .news-card p {
-            margin: 0;
-            font-size: 14px;
-            color: var(--tg-theme-hint-color);
-            line-height: 1.5;
-        }
+    .header__user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-        /* Modal */
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
-            display: none; /* Hidden by default */
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-content {
-            background-color: var(--tg-theme-bg-color);
-            margin: auto;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: slide-up 0.3s ease-out;
-        }
-        @keyframes slide-up {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--card-border-color);
-        }
-        .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        .close-btn {
-            color: var(--tg-theme-hint-color);
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid var(--card-border-color);
-            font-size: 16px;
-            box-sizing: border-box;
-            background-color: var(--tg-theme-secondary-bg-color);
-            color: var(--tg-theme-text-color);
-        }
-        .children-list .child-item {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .child-item input { flex-grow: 1; }
-        .add-child-btn {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 8px 12px;
-            background: none;
-            border: 1px solid var(--accent-color);
-            color: var(--accent-color);
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .submit-btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background-color: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .submit-btn:disabled {
-            background-color: var(--disabled-color);
-            cursor: not-allowed;
-        }
-        .child-selector-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background-color: var(--bg-color-light);
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-        .balance-info {
-            font-weight: 500;
-        }
-        .balance-info .no-balance { color: var(--danger-color); }
-        .error-message {
-            color: var(--danger-color);
-            font-size: 14px;
-            margin-top: 10px;
-            text-align: center;
-        }
-        
-        /* Loader */
-        .loader-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        .loader {
-            border: 4px solid var(--tg-theme-secondary-bg-color);
-            border-top: 4px solid var(--tg-theme-button-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+    .header__user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-    </style>
+    .header__user-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .header__user-name {
+      font-weight: 500;
+    }
+
+    .promo {
+      background-color: var(--bg-secondary);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .promo__text {
+      flex: 1;
+    }
+
+    .promo__title {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+    }
+
+    .promo__subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .promo__image img {
+      width: 120px;
+      height: 120px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab {
+      padding: 10px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .tab.active {
+      background-color: var(--accent-blue);
+      color: var(--text-main);
+      border-color: var(--accent-blue);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    /* Calendar styles */
+    .calendar-container {
+        background-color: var(--bg-secondary);
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    .week-selector {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .week-selector__arrow {
+        cursor: pointer;
+        padding: 8px;
+    }
+    .week-selector__arrow svg {
+        width: 24px;
+        height: 24px;
+        stroke: var(--text-secondary);
+    }
+    
+    .week-selector__date {
+        font-size: 18px;
+        font-weight: 600;
+    }
+    
+    .days-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .day {
+        padding: 10px 5px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .day.active {
+        background-color: var(--accent-blue);
+    }
+
+    .day__name {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+    }
+    
+    .day__date {
+        font-weight: 600;
+    }
+
+    .slots-list .slot-card {
+        background-color: var(--bg-main);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .slot-card__info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .slot-card__time {
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .slot-card__details {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .slot-card__action .btn {
+        background-color: var(--accent-blue);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    
+    .slot-card__action .btn:hover {
+        opacity: 0.8;
+    }
+
+    /* Trainers styles */
+    .trainers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 16px;
+    }
+
+    .trainer-card {
+        background-color: var(--bg-secondary);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .trainer-card__avatar img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 12px;
+        border: 2px solid var(--border-color);
+    }
+
+    .trainer-card__name {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .trainer-card__speciality {
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+    }
+    
+    .trainer-card__contact-btn {
+        display: inline-block;
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+    }
+    
+    /* Profile styles */
+    .profile-section {
+        background-color: var(--bg-secondary);
+        border-radius: 16px;
+        padding: 20px;
+    }
+    
+    .profile-section p {
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+  </style>
 </head>
+
 <body>
+  <div class="container">
+    <header class="header">
+      <div class="header__logo">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="20" fill="white"/>
+            <path d="M20 31.6667C26.4435 31.6667 31.6667 26.4435 31.6667 20C31.6667 13.5565 26.4435 8.33334 20 8.33334C13.5565 8.33334 8.33337 13.5565 8.33337 20C8.33337 26.4435 13.5565 31.6667 20 31.6667Z" fill="#007AFF"/>
+        </svg>          
+      </div>
+      <div class="header__user">
+        <div class="header__user-avatar"><img id="user-avatar" src="" alt=""></div>
+        <div class="header__user-name" id="user-name">Загрузка...</div>
+      </div>
+    </header>
 
-    <div id="loader" class="loader-overlay">
-        <div class="loader"></div>
-    </div>
+    <main>
+      <section class="promo">
+        <div class="promo__text">
+          <h1 class="promo__title">Запись на занятия</h1>
+          <p class="promo__subtitle">Выберите удобное время для вашего ребенка и запишитесь в один клик.</p>
+        </div>
+        <div class="promo__image">
+          <img src="https://em-content.zobj.net/source/apple/354/person-cartwheeling_1f938.png" alt="Гимнастика">
+        </div>
+      </section>
 
-    <div class="container" id="app-container" style="display: none;">
-        <!-- Header -->
-        <header class="header">
-            <a href="#" id="studio-address" target="_blank" class="address">Загрузка адреса...</a>
-            <a href="#" id="channel-link" target="_blank" class="tg-icon">
-                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.84c-.15.45-.45.86-.82 1.22-.37.36-.82.66-1.32.9-.5.24-1.03.42-1.58.54-.55.12-1.11.18-1.67.18-.75 0-1.46-.11-2.12-.33-.66-.22-1.26-.53-1.8-.93-.54-.4-.98-.88-1.32-1.44s-.58-1.18-.7-1.86c-.12-.68-.18-1.38-.18-2.11 0-.73.06-1.44.18-2.13.12-.68.34-1.32.65-1.91s.72-1.12 1.2-1.6c.48-.48 1.03-.87 1.64-1.18.6-.3 1.25-.51 1.94-.61.69-.1 1.39-.15 2.1-.15.79 0 1.54.06 2.25.19s1.37.35 1.98.64c.61.29 1.15.68 1.61 1.15.46.47.83.99 1.11 1.57.28.58.48 1.2.59 1.85.11.65.17 1.32.17 2 0 .79-.07 1.55-.21 2.28-.14.73-.36 1.43-.66 2.09zm-1.5-6.09c0-.4-.06-.78-.18-1.14s-.29-.69-.51-1-.48-.56-.8-.75-.7-.32-1.14-.38c-.44-.06-.9-.09-1.37-.09s-.92.03-1.36.09c-.44.06-.83.18-1.17.38-.34.19-.64.44-.89.75-.25.31-.45.64-.59 1-.14.36-.25.74-.31 1.14-.07.4-.1.81-.1 1.23s.03.83.1 1.24c.06.4.17.78.31 1.14.14.36.34.69.59 1s.55.56.89.75c.34.19.73.32 1.17.38.44.06.89.09 1.36.09s.93-.03 1.37-.09c.44-.06.84-.18 1.14-.38.3-.19.56-.44.8-.75s.42-.64.51-1c.09-.36.18-.74.18-1.14s-.06-.79-.18-1.23zM9.5 12.03c.53 0 1.05.02 1.56.05.51.03 1.01.1 1.5.2.49.1.97.24 1.43.43.46.19.9.42 1.32.7.42.28.8.6 1.12.98.32.38.58.8.77 1.25.19.45.31.92.38 1.41.06.49.09.98.09 1.48 0 .5-.03 1-.09 1.48-.06.49-.19.96-.38 1.41-.19.45-.45.87-.77 1.25-.32.38-.7.7-1.12.98-.42.28-.86.51-1.32.7-.46.19-.94.33-1.43.43-.49.1-1 .17-1.5.2-.51.03-1.03.05-1.56.05-.53 0-1.05-.02-1.56-.05-.51-.03-1.01-.1-1.5-.2-.49-.1-.97-.24-1.43-.43-.46-.19-.9-.42-1.32-.7-.42-.28-.8-.6-1.12.98-.32-.38-.58-.8-.77-1.25-.19-.45-.31-.92-.38-1.41-.06-.49-.09-.98-.09-1.48 0-.5.03-1 .09-1.48.06-.49.19-.96.38-1.41.19.45.45.87.77-1.25.32.38.7.7 1.12.98.42.28.86.51 1.32.7.46.19.94.33 1.43.43.49.1 1 .17 1.5.2.51.03 1.03.05 1.56.05z"></path></svg>
-            </a>
-        </header>
+      <nav class="tabs">
+        <div class="tab active" data-tab="schedule">Расписание</div>
+        <div class="tab" data-tab="trainers">Тренеры</div>
+        <div class="tab" data-tab="profile">Мой профиль</div>
+      </nav>
 
-        <!-- Slider -->
-        <div class="slider" id="slider"></div>
-
-        <!-- Calendar -->
-        <section id="calendar-section">
-            <h2 class="section-title">Расписание</h2>
-            <div id="slots-container"></div>
-        </section>
-
-        <!-- Trainer -->
-        <section id="trainer-section">
-            <h2 class="section-title">Тренер</h2>
-            <div id="trainer-card-container"></div>
-        </section>
-
-        <!-- News -->
-        <section id="news-section">
-            <h2 class="section-title">Важная информация</h2>
-            <div id="news-container"></div>
-        </section>
-
-    </div>
-
-    <!-- Modals -->
-    <div id="booking-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Запись на занятие</h3>
-                <span class="close-btn">&times;</span>
+      <div class="tab-content active" id="schedule">
+        <div class="calendar-container">
+            <div class="week-selector">
+                <div class="week-selector__arrow" id="prev-week">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+                </div>
+                <div class="week-selector__date">3 – 9 сентября</div>
+                <div class="week-selector__arrow" id="next-week">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+                </div>
             </div>
-            <div class="modal-body">
-                <p id="booking-slot-info"></p>
-                <div id="existing-user-form">
-                    <div class="form-group">
-                        <label for="child-select">Выберите ребенка</label>
-                        <select id="child-select" class="form-group"></select>
+
+            <div class="days-grid">
+                <div class="day">
+                    <div class="day__name">ПН</div>
+                    <div class="day__date">3</div>
+                </div>
+                <div class="day active">
+                    <div class="day__name">ВТ</div>
+                    <div class="day__date">4</div>
+                </div>
+                <div class="day">
+                    <div class="day__name">СР</div>
+                    <div class="day__date">5</div>
+                </div>
+                <div class="day">
+                    <div class="day__name">ЧТ</div>
+                    <div class="day__date">6</div>
+                </div>
+                <div class="day">
+                    <div class="day__name">ПТ</div>
+                    <div class="day__date">7</div>
+                </div>
+                <div class="day">
+                    <div class="day__name">СБ</div>
+                    <div class="day__date">8</div>
+                </div>
+                <div class="day">
+                    <div class="day__name">ВС</div>
+                    <div class="day__date">9</div>
+                </div>
+            </div>
+
+            <div class="slots-list">
+                <div class="section-title">Свободные слоты на Вторник, 4 сентября</div>
+                <div class="slot-card">
+                    <div class="slot-card__info">
+                        <div class="slot-card__time">10:00 - 11:00</div>
+                        <div class="slot-card__details">Тренер: Иванова Мария | Свободно: 3/8</div>
                     </div>
-                    <div class="child-selector-info">
-                        <span>Осталось занятий:</span>
-                        <span id="balance-info" class="balance-info"></span>
+                    <div class="slot-card__action">
+                        <button class="btn">Записаться</button>
                     </div>
-                     <div class="form-group">
-                        <label for="booking-comment">Комментарий (необязательно)</label>
-                        <textarea id="booking-comment" rows="2"></textarea>
+                </div>
+                <div class="slot-card">
+                    <div class="slot-card__info">
+                        <div class="slot-card__time">12:00 - 13:00</div>
+                        <div class="slot-card__details">Тренер: Петров Алексей | Свободно: 1/8</div>
                     </div>
-                    <button id="confirm-booking-btn" class="submit-btn">Подтвердить запись</button>
-                    <p id="booking-error" class="error-message"></p>
+                    <div class="slot-card__action">
+                        <button class="btn">Записаться</button>
+                    </div>
+                </div>
+                <div class="slot-card">
+                    <div class="slot-card__info">
+                        <div class="slot-card__time">15:00 - 16:00</div>
+                        <div class="slot-card__details">Тренер: Иванова Мария | Мест нет</div>
+                    </div>
+                    <div class="slot-card__action">
+                        <button class="btn" disabled>Записаться</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+      </div>
 
-    <div id="registration-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Регистрация</h3>
-                <span class="close-btn">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="registration-form">
-                    <h4>Данные родителя</h4>
-                    <div class="form-group">
-                        <label for="parent-name">ФИО</label>
-                        <input type="text" id="parent-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="parent-phone">Телефон</label>
-                        <input type="tel" id="parent-phone" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="parent-email">Email (необязательно)</label>
-                        <input type="email" id="parent-email">
-                    </div>
-                    <h4>Данные детей</h4>
-                    <div id="children-list">
-                        <div class="child-item">
-                            <input type="text" placeholder="Имя ребенка" class="child-name" required>
-                            <input type="date" class="child-dob" required>
-                        </div>
-                    </div>
-                    <button type="button" class="add-child-btn">+ Добавить ребенка</button>
-                    <button type="submit" class="submit-btn">Зарегистрироваться и записаться</button>
-                    <p id="registration-error" class="error-message"></p>
-                </form>
+      <div class="tab-content" id="trainers">
+        <div class="section-title">Наши тренеры</div>
+        <div class="trainers-grid">
+            <div class="trainer-card">
+                <div class="trainer-card__avatar">
+                    <img src="https://i.pravatar.cc/150?u=maria" alt="Павел">
+                </div>
+                <div class="trainer-card__name">Пашел</div>
+                <div class="trainer-card__speciality">тренер</div>
+                <a href="#" class="trainer-card__contact-btn">Написать</a>
             </div>
         </div>
-    </div>
+      </div>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+      <div class="tab-content" id="profile">
+        <div class="section-title">Профиль</div>
+        <div class="profile-section">
+            <h3 id="profile-parent-name">Имя Родителя</h3>
+            <p>Здесь будет отображаться информация о ваших детях, их балансе занятий и истории посещений.</p>
+        </div>
+      </div>
+    </main>
+  </div>
 
-        // --- CONFIG ---
-        const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec'; // ⚠️ PASTE YOUR DEPLOYED URL HERE
-        const tgInitData = tg.initData;
-        // For testing in browser:
-        // const tgInitData = 'query_id=...&user=%7B%22id%22%3A123456789,...%7D&auth_date=...&hash=...';
-        
-        // --- STATE ---
-        const appState = {
-            config: null, user: null, children: [], balances: {},
-            trainers: {}, slots: [], news: [], selectedSlot: null,
-        };
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const tg = window.Telegram.WebApp;
+      tg.expand();
 
-        // --- DOM ELEMENTS ---
-        const loader = document.getElementById('loader');
-        const appContainer = document.getElementById('app-container');
-        const sliderEl = document.getElementById('slider');
-        const slotsContainer = document.getElementById('slots-container');
-        const trainerContainer = document.getElementById('trainer-card-container');
-        const newsContainer = document.getElementById('news-container');
-        const studioAddressEl = document.getElementById('studio-address');
-        const channelLinkEl = document.getElementById('channel-link');
-        const bookingModal = document.getElementById('booking-modal');
-        const registrationModal = document.getElementById('registration-modal');
-        const modals = [bookingModal, registrationModal];
+      // User info
+      const user = tg.initDataUnsafe?.user;
+      if (user) {
+        document.getElementById('user-name').textContent = user.first_name || 'Пользователь';
+        // You can add logic for user photo if available
+        // document.getElementById('user-avatar').src = user.photo_url || '';
+      } else {
+         document.getElementById('user-name').textContent = 'Гость';
+      }
 
-        // --- API HELPER (NEW - POST ONLY) ---
-        async function apiCall(action, payload = {}) {
-            const options = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Telegram-Init-Data': tgInitData,
-                },
-                body: JSON.stringify({ action, ...payload }),
-            };
-            try {
-                // Apps Script returns a 302 redirect on POST, so we follow it manually
-                const initialResponse = await fetch(API_BASE_URL, { ...options, redirect: 'manual' });
-                if (initialResponse.status !== 302) {
-                     const errorText = await initialResponse.text();
-                     throw new Error(`Expected redirect, but got status ${initialResponse.status}. Response: ${errorText}`);
-                }
-                
-                const redirectUrl = initialResponse.headers.get('Location');
-                const finalResponse = await fetch(redirectUrl);
 
-                if (!finalResponse.ok) {
-                    const errorData = await finalResponse.json();
-                    throw new Error(errorData.message || 'Ошибка сети');
-                }
-                return await finalResponse.json();
-            } catch (error) {
-                console.error(`API Error (action: ${action}):`, error);
-                tg.showAlert(`Ошибка: ${error.message}`);
-                throw error;
-            }
-        }
+      // Tabs logic
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
 
-        // --- RENDER FUNCTIONS (No changes here) ---
-        function renderHeader() {
-            studioAddressEl.textContent = appState.config.studio_address;
-            studioAddressEl.href = appState.config.studio_map_link;
-            channelLinkEl.href = appState.config.channel_url;
-        }
-        function renderSlider() {
-            try {
-                const banners = JSON.parse(appState.config.banner_items);
-                if (!banners || banners.length === 0) return;
-                sliderEl.innerHTML = banners.map((banner, index) => `
-                    <div class="slide ${index === 0 ? 'active' : ''}" style="background-image: url('${banner.img}')">
-                        <div class="slide-content"><h3>${banner.title}</h3><p>${banner.subtitle}</p></div>
-                    </div>`).join('');
-                let currentSlide = 0;
-                const slides = sliderEl.querySelectorAll('.slide');
-                if (slides.length > 1) {
-                    setInterval(() => {
-                        slides[currentSlide].classList.remove('active');
-                        currentSlide = (currentSlide + 1) % slides.length;
-                        slides[currentSlide].classList.add('active');
-                    }, 6000);
-                }
-            } catch (e) { console.error("Error parsing banners JSON", e); }
-        }
-        function renderSlots() {
-            const groupedSlots = appState.slots.reduce((acc, slot) => {
-                const date = new Date(slot.date).toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
-                if (!acc[date]) acc[date] = [];
-                acc[date].push(slot);
-                return acc;
-            }, {});
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          // Remove active class from all tabs and contents
+          tabs.forEach(item => item.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
 
-            slotsContainer.innerHTML = Object.keys(groupedSlots).sort((a,b) => new Date(a) - new Date(b)).map(date => `
-                <div class="date-group">
-                    <h3 class="date-header">${date}</h3>
-                    ${groupedSlots[date].map(slot => {
-                        const trainer = appState.trainers[slot.trainer_id] || { name: 'Тренер' };
-                        const remaining = slot.capacity - slot.booked;
-                        const isDisabled = remaining <= 0;
-                        return `
-                        <div class="slot-card" data-slot-id="${slot.slot_id}" ${isDisabled ? 'disabled' : ''}>
-                            <div class="slot-time">${slot.time}</div>
-                            <div class="slot-details">
-                                <div class="slot-trainer">${trainer.name}</div>
-                                <div class="slot-availability">
-                                    ${isDisabled ? `<span class="full">Мест нет</span>` : `Осталось мест: <span class="available">${remaining}</span>`}
-                                </div>
-                            </div>
-                        </div>`
-                    }).join('')}
-                </div>`).join('') || '<p>Свободных слотов на ближайшую неделю нет.</p>';
-        }
-        function renderTrainer() {
-             const firstTrainer = Object.values(appState.trainers)[0];
-             if(!firstTrainer) return;
-             trainerContainer.innerHTML = `
-                <div class="trainer-card">
-                    <div class="trainer-avatar"><img src="${firstTrainer.avatar_url}" alt="${firstTrainer.name}"></div>
-                    <div class="trainer-info"><h4>${firstTrainer.name}</h4><p>${firstTrainer.speciality}</p></div>
-                    <a href="https://t.me/${firstTrainer.tg_username}" target="_blank" class="trainer-contact-btn">Написать</a>
-                </div>`;
-        }
-        function renderNews() {
-            const importantNews = appState.news.filter(item => item.is_important === true || String(item.is_important).toLowerCase() === 'true');
-            if (importantNews.length === 0) {
-                document.getElementById('news-section').style.display = 'none';
-                return;
-            }
-            newsContainer.innerHTML = importantNews.map(item => `
-                <div class="news-card"><h4>${item.title}</h4><p>${item.text}</p></div>`).join('');
-        }
+          // Add active class to clicked tab and corresponding content
+          tab.classList.add('active');
+          const contentId = tab.getAttribute('data-tab');
+          document.getElementById(contentId).classList.add('active');
+        });
+      });
+      
+      // Calendar day selection logic (visual only)
+      const days = document.querySelectorAll('.day');
+      days.forEach(day => {
+        day.addEventListener('click', () => {
+            days.forEach(d => d.classList.remove('active'));
+            day.classList.add('active');
+            // Here you would typically load slots for the selected day
+        });
+      });
 
-        // --- MODAL LOGIC (No changes here) ---
-        function showModal(modal) { modal.style.display = 'flex'; }
-        function hideModal(modal) { modal.style.display = 'none'; }
-        function openBookingFlow(slotId) {
-            appState.selectedSlot = appState.slots.find(s => s.slot_id === slotId);
-            if (appState.user && appState.user.telegram_id) {
-                setupBookingModal();
-                showModal(bookingModal);
-            } else {
-                setupRegistrationModal();
-                showModal(registrationModal);
-            }
-        }
-        function setupBookingModal() {
-            const slot = appState.selectedSlot;
-            document.getElementById('booking-slot-info').textContent = `Время: ${new Date(slot.date).toLocaleDateString('ru-RU')} в ${slot.time}`;
-            const childSelect = document.getElementById('child-select');
-            childSelect.innerHTML = appState.children.map(c => `<option value="${c.child_id}">${c.child_name}</option>`).join('');
-            updateBalanceInfo();
-            childSelect.addEventListener('change', updateBalanceInfo);
-        }
-        function updateBalanceInfo() {
-            const childId = document.getElementById('child-select').value;
-            const balance = appState.balances[childId]?.remaining || 0;
-            const balanceInfoEl = document.getElementById('balance-info');
-            const confirmBtn = document.getElementById('confirm-booking-btn');
-            balanceInfoEl.textContent = balance;
-            if (balance <= 0) {
-                balanceInfoEl.classList.add('no-balance');
-                confirmBtn.disabled = true;
-                document.getElementById('booking-error').textContent = 'Недостаточно занятий. Пополните баланс.';
-            } else {
-                balanceInfoEl.classList.remove('no-balance');
-                confirmBtn.disabled = false;
-                document.getElementById('booking-error').textContent = '';
-            }
-        }
-        function setupRegistrationModal() {
-            document.getElementById('registration-form').reset();
-            document.querySelectorAll('.child-item:not(:first-child)').forEach(child => child.remove());
-        }
-
-        // --- EVENT HANDLERS (No changes here) ---
-        function handleSlotClick(event) {
-            const card = event.target.closest('.slot-card');
-            if (card && !card.hasAttribute('disabled')) {
-                openBookingFlow(card.dataset.slotId);
-            }
-        }
-        async function handleBookingSubmit() {
-            const btn = document.getElementById('confirm-booking-btn');
-            btn.disabled = true; btn.textContent = 'Записываем...';
-            document.getElementById('booking-error').textContent = '';
-            try {
-                await apiCall('book', {
-                    slot_id: appState.selectedSlot.slot_id,
-                    child_id: document.getElementById('child-select').value,
-                    comment: document.getElementById('booking-comment').value
-                });
-                tg.showPopup({ title: 'Успех!', message: 'Вы успешно записаны на занятие.', buttons: [{ type: 'ok', text: 'Закрыть' }] }, () => tg.close());
-            } catch (error) {
-                document.getElementById('booking-error').textContent = error.message;
-            } finally {
-                btn.disabled = false; btn.textContent = 'Подтвердить запись';
-            }
-        }
-        async function handleRegistrationSubmit(event) {
-            event.preventDefault();
-            const btn = event.target.querySelector('button[type="submit"]');
-            btn.disabled = true; btn.textContent = 'Регистрация...';
-            document.getElementById('registration-error').textContent = '';
-            try {
-                const parentData = {
-                    full_name: document.getElementById('parent-name').value,
-                    phone: document.getElementById('parent-phone').value,
-                    email: document.getElementById('parent-email').value,
-                };
-                const childrenData = Array.from(document.querySelectorAll('.child-item')).map(item => ({
-                    child_name: item.querySelector('.child-name').value,
-                    birthdate: item.querySelector('.child-dob').value
-                }));
-                const regResponse = await apiCall('register_parent', { parent: parentData, children: childrenData });
-                appState.user = regResponse.parent;
-                appState.children = regResponse.children;
-                regResponse.balances.forEach(b => { appState.balances[b.child_id] = b });
-                await apiCall('book', { slot_id: appState.selectedSlot.slot_id, child_id: regResponse.children[0].child_id });
-                tg.showPopup({ title: 'Успех!', message: 'Регистрация прошла успешно, вы записаны.', buttons: [{ type: 'ok', text: 'Закрыть' }] }, () => tg.close());
-            } catch (error) {
-                document.getElementById('registration-error').textContent = error.message;
-            } finally {
-                btn.disabled = false; btn.textContent = 'Зарегистрироваться и записаться';
-            }
-        }
-        function handleAddChild() {
-            const list = document.getElementById('children-list');
-            const newItem = document.createElement('div');
-            newItem.className = 'child-item';
-            newItem.innerHTML = `<input type="text" placeholder="Имя ребенка" class="child-name" required> <input type="date" class="child-dob" required>`;
-            list.appendChild(newItem);
-        }
-
-        // --- INITIALIZATION (Updated) ---
-        async function init() {
-            try {
-                const bootstrapData = await apiCall('bootstrap');
-                appState.config = bootstrapData.config;
-                appState.user = bootstrapData.parent;
-                appState.children = bootstrapData.children;
-                bootstrapData.balances.forEach(b => { appState.balances[b.child_id] = b });
-                bootstrapData.trainers.forEach(t => { appState.trainers[t.trainer_id] = t });
-                appState.news = bootstrapData.news;
-                
-                const today = new Date();
-                const toDate = new Date();
-                toDate.setDate(today.getDate() + 7);
-                const from = today.toISOString().split('T')[0];
-                const to = toDate.toISOString().split('T')[0];
-                
-                appState.slots = await apiCall('slots', { from, to });
-
-                renderHeader(); renderSlider(); renderTrainer(); renderNews(); renderSlots();
-
-                appContainer.style.display = 'block';
-                loader.style.display = 'none';
-
-                slotsContainer.addEventListener('click', handleSlotClick);
-                document.getElementById('confirm-booking-btn').addEventListener('click', handleBookingSubmit);
-                document.getElementById('registration-form').addEventListener('submit', handleRegistrationSubmit);
-                document.querySelector('.add-child-btn').addEventListener('click', handleAddChild);
-
-                modals.forEach(modal => {
-                    modal.querySelector('.close-btn').addEventListener('click', () => hideModal(modal));
-                });
-                window.addEventListener('click', (event) => {
-                    if (event.target.classList.contains('modal')) hideModal(event.target);
-                });
-
-            } catch (error) {
-                loader.innerHTML = `<p style="text-align: center; color: var(--danger-color);">Не удалось загрузить данные. Пожалуйста, перезапустите приложение.</p>`;
-            }
-        }
-
-        init();
     });
-    </script>
+  </script>
 </body>
+
 </html>
