@@ -123,8 +123,12 @@
       const tg = window.Telegram.WebApp;
       tg.expand();
 
-      // --- CONFIG (оставь URL тот же) ---
-      const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec';//
+      // --- DEBUG: покажем initData в консоли (удали в проде если нужно) ---
+      console.log('tg.initData:', tg.initData);
+      console.log('tg.initDataUnsafe:', tg.initDataUnsafe);
+
+      // --- CONFIG (оставь URL тот же, если изменил - замени) ---
+      const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec';
       const tgInitData = tg.initData || '';
 
       // --- STATE ---
@@ -157,7 +161,6 @@
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(body),
           });
-          // ContentService returns status 200 always — parse JSON and check semantic success
           const data = await response.json();
           if (data && typeof data === 'object' && data.success === false) {
             throw new Error(data.message || 'Server returned error');
@@ -229,9 +232,7 @@
             el.daysGrid.appendChild(dayEl);
         }
         
-        // If no date is selected or selected date has no slots, auto-select first available day
         if (hasSelectableDay && (!appState.selectedDate || !appState.allSlots.some(s => String(s.date) === appState.selectedDate))) {
-            // pick earliest date string
             const dateList = appState.allSlots.map(s => String(s.date)).sort();
             const firstDayWithSlots = dateList[0];
             if (firstDayWithSlots) {
@@ -386,7 +387,6 @@
         appState.currentWeekStart.setDate(appState.currentWeekStart.getDate() + (7 * direction));
         el.slotsList.innerHTML = '<p>Загрузка расписания...</p>';
         await fetchSlotsForCurrentWeek();
-        // Reset selected date to the first day of the new week
         appState.selectedDate = null;
         renderCalendar();
       }
@@ -396,11 +396,9 @@
           const to = new Date(from);
           to.setDate(from.getDate() + 6);
           try {
-              // server expects YYYY-MM-DD
               const fromStr = toYYYYMMDD(from);
               const toStr = toYYYYMMDD(to);
               const slots = await apiCall('slots', { from: fromStr, to: toStr });
-              // slots may be array returned by server
               appState.allSlots = Array.isArray(slots) ? slots : [];
           } catch (e) {
               appState.allSlots = [];
@@ -424,20 +422,17 @@
           renderTrainers();
           renderProfile();
 
-          // Init calendar - visual part first
           const today = new Date();
           appState.currentWeekStart = getStartOfWeek(today);
           appState.selectedDate = toYYYYMMDD(today);
-          renderCalendar(); // Render empty calendar grid
+          renderCalendar();
           
           el.loader.style.display = 'none';
           el.mainContent.style.display = 'block';
 
-          // Then fetch data for it
           await fetchSlotsForCurrentWeek();
-          renderCalendar(); // Re-render calendar with slots data
+          renderCalendar();
 
-          // General event listeners
           document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
               document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
