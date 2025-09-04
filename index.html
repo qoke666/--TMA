@@ -96,30 +96,39 @@
       const state = { user: null, children: [], balances: {}, trainers: {}, allSlots: [], selectedChildId: null, currentWeekStart: null, selectedDate: null };
       const el = { loader: document.getElementById('loader'), mainContent: document.getElementById('main-content'), userName: document.getElementById('user-name'), weekDisplay: document.getElementById('week-display'), daysGrid: document.getElementById('days-grid-container'), slotsList: document.getElementById('slots-list-container'), trainersGrid: document.getElementById('trainers-grid-container'), profileSection: document.getElementById('profile-section-container'), prevWeekBtn: document.getElementById('prev-week'), nextWeekBtn: document.getElementById('next-week') };
 
-      // --- API HELPERS (NEW GET/POST SPLIT) ---
-      async function apiGet(action, params = {}) {
-        const url = new URL(API_BASE_URL);
-        url.searchParams.append('action', action);
-        url.searchParams.append('initData', tgInitData);
-        for (const key in params) { url.searchParams.append(key, params[key]); }
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-        return await response.json();
-      }
-
-      async function apiPost(action, payload = {}) {
-        const body = { action, initData: tgInitData, ...payload };
-        const response = await fetch(API_BASE_URL, { method: 'POST', body: JSON.stringify(body) });
-        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-        return await response.json();
+      async function apiCall(method, action, data = {}) {
+          try {
+              let response;
+              if (method === 'GET') {
+                  const url = new URL(API_BASE_URL);
+                  url.searchParams.append('action', action);
+                  url.searchParams.append('initData', tgInitData);
+                  for (const key in data) { url.searchParams.append(key, data[key]); }
+                  response = await fetch(url);
+              } else { // POST
+                  const body = { action, initData: tgInitData, ...data };
+                  response = await fetch(API_BASE_URL, { method: 'POST', body: JSON.stringify(body), headers: {'Content-Type': 'application/json'} });
+              }
+              if (!response.ok) {
+                  const errorText = await response.text();
+                  throw new Error(`HTTP ${response.status}: ${errorText}`);
+              }
+              const result = await response.json();
+              if (result.success === false) { // Handle application-level errors
+                  throw new Error(result.message);
+              }
+              return result;
+          } catch(e) {
+              console.error(`API Call failed [${method} ${action}]:`, e);
+              tg.showAlert(e.message || 'Произошла неизвестная ошибка');
+              throw e;
+          }
       }
       
-      // --- DATE HELPERS ---
       function getStartOfWeek(date) { const d = new Date(date); d.setHours(0,0,0,0); const day = d.getDay(); const diff = d.getDate() - day + (day === 0 ? -6 : 1); return new Date(d.setDate(diff)); }
       function formatDate(date, options) { return date.toLocaleDateString('ru-RU', options); }
       function toYYYYMMDD(date) { return date.toISOString().split('T')[0]; }
 
-      // --- RENDER FUNCTIONS ---
       function renderUserInfo() { const tgUser = tg.initDataUnsafe?.user; el.userName.textContent = state.user ? state.user.full_name : (tgUser?.first_name || 'Гость'); }
       function renderCalendar() {
         const weekStart = state.currentWeekStart; const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 6);
@@ -134,7 +143,7 @@
             if (dayKey === state.selectedDate) dayEl.classList.add('active');
             el.daysGrid.appendChild(dayEl);
         }
-        if (firstAvailableDate && !state.selectedDate) state.selectedDate = firstAvailableDate;
+        if (firstAvailableDate && !state.allSlots.some(s => s.date.startsWith(state.selectedDate))) { state.selectedDate = firstAvailableDate; }
         const activeDayEl = el.daysGrid.querySelector(`[data-date="${state.selectedDate}"]`); if (activeDayEl) activeDayEl.classList.add('active');
         renderSlotsForDate(state.selectedDate);
       }
@@ -159,16 +168,15 @@
           }
       }
 
-      // --- EVENT HANDLERS ---
       async function handleRegistrationSubmit(event) {
           event.preventDefault(); const btn = event.target.querySelector('button'); btn.disabled = true; btn.textContent = 'Регистрация...';
           try {
-              const response = await apiPost('register_parent', { parent: { full_name: document.getElementById('parent-name').value, phone: document.getElementById('parent-phone').value }, children: [{ child_name: document.getElementById('child-name').value, birthdate: document.getElementById('child-dob').value }] });
+              const response = await apiCall('POST', 'register_parent', { parent: { full_name: document.getElementById('parent-name').value, phone: document.getElementById('parent-phone').value }, children: [{ child_name: document.getElementById('child-name').value, birthdate: document.getElementById('child-dob').value }] });
               state.user = response.parent; state.children = response.children;
               state.balances = response.balances.reduce((acc, b) => ({...acc, [b.child_id]: b}), {});
               state.selectedChildId = response.children[0]?.child_id;
               renderUserInfo(); renderProfile(); tg.showAlert('Вы успешно зарегистрированы!');
-          } catch(e) { tg.showAlert(`Ошибка регистрации: ${e.message}`); } finally { btn.disabled = false; btn.textContent = 'Зарегистрироваться'; }
+          } catch(e) { /* error already shown by apiCall */ } finally { btn.disabled = false; btn.textContent = 'Зарегистрироваться'; }
       }
       function handleChildSelect(childId) { state.selectedChildId = childId; renderProfile(); }
       async function handleBookingClick(event) {
@@ -176,44 +184,45 @@
           if (!state.selectedChildId) { tg.showAlert('Пожалуйста, выберите ребенка в профиле.'); document.querySelector('.tab[data-tab="profile"]').click(); return; }
           btn.disabled = true; btn.textContent = '...';
           try {
-              const response = await apiPost('book', { slot_id: slotId, child_id: state.selectedChildId });
+              const response = await apiCall('POST', 'book', { slot_id: slotId, child_id: state.selectedChildId });
               const slot = state.allSlots.find(s => s.slot_id === slotId); if (slot) slot.booked++;
               state.balances[state.selectedChildId] = response.updatedBalance;
               renderSlotsForDate(state.selectedDate); renderProfile();
               tg.showPopup({ title: 'Успех!', message: 'Ребенок записан!'});
-          } catch (e) { tg.showAlert(`Ошибка записи: ${e.message}`); btn.disabled = false; btn.textContent = 'Записаться'; }
+          } catch (e) { /* error already shown by apiCall */ btn.disabled = false; btn.textContent = 'Записаться'; }
       }
       function handleDayClick(dateKey) { state.selectedDate = dateKey; renderCalendar(); }
       async function changeWeek(direction) { state.currentWeekStart.setDate(state.currentWeekStart.getDate() + (7 * direction)); el.slotsList.innerHTML = '<p>Загрузка...</p>'; state.selectedDate = null; await fetchSlotsForCurrentWeek(); renderCalendar(); }
       async function fetchSlotsForCurrentWeek() {
           const from = state.currentWeekStart; const to = new Date(from); to.setDate(from.getDate() + 6);
-          try { state.allSlots = await apiGet('slots', { from: toYYYYMMDD(from), to: toYYYYMMDD(to) }); } catch (e) { state.allSlots = []; el.slotsList.innerHTML = `<p style="color: var(--accent-red)">Не удалось загрузить расписание.</p>`; }
+          try { const data = await apiCall('GET', 'get_slots', { from: toYYYYMMDD(from), to: toYYYYMMDD(to) }); state.allSlots = data.slots; }
+          catch (e) { state.allSlots = []; el.slotsList.innerHTML = `<p style="color: var(--accent-red)">Не удалось загрузить расписание.</p>`; }
       }
 
-      // --- INITIALIZATION ---
       async function init() {
         el.loader.style.display = 'block'; el.mainContent.style.display = 'none';
         document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active')); tab.classList.add('active'); document.getElementById(tab.dataset.tab).classList.add('active'); }));
         el.prevWeekBtn.addEventListener('click', () => changeWeek(-1)); el.nextWeekBtn.addEventListener('click', () => changeWeek(1));
+        const today = new Date(); state.currentWeekStart = getStartOfWeek(today); state.selectedDate = toYYYYMMDD(today);
 
         try {
-          const bootstrapData = await apiGet('bootstrap');
-          state.user = bootstrapData.parent; state.children = bootstrapData.children || [];
-          state.balances = (bootstrapData.balances || []).reduce((acc, b) => ({...acc, [b.child_id]: b}), {});
-          state.trainers = (bootstrapData.trainers || []).reduce((acc, t) => ({...acc, [t.trainer_id]: t}), {});
+          const [initialConfig, userData] = await Promise.all([
+             apiCall('POST', 'get_initial_config'), // Use POST for init config to avoid long URL
+             apiCall('POST', 'get_user_data')
+          ]);
+          
+          state.trainers = (initialConfig.trainers || []).reduce((acc, t) => ({...acc, [t.trainer_id]: t}), {});
+          state.user = userData.parent; state.children = userData.children || [];
+          state.balances = (userData.balances || []).reduce((acc, b) => ({...acc, [b.child_id]: b}), {});
           if (state.children.length > 0) state.selectedChildId = state.children[0].child_id;
           
           renderUserInfo(); renderTrainers(); renderProfile();
           
-          const today = new Date();
-          state.currentWeekStart = getStartOfWeek(today);
           await fetchSlotsForCurrentWeek();
-          state.selectedDate = toYYYYMMDD(today);
           renderCalendar();
           
           el.loader.style.display = 'none'; el.mainContent.style.display = 'block';
-
-        } catch (error) { el.loader.textContent = 'Не удалось загрузить данные. Пожалуйста, перезапустите приложение.'; console.error("Initialization failed:", error); }
+        } catch (error) { el.loader.textContent = 'Не удалось загрузить данные. Перезапустите приложение.'; }
       }
       init();
     });
