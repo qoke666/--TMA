@@ -155,9 +155,9 @@
         try {
           const response = await fetch(API_BASE_URL, {
             method: 'POST',
-            // Using text/plain is a common workaround for Google Apps Script's CORS behavior.
             headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
             body: JSON.stringify(body),
+            redirect: 'follow',
           });
           if (!response.ok) {
               const errorText = await response.text();
@@ -173,18 +173,13 @@
 
       // --- DATE HELPERS ---
       function getStartOfWeek(date) {
-        const d = new Date(date);
-        d.setHours(0,0,0,0);
+        const d = new Date(date); d.setHours(0,0,0,0);
         const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
         return new Date(d.setDate(diff));
       }
-      function formatDate(date, options) {
-          return date.toLocaleDateString('ru-RU', options);
-      }
-      function toYYYYMMDD(date) {
-        return date.toISOString().split('T')[0];
-      }
+      function formatDate(date, options) { return date.toLocaleDateString('ru-RU', options); }
+      function toYYYYMMDD(date) { return date.toISOString().split('T')[0]; }
 
       // --- RENDER FUNCTIONS ---
       function renderUserInfo() {
@@ -194,177 +189,111 @@
 
       function renderCalendar() {
         const weekStart = appState.currentWeekStart;
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-
+        const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 6);
         el.weekDisplay.textContent = `${formatDate(weekStart, {day:'numeric', month:'long'})} - ${formatDate(weekEnd, {day:'numeric', month:'long'})}`;
-
         el.daysGrid.innerHTML = '';
-        let hasSelectableDay = false;
+        let firstAvailableDate = null;
+
         for (let i = 0; i < 7; i++) {
-            const dayDate = new Date(weekStart);
-            dayDate.setDate(weekStart.getDate() + i);
+            const dayDate = new Date(weekStart); dayDate.setDate(weekStart.getDate() + i);
             const dayKey = toYYYYMMDD(dayDate);
-            
             const dayEl = document.createElement('div');
-            dayEl.className = 'day';
-            dayEl.dataset.date = dayKey;
-            dayEl.innerHTML = `
-                <div class="day__name">${formatDate(dayDate, {weekday: 'short'}).toUpperCase()}</div>
-                <div class="day__date">${dayDate.getDate()}</div>
-            `;
+            dayEl.className = 'day'; dayEl.dataset.date = dayKey;
+            dayEl.innerHTML = `<div class="day__name">${formatDate(dayDate, {weekday: 'short'}).toUpperCase()}</div><div class="day__date">${dayDate.getDate()}</div>`;
             
             const hasSlots = appState.allSlots.some(s => s.date.startsWith(dayKey));
             if (hasSlots) {
+                if (!firstAvailableDate) firstAvailableDate = dayKey;
                 dayEl.classList.add('has-slots', 'selectable');
                 dayEl.addEventListener('click', () => handleDayClick(dayKey));
-                hasSelectableDay = true;
             }
-            if (dayKey === appState.selectedDate) {
-                dayEl.classList.add('active');
-            }
+            if (dayKey === appState.selectedDate) dayEl.classList.add('active');
             el.daysGrid.appendChild(dayEl);
         }
         
-        // If no date is selected or selected date has no slots, auto-select first available day
-        if (hasSelectableDay && (!appState.selectedDate || !appState.allSlots.some(s => s.date.startsWith(appState.selectedDate)))) {
-            const firstDayWithSlots = toYYYYMMDD(new Date(Math.min(...appState.allSlots.map(s => new Date(s.date)))));
-            if (firstDayWithSlots) {
-                appState.selectedDate = firstDayWithSlots;
-                const activeDayEl = el.daysGrid.querySelector(`[data-date="${firstDayWithSlots}"]`);
-                if (activeDayEl) activeDayEl.classList.add('active');
-            }
+        if (firstAvailableDate && !appState.selectedDate) {
+            appState.selectedDate = firstAvailableDate;
+            const activeDayEl = el.daysGrid.querySelector(`[data-date="${firstAvailableDate}"]`);
+            if (activeDayEl) activeDayEl.classList.add('active');
         }
         renderSlotsForDate(appState.selectedDate);
       }
 
       function renderSlotsForDate(dateKey) {
           if (!dateKey) {
-              el.slotsList.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 20px 0;">Выберите день выше, чтобы увидеть свободные слоты.</p>`;
+              el.slotsList.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 20px 0;">Выберите день, чтобы увидеть слоты, или переключите неделю.</p>`;
               return;
           }
           const slotsForDay = appState.allSlots.filter(s => s.date.startsWith(dateKey));
-          const selectedDay = new Date(dateKey);
+          const selectedDay = new Date(dateKey); selectedDay.setMinutes(selectedDay.getMinutes() + selectedDay.getTimezoneOffset());
           const title = `Свободные слоты на ${formatDate(selectedDay, {weekday: 'long', day:'numeric', month:'long'})}`;
           
           if (slotsForDay.length === 0) {
               el.slotsList.innerHTML = `<div class="section-title">${title}</div><p>На этот день слотов нет.</p>`;
               return;
           }
-
           el.slotsList.innerHTML = `
             <div class="section-title">${title}</div>
             ${slotsForDay.map(slot => {
                 const trainer = appState.trainers[slot.trainer_id] || { name: 'Тренер' };
                 const remaining = slot.capacity - slot.booked;
                 const isFull = remaining <= 0;
-                return `
-                <div class="slot-card" data-slot-id="${slot.slot_id}">
-                    <div class="slot-card__info">
-                        <div class="slot-card__time">${slot.time}</div>
-                        <div class="slot-card__details">Тренер: ${trainer.name} | Свободно: ${remaining}/${slot.capacity}</div>
-                    </div>
-                    <div class="slot-card__action">
-                        <button class="btn" ${isFull ? 'disabled' : ''}>Записаться</button>
-                    </div>
-                </div>
-                `
+                return `<div class="slot-card" data-slot-id="${slot.slot_id}"><div class="slot-card__info"><div class="slot-card__time">${slot.time}</div><div class="slot-card__details">Тренер: ${trainer.name} | Свободно: ${remaining}/${slot.capacity}</div></div><div class="slot-card__action"><button class="btn" ${isFull ? 'disabled' : ''}>Записаться</button></div></div>`
             }).join('')}
           `;
-          el.slotsList.querySelectorAll('.btn').forEach(btn => {
-              btn.addEventListener('click', handleBookingClick);
-          });
+          el.slotsList.querySelectorAll('.btn').forEach(btn => btn.addEventListener('click', handleBookingClick));
       }
 
       function renderTrainers() {
           el.trainersGrid.innerHTML = Object.values(appState.trainers).map(trainer => `
-            <div class="trainer-card">
-                <div class="trainer-card__avatar"><img src="${trainer.avatar_url}" alt="${trainer.name}"></div>
-                <div class="trainer-card__name">${trainer.name}</div>
-                <div class="trainer-card__speciality">${trainer.speciality}</div>
-                <a href="https://t.me/${trainer.tg_username}" target="_blank" class="trainer-card__contact-btn">Написать</a>
-            </div>
+            <div class="trainer-card"><div class="trainer-card__avatar"><img src="${trainer.avatar_url}" alt="${trainer.name}"></div><div class="trainer-card__name">${trainer.name}</div><div class="trainer-card__speciality">${trainer.speciality}</div><a href="https://t.me/${trainer.tg_username}" target="_blank" class="trainer-card__contact-btn">Написать</a></div>
           `).join('');
       }
       
       function renderProfile() {
           if (!appState.user) {
-              el.profileSection.innerHTML = `
-                <p>Чтобы записывать детей, пожалуйста, зарегистрируйтесь.</p>
-                <form id="registration-form">
-                    <div class="form-group"><label for="parent-name">Ваше ФИО</label><input type="text" id="parent-name" required></div>
-                    <div class="form-group"><label for="parent-phone">Ваш телефон</label><input type="tel" id="parent-phone" required></div>
-                    <hr style="border-color: var(--border-color); margin: 20px 0;">
-                    <div class="form-group"><label for="child-name">Имя ребенка</label><input type="text" id="child-name" required></div>
-                    <div class="form-group"><label for="child-dob">Дата рождения ребенка</label><input type="date" id="child-dob" required></div>
-                    <button type="submit" class="submit-btn">Зарегистрироваться</button>
-                </form>
-              `;
+              el.profileSection.innerHTML = `<p>Чтобы записывать детей, пожалуйста, зарегистрируйтесь.</p><form id="registration-form"><div class="form-group"><label for="parent-name">Ваше ФИО</label><input type="text" id="parent-name" required></div><div class="form-group"><label for="parent-phone">Ваш телефон</label><input type="tel" id="parent-phone" required></div><hr style="border-color: var(--border-color); margin: 20px 0;"><div class="form-group"><label for="child-name">Имя ребенка</label><input type="text" id="child-name" required></div><div class="form-group"><label for="child-dob">Дата рождения ребенка</label><input type="date" id="child-dob" required></div><button type="submit" class="submit-btn">Зарегистрироваться</button></form>`;
               document.getElementById('registration-form').addEventListener('submit', handleRegistrationSubmit);
           } else {
               const hasChildren = appState.children.length > 0;
-              el.profileSection.innerHTML = `
-                <div class="child-switcher">${appState.children.map(child => `<div class="child-tab ${child.child_id === appState.selectedChildId ? 'active' : ''}" data-child-id="${child.child_id}">${child.child_name}</div>`).join('')}</div>
-                ${hasChildren ? `<div class="balance-info">Осталось занятий: <span id="balance-display">${appState.balances[appState.selectedChildId]?.remaining || 0}</span></div>` : '<p>У вас пока не добавлено ни одного ребенка.</p>'}
-              `;
-              el.profileSection.querySelectorAll('.child-tab').forEach(tab => {
-                  tab.addEventListener('click', () => handleChildSelect(tab.dataset.childId));
-              });
+              el.profileSection.innerHTML = `<div class="child-switcher">${appState.children.map(child => `<div class="child-tab ${child.child_id === appState.selectedChildId ? 'active' : ''}" data-child-id="${child.child_id}">${child.child_name}</div>`).join('')}</div>
+                ${hasChildren ? `<div class="balance-info">Осталось занятий: <span id="balance-display">${appState.balances[appState.selectedChildId]?.remaining || 0}</span></div>` : '<p>У вас пока не добавлено ни одного ребенка.</p>'}`;
+              el.profileSection.querySelectorAll('.child-tab').forEach(tab => tab.addEventListener('click', () => handleChildSelect(tab.dataset.childId)));
           }
       }
 
       // --- EVENT HANDLERS ---
       async function handleRegistrationSubmit(event) {
           event.preventDefault();
-          const btn = event.target.querySelector('button');
-          btn.disabled = true; btn.textContent = 'Регистрация...';
+          const btn = event.target.querySelector('button'); btn.disabled = true; btn.textContent = 'Регистрация...';
           try {
               const response = await apiCall('register_parent', { 
                   parent: { full_name: document.getElementById('parent-name').value, phone: document.getElementById('parent-phone').value },
                   children: [{ child_name: document.getElementById('child-name').value, birthdate: document.getElementById('child-dob').value }]
               });
-              appState.user = response.parent;
-              appState.children = response.children;
+              appState.user = response.parent; appState.children = response.children;
               appState.balances = response.balances.reduce((acc, b) => ({...acc, [b.child_id]: b}), {});
               appState.selectedChildId = response.children[0]?.child_id;
-              
-              renderUserInfo();
-              renderProfile();
+              renderUserInfo(); renderProfile();
               tg.showAlert('Вы успешно зарегистрированы!');
-          } catch(e) {
-              tg.showAlert(`Ошибка регистрации: ${e.message}`);
-          } finally {
-              btn.disabled = false; btn.textContent = 'Зарегистрироваться';
-          }
+          } catch(e) { tg.showAlert(`Ошибка регистрации: ${e.message}`);
+          } finally { btn.disabled = false; btn.textContent = 'Зарегистрироваться'; }
       }
       
-      function handleChildSelect(childId) {
-          appState.selectedChildId = childId;
-          renderProfile();
-      }
+      function handleChildSelect(childId) { appState.selectedChildId = childId; renderProfile(); }
 
       async function handleBookingClick(event) {
-          const btn = event.target;
-          const slotId = btn.closest('.slot-card').dataset.slotId;
-
+          const btn = event.target; const slotId = btn.closest('.slot-card').dataset.slotId;
           if (!appState.selectedChildId) {
               tg.showAlert('Пожалуйста, выберите ребенка для записи во вкладке "Мой профиль".');
-              document.querySelector('.tab[data-tab="profile"]').click();
-              return;
+              document.querySelector('.tab[data-tab="profile"]').click(); return;
           }
-          
           btn.disabled = true; btn.textContent = '...';
-
           try {
               const response = await apiCall('book', { slot_id: slotId, child_id: appState.selectedChildId });
-              
-              const slot = appState.allSlots.find(s => s.slot_id === slotId);
-              if (slot) slot.booked++;
-              
+              const slot = appState.allSlots.find(s => s.slot_id === slotId); if (slot) slot.booked++;
               appState.balances[appState.selectedChildId] = response.updatedBalance;
-              
-              renderSlotsForDate(appState.selectedDate);
-              renderProfile();
+              renderSlotsForDate(appState.selectedDate); renderProfile();
               tg.showPopup({ title: 'Успех!', message: 'Ребенок успешно записан!'});
           } catch (e) {
               tg.showAlert(`Ошибка записи: ${e.message}`);
@@ -372,75 +301,56 @@
           }
       }
       
-      function handleDayClick(dateKey) {
-          appState.selectedDate = dateKey;
-          // We only need to re-render the calendar which will also trigger re-render of slots
-          renderCalendar();
-      }
-
+      function handleDayClick(dateKey) { appState.selectedDate = dateKey; renderCalendar(); }
       async function changeWeek(direction) {
         appState.currentWeekStart.setDate(appState.currentWeekStart.getDate() + (7 * direction));
         el.slotsList.innerHTML = '<p>Загрузка расписания...</p>';
-        await fetchSlotsForCurrentWeek();
-        // Reset selected date to the first day of the new week
         appState.selectedDate = null;
-        renderCalendar();
+        await fetchSlotsForCurrentWeek(); renderCalendar();
       }
       
       async function fetchSlotsForCurrentWeek() {
-          const from = appState.currentWeekStart;
-          const to = new Date(from);
-          to.setDate(from.getDate() + 6);
-          try {
-              appState.allSlots = await apiCall('slots', { from: toYYYYMMDD(from), to: toYYYYMMDD(to) });
-          } catch (e) {
-              appState.allSlots = [];
-              el.slotsList.innerHTML = `<p style="color: var(--accent-red)">Не удалось загрузить расписание.</p>`;
-          }
+          const from = appState.currentWeekStart; const to = new Date(from); to.setDate(from.getDate() + 6);
+          try { appState.allSlots = await apiCall('slots', { from: toYYYYMMDD(from), to: toYYYYMMDD(to) });
+          } catch (e) { appState.allSlots = []; el.slotsList.innerHTML = `<p style="color: var(--accent-red)">Не удалось загрузить расписание.</p>`; }
       }
 
       // --- INITIALIZATION ---
       async function init() {
+        // Init visual parts that don't depend on data
+        el.loader.style.display = 'block'; el.mainContent.style.display = 'none';
+        const today = new Date();
+        appState.currentWeekStart = getStartOfWeek(today);
+        appState.selectedDate = toYYYYMMDD(today);
+        renderCalendar(); // Render empty calendar grid first
+        document.querySelectorAll('.tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab).classList.add('active');
+          });
+        });
+        el.prevWeekBtn.addEventListener('click', () => changeWeek(-1));
+        el.nextWeekBtn.addEventListener('click', () => changeWeek(1));
+
         try {
           const bootstrapData = await apiCall('bootstrap');
           appState.user = bootstrapData.parent;
           appState.children = bootstrapData.children || [];
           appState.balances = (bootstrapData.balances || []).reduce((acc, b) => ({...acc, [b.child_id]: b}), {});
           appState.trainers = (bootstrapData.trainers || []).reduce((acc, t) => ({...acc, [t.trainer_id]: t}), {});
-          if (appState.children.length > 0) {
-              appState.selectedChildId = appState.children[0].child_id;
-          }
-
-          renderUserInfo();
-          renderTrainers();
-          renderProfile();
-
-          // Init calendar - visual part first
-          const today = new Date();
-          appState.currentWeekStart = getStartOfWeek(today);
-          appState.selectedDate = toYYYYMMDD(today);
-          renderCalendar(); // Render empty calendar grid
+          if (appState.children.length > 0) appState.selectedChildId = appState.children[0].child_id;
+          
+          renderUserInfo(); renderTrainers(); renderProfile();
+          
+          await fetchSlotsForCurrentWeek();
+          renderCalendar();
           
           el.loader.style.display = 'none';
           el.mainContent.style.display = 'block';
 
-          // Then fetch data for it
-          await fetchSlotsForCurrentWeek();
-          renderCalendar(); // Re-render calendar with slots data
-
-          // General event listeners
-          document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-              document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
-              tab.classList.add('active');
-              document.getElementById(tab.dataset.tab).classList.add('active');
-            });
-          });
-          el.prevWeekBtn.addEventListener('click', () => changeWeek(-1));
-          el.nextWeekBtn.addEventListener('click', () => changeWeek(1));
-
         } catch (error) {
-          el.loader.textContent = 'Не удалось загрузить данные. Пожалуйста, перезапустите приложение.';
+          el.loader.textContent = 'Не удалось загрузить основные данные. Пожалуйста, перезапустите приложение.';
         }
       }
 
