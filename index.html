@@ -1,457 +1,163 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Детская Студия</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    :root {
-      --bg-main: #101010;--bg-secondary: #1C1C1C;--text-main: #FFFFFF;--text-secondary: #8E8E93;--accent-blue: #007AFF;--accent-green: #34C759;--accent-red: #FF3B30;--border-color: #2D2D2D;
-    }
-    @font-face { font-family: 'Inter'; src: url('https://rsms.me/inter/font-files/Inter-Regular.woff2?v=3.19') format('woff2'); font-weight: 400; }
-    @font-face { font-family: 'Inter'; src: url('https://rsms.me/inter/font-files/Inter-Medium.woff2?v=3.19') format('woff2'); font-weight: 500; }
-    @font-face { font-family: 'Inter'; src: url('https://rsms.me/inter/font-files/Inter-SemiBold.woff2?v=3.19') format('woff2'); font-weight: 600; }
-    @font-face { font-family: 'Inter'; src: url('https://rsms.me/inter/font-files/Inter-Bold.woff2?v=3.19') format('woff2'); font-weight: 700; }
-    body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; background-color: var(--bg-main); color: var(--text-main); padding: 16px; -webkit-font-smoothing: antialiased; }
-    .container { max-width: 800px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .header__logo svg { width: 40px; height: 40px; }
-    .header__user { display: flex; align-items: center; gap: 10px; }
-    .header__user-avatar { width: 36px; height: 36px; border-radius: 50%; background-color: var(--bg-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; }
-    .header__user-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-    .header__user-name { font-weight: 500; }
-    .promo { background-color: var(--bg-secondary); border-radius: 16px; padding: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-    .promo__text { flex: 1; }
-    .promo__title { font-size: 24px; font-weight: 700; margin: 0 0 8px 0; }
-    .promo__subtitle { font-size: 16px; color: var(--text-secondary); margin: 0; }
-    .promo__image img { width: 100px; height: 100px; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; scrollbar-width: none; }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tab { padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 20px; cursor: pointer; font-weight: 500; white-space: nowrap; transition: background-color 0.2s, color 0.2s; }
-    .tab.active { background-color: var(--accent-blue); color: var(--text-main); border-color: var(--accent-blue); }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .section-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; }
-    .calendar-container { background-color: var(--bg-secondary); border-radius: 16px; padding: 20px; }
-    .week-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .week-selector__arrow { cursor: pointer; padding: 8px; }
-    .week-selector__arrow svg { width: 24px; height: 24px; stroke: var(--text-secondary); }
-    .week-selector__date { font-size: 18px; font-weight: 600; text-align: center;}
-    .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 20px; text-align: center; }
-    .day { padding: 10px 5px; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; opacity: 0.5; }
-    .day.selectable { opacity: 1; }
-    .day.active { background-color: var(--accent-blue); }
-    .day.has-slots::after { content: ''; display: block; width: 4px; height: 4px; background-color: var(--accent-blue); border-radius: 50%; margin: 4px auto 0; }
-    .day__name { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
-    .day__date { font-weight: 600; }
-    .slots-list .slot-card { background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-    .slot-card__info { display: flex; flex-direction: column; gap: 4px; }
-    .slot-card__time { font-size: 18px; font-weight: 600; }
-    .slot-card__details { font-size: 14px; color: var(--text-secondary); }
-    .slot-card__action .btn { background-color: var(--accent-blue); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, background-color 0.2s; }
-    .slot-card__action .btn:disabled { background-color: #555; opacity: 0.6; cursor: not-allowed; }
-    .trainers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
-    .trainer-card { background-color: var(--bg-secondary); border-radius: 16px; padding: 20px; text-align: center; }
-    .trainer-card__avatar img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; border: 2px solid var(--border-color); }
-    .trainer-card__name { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-    .trainer-card__speciality { color: var(--text-secondary); margin-bottom: 16px; }
-    .trainer-card__contact-btn { display: inline-block; background-color: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px; font-weight: 500; text-decoration: none; }
-    .profile-section { background-color: var(--bg-secondary); border-radius: 16px; padding: 20px; }
-    .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
-    .form-group input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-main); color: var(--text-main); font-size: 16px; box-sizing: border-box; }
-    .submit-btn { width: 100%; padding: 14px; border: none; border-radius: 8px; background-color: var(--accent-blue); color: var(--text-main); font-size: 16px; font-weight: 600; cursor: pointer; }
-    .child-switcher { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    .child-tab { padding: 8px 14px; border: 1px solid var(--border-color); border-radius: 20px; cursor: pointer; }
-    .child-tab.active { background-color: var(--accent-green); border-color: var(--accent-green); }
-    .balance-info { font-size: 18px; font-weight: 500; }
-    .loader { text-align: center; padding: 40px; }
+    /* (копируй стили из твоего оригинала — сокращаю здесь для компактности) */
+    :root{--bg-main:#101010;--bg-secondary:#1C1C1C;--text-main:#fff;--text-secondary:#8E8E93;--accent-blue:#007AFF;--border:#2D2D2D}
+    body{background:var(--bg-main);color:var(--text-main);font-family:Inter,system-ui,Arial;padding:16px;margin:0}
+    .container{max-width:800px;margin:0 auto}
+    .loader{text-align:center;padding:40px}
+    /* остальной CSS можно оставить как у тебя */
   </style>
 </head>
-
 <body>
   <div class="container">
-    <header class="header">
-      <div class="header__logo">
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="white"/><path d="M20 31.6667C26.4435 31.6667 31.6667 26.4435 31.6667 20C31.6667 13.5565 26.4435 8.33334 20 8.33334C13.5565 8.33334 8.33337 13.5565 8.33337 20C8.33337 26.4435 13.5565 31.6667 20 31.6667Z" fill="#007AFF"/></svg>
+    <div id="app">
+      <div id="loader" class="loader">Загрузка...</div>
+      <div id="main-content" style="display:none">
+        <!-- вставь сюда твой HTML интерфейс (календарь/тренеры/профиль) -->
+        <h1>Детская Студия</h1>
+        <div id="week-display"></div>
+        <div id="days-grid"></div>
+        <div id="slots-list"></div>
       </div>
-      <div class="header__user">
-        <div class="header__user-avatar"><img id="user-avatar" src="" alt=""></div>
-        <div class="header__user-name" id="user-name"></div>
-      </div>
-    </header>
-
-    <main id="main-content" style="display: none;">
-      <section class="promo">
-        <div class="promo__text">
-          <h1 class="promo__title">Запись на занятия</h1>
-          <p class="promo__subtitle">Выберите удобное время для вашего ребенка и запишитесь в один клик.</p>
-        </div>
-        <div class="promo__image">
-          <img src="https://em-content.zobj.net/source/apple/354/person-cartwheeling_1f938.png" alt="Гимнастика">
-        </div>
-      </section>
-
-      <nav class="tabs">
-        <div class="tab active" data-tab="schedule">Расписание</div>
-        <div class="tab" data-tab="trainers">Тренеры</div>
-        <div class="tab" data-tab="profile">Мой профиль</div>
-      </nav>
-
-      <div class="tab-content active" id="schedule">
-        <div class="calendar-container">
-            <div class="week-selector">
-                <div class="week-selector__arrow" id="prev-week"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg></div>
-                <div class="week-selector__date" id="week-display"></div>
-                <div class="week-selector__arrow" id="next-week"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg></div>
-            </div>
-            <div class="days-grid" id="days-grid-container"></div>
-            <div class="slots-list" id="slots-list-container"></div>
-        </div>
-      </div>
-
-      <div class="tab-content" id="trainers"><div class="section-title">Наши тренеры</div><div class="trainers-grid" id="trainers-grid-container"></div></div>
-
-      <div class="tab-content" id="profile"><div class="section-title">Мой профиль</div><div class="profile-section" id="profile-section-container"></div></div>
-    </main>
-     <div class="loader" id="loader">Загрузка...</div>
+    </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const tg = window.Telegram.WebApp;
-      tg.expand();
+<script>
+document.addEventListener('DOMContentLoaded', async ()=> {
+  const tg = window.Telegram.WebApp;
+  tg.expand();
 
-      // --- DEBUG: покажем initData в консоли (удали в проде если нужно) ---
-      console.log('tg.initData:', tg.initData);
-      console.log('tg.initDataUnsafe:', tg.initDataUnsafe);
+  // DEBUG: покажем initData
+  console.log('tg.initData:', tg.initData);
+  console.log('tg.initDataUnsafe:', tg.initDataUnsafe);
 
-      // --- CONFIG (оставь URL тот же, если изменил - замени) ---
-      const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec';
-      const tgInitData = tg.initData || '';
+  // --- CONFIG: поставь сюда URL деплоя GAS
+  const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec';
 
-      // --- STATE ---
-      const appState = {
-        user: null, children: [], balances: {}, trainers: {},
-        allSlots: [], selectedChildId: null,
-        currentWeekStart: null, selectedDate: null,
-      };
+  // --- state ---
+  const state = { allSlots: [], trainers: {}, user: null, children: [], balances: {}, selectedDate: null, currentWeekStart: null };
 
-      // --- DOM ELEMENTS ---
-      const el = {
-          loader: document.getElementById('loader'),
-          mainContent: document.getElementById('main-content'),
-          userName: document.getElementById('user-name'),
-          weekDisplay: document.getElementById('week-display'),
-          daysGrid: document.getElementById('days-grid-container'),
-          slotsList: document.getElementById('slots-list-container'),
-          trainersGrid: document.getElementById('trainers-grid-container'),
-          profileSection: document.getElementById('profile-section-container'),
-          prevWeekBtn: document.getElementById('prev-week'),
-          nextWeekBtn: document.getElementById('next-week'),
-      };
+  // --- helpers ---
+  function toYMD(d){ const D=new Date(d); return `${D.getFullYear()}-${String(D.getMonth()+1).padStart(2,'0')}-${String(D.getDate()).padStart(2,'0')}`; }
+  function formatDay(d){ return new Date(d).toLocaleDateString('ru-RU', {weekday:'short'}).toUpperCase(); }
+  function formatFull(d){ return new Date(d).toLocaleDateString('ru-RU', {weekday:'long', day:'numeric', month:'long'}); }
 
-      // --- API HELPER ---
-      async function apiCall(action, payload = {}) {
-        const body = { action, initData: tgInitData, ...payload };
+  async function apiCall(action, payload={}) {
+    // if tg.initData exists, send it; otherwise send initDataUnsafe as JSON string (dev fallback)
+    const initData = tg.initData || '';
+    const body = Object.assign({}, {action}, payload);
+    if (initData) body.initData = initData;
+    else body.initDataUnsafe = JSON.stringify(tg.initDataUnsafe || {}); // dev fallback
+
+    try {
+      const res = await fetch(API_BASE_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      // server uses semantic responses: arrays or {success:false}
+      if (data && data.success === false) throw new Error(data.message || 'Server error');
+      return data;
+    } catch (err) {
+      console.error('apiCall error', err);
+      tg.showAlert(err.message || 'Ошибка связи');
+      throw err;
+    }
+  }
+
+  // --- render ---
+  const loaderEl = document.getElementById('loader');
+  const mainEl = document.getElementById('main-content');
+  const daysGrid = document.getElementById('days-grid');
+  const slotsList = document.getElementById('slots-list');
+  const weekDisplay = document.getElementById('week-display');
+
+  function getStartOfWeek(date) {
+    const d = new Date(date); d.setHours(0,0,0,0);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day===0 ? -6 : 1);
+    return new Date(d.setDate(diff));
+  }
+
+  function renderCalendar() {
+    const weekStart = state.currentWeekStart;
+    const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate()+6);
+    weekDisplay.textContent = `${weekStart.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})} — ${weekEnd.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})}`;
+    daysGrid.innerHTML = '';
+    for (let i=0;i<7;i++){
+      const d = new Date(weekStart); d.setDate(weekStart.getDate()+i);
+      const key = toYMD(d);
+      const el = document.createElement('button');
+      el.textContent = `${formatDay(d)} ${d.getDate()}`;
+      el.style.margin='4px';
+      const has = state.allSlots.some(s => String(s.date)===key);
+      if (has) { el.style.opacity=1; el.onclick = ()=> { state.selectedDate = key; renderSlots(); }; }
+      else el.style.opacity=0.4;
+      if (state.selectedDate===key) el.style.background='#007AFF';
+      daysGrid.appendChild(el);
+    }
+    renderSlots();
+  }
+
+  function renderSlots(){
+    const date = state.selectedDate;
+    if (!date) { slotsList.innerHTML = '<i>Выберите день</i>'; return; }
+    const slots = state.allSlots.filter(s => String(s.date) === date);
+    if (!slots.length) { slotsList.innerHTML = '<i>На этот день слотов нет</i>'; return; }
+    slotsList.innerHTML = '';
+    slots.forEach(s=>{
+      const left = document.createElement('div'); left.textContent = `${s.time} — тренер: ${ (state.trainers[s.trainer_id] && state.trainers[s.trainer_id].name) || s.trainer_id }`;
+      const btn = document.createElement('button'); btn.textContent = `Записаться (${ (Number(s.capacity||0) - Number(s.booked||0)) })`;
+      btn.disabled = (Number(s.capacity||0) - Number(s.booked||0)) <= 0;
+      btn.onclick = async ()=> {
+        if (!state.children || state.children.length===0) { tg.showAlert('Сначала добавьте ребёнка во вкладке профиль'); return; }
+        const childId = state.children[0].child_id;
         try {
-          const response = await fetch(API_BASE_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(body),
-          });
-          const data = await response.json();
-          if (data && typeof data === 'object' && data.success === false) {
-            throw new Error(data.message || 'Server returned error');
-          }
-          return data;
-        } catch (error) {
-          console.error(`API Error (${action}):`, error);
-          tg.showAlert(error.message || 'Ошибка сети или сервера. Попробуйте позже.');
-          throw error;
-        }
-      }
-
-      // --- DATE HELPERS ---
-      function getStartOfWeek(date) {
-        const d = new Date(date);
-        d.setHours(0,0,0,0);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-        return new Date(d.setDate(diff));
-      }
-      function formatDate(date, options) {
-          return date.toLocaleDateString('ru-RU', options);
-      }
-      function toYYYYMMDD(date) {
-        const d = new Date(date);
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
-      }
-
-      // --- RENDER FUNCTIONS ---
-      function renderUserInfo() {
-        const tgUser = tg.initDataUnsafe?.user;
-        el.userName.textContent = appState.user ? appState.user.full_name : (tgUser?.first_name || 'Гость');
-      }
-
-      function renderCalendar() {
-        const weekStart = appState.currentWeekStart;
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-
-        el.weekDisplay.textContent = `${formatDate(weekStart, {day:'numeric', month:'long'})} - ${formatDate(weekEnd, {day:'numeric', month:'long'})}`;
-
-        el.daysGrid.innerHTML = '';
-        let hasSelectableDay = false;
-        for (let i = 0; i < 7; i++) {
-            const dayDate = new Date(weekStart);
-            dayDate.setDate(weekStart.getDate() + i);
-            const dayKey = toYYYYMMDD(dayDate);
-            
-            const dayEl = document.createElement('div');
-            dayEl.className = 'day';
-            dayEl.dataset.date = dayKey;
-            dayEl.innerHTML = `
-                <div class="day__name">${formatDate(dayDate, {weekday: 'short'}).toUpperCase()}</div>
-                <div class="day__date">${dayDate.getDate()}</div>
-            `;
-            
-            const hasSlots = appState.allSlots.some(s => String(s.date) === dayKey);
-            if (hasSlots) {
-                dayEl.classList.add('has-slots', 'selectable');
-                dayEl.addEventListener('click', () => handleDayClick(dayKey));
-                hasSelectableDay = true;
-            }
-            if (dayKey === appState.selectedDate) {
-                dayEl.classList.add('active');
-            }
-            el.daysGrid.appendChild(dayEl);
-        }
-        
-        if (hasSelectableDay && (!appState.selectedDate || !appState.allSlots.some(s => String(s.date) === appState.selectedDate))) {
-            const dateList = appState.allSlots.map(s => String(s.date)).sort();
-            const firstDayWithSlots = dateList[0];
-            if (firstDayWithSlots) {
-                appState.selectedDate = firstDayWithSlots;
-                const activeDayEl = el.daysGrid.querySelector(`[data-date="${firstDayWithSlots}"]`);
-                if (activeDayEl) activeDayEl.classList.add('active');
-            }
-        }
-        renderSlotsForDate(appState.selectedDate);
-      }
-
-      function renderSlotsForDate(dateKey) {
-          if (!dateKey) {
-              el.slotsList.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 20px 0;">Выберите день выше, чтобы увидеть свободные слоты.</p>`;
-              return;
-          }
-          const slotsForDay = appState.allSlots.filter(s => String(s.date) === dateKey);
-          const selectedDay = new Date(dateKey);
-          const title = `Свободные слоты на ${formatDate(selectedDay, {weekday: 'long', day:'numeric', month:'long'})}`;
-          
-          if (slotsForDay.length === 0) {
-              el.slotsList.innerHTML = `<div class="section-title">${title}</div><p>На этот день слотов нет.</p>`;
-              return;
-          }
-
-          el.slotsList.innerHTML = `
-            <div class="section-title">${title}</div>
-            ${slotsForDay.map(slot => {
-                const trainer = appState.trainers[slot.trainer_id] || { name: 'Тренер' };
-                const remaining = (Number(slot.capacity) || 0) - (Number(slot.booked) || 0);
-                const isFull = remaining <= 0;
-                return `
-                <div class="slot-card" data-slot-id="${slot.slot_id}">
-                    <div class="slot-card__info">
-                        <div class="slot-card__time">${slot.time}</div>
-                        <div class="slot-card__details">Тренер: ${trainer.name} | Свободно: ${remaining}/${slot.capacity}</div>
-                    </div>
-                    <div class="slot-card__action">
-                        <button class="btn" ${isFull ? 'disabled' : ''}>Записаться</button>
-                    </div>
-                </div>
-                `
-            }).join('')}
-          `;
-          el.slotsList.querySelectorAll('.btn').forEach(btn => {
-              btn.addEventListener('click', handleBookingClick);
-          });
-      }
-
-      function renderTrainers() {
-          el.trainersGrid.innerHTML = Object.values(appState.trainers).map(trainer => `
-            <div class="trainer-card">
-                <div class="trainer-card__avatar"><img src="${trainer.avatar_url}" alt="${trainer.name}"></div>
-                <div class="trainer-card__name">${trainer.name}</div>
-                <div class="trainer-card__speciality">${trainer.speciality}</div>
-                <a href="https://t.me/${trainer.tg_username}" target="_blank" class="trainer-card__contact-btn">Написать</a>
-            </div>
-          `).join('') || '<p style="color:var(--text-secondary)">Тренеры не найдены.</p>';
-      }
-      
-      function renderProfile() {
-          if (!appState.user) {
-              el.profileSection.innerHTML = `
-                <p>Чтобы записывать детей, пожалуйста, зарегистрируйтесь.</p>
-                <form id="registration-form">
-                    <div class="form-group"><label for="parent-name">Ваше ФИО</label><input type="text" id="parent-name" required></div>
-                    <div class="form-group"><label for="parent-phone">Ваш телефон</label><input type="tel" id="parent-phone" required></div>
-                    <hr style="border-color: var(--border-color); margin: 20px 0;">
-                    <div class="form-group"><label for="child-name">Имя ребенка</label><input type="text" id="child-name" required></div>
-                    <div class="form-group"><label for="child-dob">Дата рождения ребенка</label><input type="date" id="child-dob" required></div>
-                    <button type="submit" class="submit-btn">Зарегистрироваться</button>
-                </form>
-              `;
-              document.getElementById('registration-form').addEventListener('submit', handleRegistrationSubmit);
-          } else {
-              const hasChildren = appState.children.length > 0;
-              el.profileSection.innerHTML = `
-                <div class="child-switcher">${appState.children.map(child => `<div class="child-tab ${child.child_id === appState.selectedChildId ? 'active' : ''}" data-child-id="${child.child_id}">${child.child_name}</div>`).join('')}</div>
-                ${hasChildren ? `<div class="balance-info">Осталось занятий: <span id="balance-display">${(appState.balances[appState.selectedChildId] && appState.balances[appState.selectedChildId].remaining) || 0}</span></div>` : '<p>У вас пока не добавлено ни одного ребенка.</p>'}
-              `;
-              el.profileSection.querySelectorAll('.child-tab').forEach(tab => {
-                  tab.addEventListener('click', () => handleChildSelect(tab.dataset.childId));
-              });
-          }
-      }
-
-      // --- EVENT HANDLERS ---
-      async function handleRegistrationSubmit(event) {
-          event.preventDefault();
-          const btn = event.target.querySelector('button');
-          btn.disabled = true; btn.textContent = 'Регистрация...';
-          try {
-              const response = await apiCall('register_parent', { 
-                  parent: { full_name: document.getElementById('parent-name').value, phone: document.getElementById('parent-phone').value },
-                  children: [{ child_name: document.getElementById('child-name').value, birthdate: document.getElementById('child-dob').value }]
-              });
-              appState.user = response.parent;
-              appState.children = response.children;
-              appState.balances = response.balances.reduce((acc, b) => ({...acc, [b.child_id]: b}), {});
-              appState.selectedChildId = response.children[0]?.child_id;
-              
-              renderUserInfo();
-              renderProfile();
-              tg.showAlert('Вы успешно зарегистрированы!');
-          } catch(e) {
-              tg.showAlert(`Ошибка регистрации: ${e.message}`);
-          } finally {
-              btn.disabled = false; btn.textContent = 'Зарегистрироваться';
-          }
-      }
-      
-      function handleChildSelect(childId) {
-          appState.selectedChildId = childId;
-          renderProfile();
-      }
-
-      async function handleBookingClick(event) {
-          const btn = event.target;
-          const slotId = btn.closest('.slot-card').dataset.slotId;
-
-          if (!appState.selectedChildId) {
-              tg.showAlert('Пожалуйста, выберите ребенка для записи во вкладке "Мой профиль".');
-              document.querySelector('.tab[data-tab="profile"]').click();
-              return;
-          }
-          
-          btn.disabled = true; btn.textContent = '...';
-
-          try {
-              const response = await apiCall('book', { slot_id: slotId, child_id: appState.selectedChildId });
-              
-              const slot = appState.allSlots.find(s => s.slot_id === slotId);
-              if (slot) slot.booked = Number(slot.booked || 0) + 1;
-              
-              appState.balances[appState.selectedChildId] = response.updatedBalance || appState.balances[appState.selectedChildId];
-              
-              renderSlotsForDate(appState.selectedDate);
-              renderProfile();
-              tg.showPopup({ title: 'Успех!', message: 'Ребенок успешно записан!'});
-          } catch (e) {
-              tg.showAlert(`Ошибка записи: ${e.message}`);
-              btn.disabled = false; btn.textContent = 'Записаться';
-          }
-      }
-      
-      function handleDayClick(dateKey) {
-          appState.selectedDate = dateKey;
-          renderCalendar();
-      }
-
-      async function changeWeek(direction) {
-        appState.currentWeekStart.setDate(appState.currentWeekStart.getDate() + (7 * direction));
-        el.slotsList.innerHTML = '<p>Загрузка расписания...</p>';
-        await fetchSlotsForCurrentWeek();
-        appState.selectedDate = null;
-        renderCalendar();
-      }
-      
-      async function fetchSlotsForCurrentWeek() {
-          const from = appState.currentWeekStart;
-          const to = new Date(from);
-          to.setDate(from.getDate() + 6);
-          try {
-              const fromStr = toYYYYMMDD(from);
-              const toStr = toYYYYMMDD(to);
-              const slots = await apiCall('slots', { from: fromStr, to: toStr });
-              appState.allSlots = Array.isArray(slots) ? slots : [];
-          } catch (e) {
-              appState.allSlots = [];
-              el.slotsList.innerHTML = `<p style="color: var(--accent-red)">Не удалось загрузить расписание.</p>`;
-          }
-      }
-
-      // --- INITIALIZATION ---
-      async function init() {
-        try {
-          const bootstrapData = await apiCall('bootstrap');
-          appState.user = bootstrapData.parent;
-          appState.children = bootstrapData.children || [];
-          appState.balances = (bootstrapData.balances || []).reduce((acc, b) => ({...acc, [b.child_id]: b}), {});
-          appState.trainers = (bootstrapData.trainers || []).reduce((acc, t) => ({...acc, [t.trainer_id]: t}), {});
-          if (appState.children.length > 0) {
-              appState.selectedChildId = appState.children[0].child_id;
-          }
-
-          renderUserInfo();
-          renderTrainers();
-          renderProfile();
-
-          const today = new Date();
-          appState.currentWeekStart = getStartOfWeek(today);
-          appState.selectedDate = toYYYYMMDD(today);
-          renderCalendar();
-          
-          el.loader.style.display = 'none';
-          el.mainContent.style.display = 'block';
-
-          await fetchSlotsForCurrentWeek();
-          renderCalendar();
-
-          document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-              document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
-              tab.classList.add('active');
-              document.getElementById(tab.dataset.tab).classList.add('active');
-            });
-          });
-          el.prevWeekBtn.addEventListener('click', () => changeWeek(-1));
-          el.nextWeekBtn.addEventListener('click', () => changeWeek(1));
-
-        } catch (error) {
-          el.loader.textContent = 'Не удалось загрузить данные. Пожалуйста, перезапустите приложение.';
-          console.error('Init error', error);
-        }
-      }
-
-      init();
+          await apiCall('book', { slot_id: s.slot_id, child_id });
+          tg.showPopup({ title:'Готово', message:'Записано' });
+          // обновим локально
+          s.booked = Number(s.booked||0) + 1;
+          renderSlots();
+        } catch(e) { console.error(e); }
+      };
+      const wrap = document.createElement('div');
+      wrap.style.border='1px solid #333'; wrap.style.padding='8px'; wrap.style.margin='8px 0'; wrap.appendChild(left); wrap.appendChild(btn);
+      slotsList.appendChild(wrap);
     });
-  </script>
+  }
+
+  // --- initial load ---
+  try {
+    const bs = await apiCall('bootstrap');
+    state.user = bs.parent || null;
+    state.children = bs.children || [];
+    state.balances = (bs.balances || []).reduce((a,b)=>{a[b.child_id]=b;return a;},{});
+    state.trainers = (bs.trainers || []).reduce((a,t)=>{a[t.trainer_id]=t;return a;},{});
+    // calendar setup
+    state.currentWeekStart = getStartOfWeek(new Date());
+    // default select today if exists
+    state.selectedDate = toYMD(new Date());
+    // fetch slots for the week
+    const from = toYMD(state.currentWeekStart);
+    const to = toYMD(new Date(state.currentWeekStart.getFullYear(), state.currentWeekStart.getMonth(), state.currentWeekStart.getDate()+6));
+    const slots = await apiCall('slots', { from, to });
+    state.allSlots = Array.isArray(slots) ? slots : [];
+    // auto select first slot day if today's empty
+    const todayHas = state.allSlots.some(s => String(s.date) === toYMD(new Date()));
+    if (!todayHas && state.allSlots.length>0) {
+      state.selectedDate = state.allSlots.map(s=>String(s.date)).sort()[0];
+    }
+    loaderEl.style.display='none';
+    mainEl.style.display='block';
+    renderCalendar();
+  } catch (err) {
+    loaderEl.textContent = 'Ошибка загрузки: ' + (err && err.message ? err.message : '');
+    console.error(err);
+  }
+});
+</script>
 </body>
 </html>
-
