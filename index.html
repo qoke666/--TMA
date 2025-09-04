@@ -155,7 +155,6 @@
         try {
           const response = await fetch(API_BASE_URL, {
             method: 'POST',
-            // Using text/plain is a common workaround for Google Apps Script's CORS behavior.
             headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
             body: JSON.stringify(body),
           });
@@ -164,11 +163,11 @@
               throw new Error(`HTTP error ${response.status}: ${errorText}`);
           }
           const data = await response.json();
-          console.log(`API Response for ${action}:`, data); // DEBUG: Log API response
+          console.log(`API Response for ${action}:`, data);
           return data;
         } catch (error) {
           console.error(`API Error (${action}):`, error);
-          tg.showAlert(`Ошибка сети или сервера. Попробуйте позже.`);
+          tg.showAlert(`Ошибка сети или сервера: ${error.message}. Проверьте консоль для деталей.`);
           throw error;
         }
       }
@@ -178,7 +177,7 @@
         const d = new Date(date);
         d.setHours(0,0,0,0);
         const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
         return new Date(d.setDate(diff));
       }
       function formatDate(date, options) {
@@ -216,7 +215,10 @@
                 <div class="day__date">${dayDate.getDate()}</div>
             `;
             
-            const hasSlots = appState.allSlots.some(s => s.date.startsWith(dayKey));
+            const hasSlots = appState.allSlots.some(s => {
+              const slotDateKey = typeof s.date === 'string' ? s.date.split('T')[0] : toYYYYMMDD(new Date(s.date));
+              return slotDateKey === dayKey;
+            });
             if (hasSlots) {
                 dayEl.classList.add('has-slots', 'selectable');
                 dayEl.addEventListener('click', () => handleDayClick(dayKey));
@@ -228,12 +230,18 @@
             el.daysGrid.appendChild(dayEl);
         }
         
-        // If no date is selected or selected date has no slots, auto-select first available day
-        if (hasSelectableDay && (!appState.selectedDate || !appState.allSlots.some(s => s.date.startsWith(appState.selectedDate)))) {
-            const firstDayWithSlots = toYYYYMMDD(new Date(Math.min(...appState.allSlots.map(s => new Date(s.date)))));
-            if (firstDayWithSlots) {
-                appState.selectedDate = firstDayWithSlots;
-                const activeDayEl = el.daysGrid.querySelector(`[data-date="${firstDayWithSlots}"]`);
+        if (hasSelectableDay && (!appState.selectedDate || !appState.allSlots.some(s => {
+          const slotDateKey = typeof s.date === 'string' ? s.date.split('T')[0] : toYYYYMMDD(new Date(s.date));
+          return slotDateKey === appState.selectedDate;
+        }))) {
+            const firstDayWithSlots = appState.allSlots.reduce((min, s) => {
+              const slotDate = new Date(s.date);
+              return slotDate < min ? slotDate : min;
+            }, new Date(Infinity));
+            const firstDayKey = toYYYYMMDD(firstDayWithSlots);
+            if (firstDayKey) {
+                appState.selectedDate = firstDayKey;
+                const activeDayEl = el.daysGrid.querySelector(`[data-date="${firstDayKey}"]`);
                 if (activeDayEl) activeDayEl.classList.add('active');
             }
         }
@@ -245,7 +253,10 @@
               el.slotsList.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 20px 0;">Выберите день выше, чтобы увидеть свободные слоты.</p>`;
               return;
           }
-          const slotsForDay = appState.allSlots.filter(s => s.date.startsWith(dateKey));
+          const slotsForDay = appState.allSlots.filter(s => {
+            const slotDateKey = typeof s.date === 'string' ? s.date.split('T')[0] : toYYYYMMDD(new Date(s.date));
+            return slotDateKey === dateKey;
+          });
           const selectedDay = new Date(dateKey);
           const title = `Свободные слоты на ${formatDate(selectedDay, {weekday: 'long', day:'numeric', month:'long'})}`;
           
@@ -258,7 +269,7 @@
             <div class="section-title">${title}</div>
             ${slotsForDay.map(slot => {
                 const trainer = appState.trainers[slot.trainer_id] || { name: 'Тренер' };
-                const remaining = slot.capacity - slot.booked;
+                const remaining = slot.capacity - (slot.booked || 0);
                 const isFull = remaining <= 0;
                 return `
                 <div class="slot-card" data-slot-id="${slot.slot_id}">
@@ -279,10 +290,10 @@
       }
 
       function renderTrainers() {
-          console.log('Rendering trainers:', appState.trainers); // DEBUG
+          console.log('Rendering trainers:', appState.trainers);
           el.trainersGrid.innerHTML = Object.values(appState.trainers).map(trainer => `
             <div class="trainer-card">
-                <div class="trainer-card__avatar"><img src="${trainer.avatar_url}" alt="${trainer.name}"></div>
+                <div class="trainer-card__avatar"><img src="${trainer.avatar_url || ''}" alt="${trainer.name}"></div>
                 <div class="trainer-card__name">${trainer.name}</div>
                 <div class="trainer-card__speciality">${trainer.speciality}</div>
                 <a href="https://t.me/${trainer.tg_username}" target="_blank" class="trainer-card__contact-btn">Написать</a>
@@ -291,7 +302,7 @@
       }
       
       function renderProfile() {
-          console.log('Rendering profile:', appState.user, appState.children); // DEBUG
+          console.log('Rendering profile:', appState.user, appState.children);
           if (!appState.user) {
               el.profileSection.innerHTML = `
                 <p>Чтобы записывать детей, пожалуйста, зарегистрируйтесь.</p>
@@ -327,15 +338,19 @@
                   parent: { full_name: document.getElementById('parent-name').value, phone: document.getElementById('parent-phone').value },
                   children: [{ child_name: document.getElementById('child-name').value, birthdate: document.getElementById('child-dob').value }]
               });
+              if (!response.success) {
+                  throw new Error(response.message || 'Неизвестная ошибка регистрации');
+              }
               appState.user = response.parent;
-              appState.children = response.children;
-              appState.balances = response.balances.reduce((acc, b) => ({...acc, [b.child_id]: b}), {});
-              appState.selectedChildId = response.children[0]?.child_id;
+              appState.children = response.children || [];
+              appState.balances = (response.balances || []).reduce((acc, b) => ({...acc, [b.child_id]: b}), {});
+              appState.selectedChildId = appState.children[0]?.child_id;
               
               renderUserInfo();
               renderProfile();
               tg.showAlert('Вы успешно зарегистрированы!');
           } catch(e) {
+              console.error('Registration error:', e);
               tg.showAlert(`Ошибка регистрации: ${e.message}`);
           } finally {
               btn.disabled = false; btn.textContent = 'Зарегистрироваться';
@@ -361,9 +376,11 @@
 
           try {
               const response = await apiCall('book', { slot_id: slotId, child_id: appState.selectedChildId });
-              
+              if (!response.success) {
+                  throw new Error(response.message || 'Неизвестная ошибка записи');
+              }
               const slot = appState.allSlots.find(s => s.slot_id === slotId);
-              if (slot) slot.booked++;
+              if (slot) slot.booked = (slot.booked || 0) + 1;
               
               appState.balances[appState.selectedChildId] = response.updatedBalance;
               
@@ -371,6 +388,7 @@
               renderProfile();
               tg.showPopup({ title: 'Успех!', message: 'Ребенок успешно записан!'});
           } catch (e) {
+              console.error('Booking error:', e);
               tg.showAlert(`Ошибка записи: ${e.message}`);
               btn.disabled = false; btn.textContent = 'Записаться';
           }
@@ -378,7 +396,6 @@
       
       function handleDayClick(dateKey) {
           appState.selectedDate = dateKey;
-          // We only need to re-render the calendar which will also trigger re-render of slots
           renderCalendar();
       }
 
@@ -386,7 +403,6 @@
         appState.currentWeekStart.setDate(appState.currentWeekStart.getDate() + (7 * direction));
         el.slotsList.innerHTML = '<p>Загрузка расписания...</p>';
         await fetchSlotsForCurrentWeek();
-        // Reset selected date to the first day of the new week
         appState.selectedDate = null;
         renderCalendar();
       }
@@ -397,13 +413,13 @@
           to.setDate(from.getDate() + 6);
           try {
               appState.allSlots = await apiCall('slots', { from: toYYYYMMDD(from), to: toYYYYMMDD(to) });
-              console.log('Fetched slots for week:', appState.allSlots); // DEBUG: Check fetched slots
+              console.log('Fetched slots for week (from ' + toYYYYMMDD(from) + ' to ' + toYYYYMMDD(to) + '):', appState.allSlots);
               if (appState.allSlots.length === 0) {
-                tg.showAlert('Нет слотов в этой неделе. Проверьте даты в Google Sheets или перейдите на другую неделю.');
+                tg.showAlert('Нет слотов в этой неделе. Убедитесь, что в Sheets даты в формате YYYY-MM-DD, status "OPEN", и они в диапазоне. Попробуйте другую неделю.');
               }
           } catch (e) {
               appState.allSlots = [];
-              el.slotsList.innerHTML = `<p style="color: var(--accent-red)">Не удалось загрузить расписание.</p>`;
+              el.slotsList.innerHTML = `<p style="color: var(--accent-red)">Не удалось загрузить расписание: ${e.message}.</p>`;
           }
       }
 
@@ -411,7 +427,7 @@
       async function init() {
         try {
           const bootstrapData = await apiCall('bootstrap');
-          console.log('Bootstrap data:', bootstrapData); // DEBUG: Check initial data
+          console.log('Bootstrap data:', bootstrapData);
           appState.user = bootstrapData.parent;
           appState.children = bootstrapData.children || [];
           appState.balances = (bootstrapData.balances || []).reduce((acc, b) => ({...acc, [b.child_id]: b}), {});
@@ -424,34 +440,31 @@
           renderTrainers();
           renderProfile();
 
-          // Init calendar - visual part first
           const today = new Date();
           appState.currentWeekStart = getStartOfWeek(today);
           appState.selectedDate = toYYYYMMDD(today);
-          renderCalendar(); // Render empty calendar grid
+          renderCalendar();
           
           el.loader.style.display = 'none';
           el.mainContent.style.display = 'block';
 
-          // Then fetch data for it
           await fetchSlotsForCurrentWeek();
-          renderCalendar(); // Re-render calendar with slots data
+          renderCalendar();
 
-          // General event listeners
           document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
               document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
               tab.classList.add('active');
               document.getElementById(tab.dataset.tab).classList.add('active');
-              console.log('Tab clicked:', tab.dataset.tab); // DEBUG: Confirm tab clicks
+              console.log('Tab clicked:', tab.dataset.tab);
             });
           });
           el.prevWeekBtn.addEventListener('click', () => changeWeek(-1));
           el.nextWeekBtn.addEventListener('click', () => changeWeek(1));
 
         } catch (error) {
-          console.error('Init error:', error); // DEBUG
-          el.loader.textContent = 'Не удалось загрузить данные. Пожалуйста, перезапустите приложение.';
+          console.error('Init error:', error);
+          el.loader.textContent = 'Не удалось загрузить данные: ' + error.message + '. Проверьте консоль и API.';
         }
       }
 
