@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -124,8 +123,8 @@
       const tg = window.Telegram.WebApp;
       tg.expand();
 
-      // --- CONFIG ---
-      const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec'; // ⚠️ PASTE YOUR DEPLOYED URL HERЕ
+      // --- CONFIG (оставь URL тот же) ---
+      const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec';
       const tgInitData = tg.initData || '';
 
       // --- STATE ---
@@ -155,18 +154,18 @@
         try {
           const response = await fetch(API_BASE_URL, {
             method: 'POST',
-            // Using text/plain is a common workaround for Google Apps Script's CORS behavior.
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(body),
           });
-          if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(`HTTP error ${response.status}: ${errorText}`);
+          // ContentService returns status 200 always — parse JSON and check semantic success
+          const data = await response.json();
+          if (data && typeof data === 'object' && data.success === false) {
+            throw new Error(data.message || 'Server returned error');
           }
-          return await response.json();
+          return data;
         } catch (error) {
           console.error(`API Error (${action}):`, error);
-          tg.showAlert(`Ошибка сети или сервера. Попробуйте позже.`);
+          tg.showAlert(error.message || 'Ошибка сети или сервера. Попробуйте позже.');
           throw error;
         }
       }
@@ -176,14 +175,18 @@
         const d = new Date(date);
         d.setHours(0,0,0,0);
         const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
         return new Date(d.setDate(diff));
       }
       function formatDate(date, options) {
           return date.toLocaleDateString('ru-RU', options);
       }
       function toYYYYMMDD(date) {
-        return date.toISOString().split('T')[0];
+        const d = new Date(date);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
       }
 
       // --- RENDER FUNCTIONS ---
@@ -214,7 +217,7 @@
                 <div class="day__date">${dayDate.getDate()}</div>
             `;
             
-            const hasSlots = appState.allSlots.some(s => s.date.startsWith(dayKey));
+            const hasSlots = appState.allSlots.some(s => String(s.date) === dayKey);
             if (hasSlots) {
                 dayEl.classList.add('has-slots', 'selectable');
                 dayEl.addEventListener('click', () => handleDayClick(dayKey));
@@ -227,8 +230,10 @@
         }
         
         // If no date is selected or selected date has no slots, auto-select first available day
-        if (hasSelectableDay && (!appState.selectedDate || !appState.allSlots.some(s => s.date.startsWith(appState.selectedDate)))) {
-            const firstDayWithSlots = toYYYYMMDD(new Date(Math.min(...appState.allSlots.map(s => new Date(s.date)))));
+        if (hasSelectableDay && (!appState.selectedDate || !appState.allSlots.some(s => String(s.date) === appState.selectedDate))) {
+            // pick earliest date string
+            const dateList = appState.allSlots.map(s => String(s.date)).sort();
+            const firstDayWithSlots = dateList[0];
             if (firstDayWithSlots) {
                 appState.selectedDate = firstDayWithSlots;
                 const activeDayEl = el.daysGrid.querySelector(`[data-date="${firstDayWithSlots}"]`);
@@ -243,7 +248,7 @@
               el.slotsList.innerHTML = `<p style="color: var(--text-secondary); text-align: center; padding: 20px 0;">Выберите день выше, чтобы увидеть свободные слоты.</p>`;
               return;
           }
-          const slotsForDay = appState.allSlots.filter(s => s.date.startsWith(dateKey));
+          const slotsForDay = appState.allSlots.filter(s => String(s.date) === dateKey);
           const selectedDay = new Date(dateKey);
           const title = `Свободные слоты на ${formatDate(selectedDay, {weekday: 'long', day:'numeric', month:'long'})}`;
           
@@ -256,7 +261,7 @@
             <div class="section-title">${title}</div>
             ${slotsForDay.map(slot => {
                 const trainer = appState.trainers[slot.trainer_id] || { name: 'Тренер' };
-                const remaining = slot.capacity - slot.booked;
+                const remaining = (Number(slot.capacity) || 0) - (Number(slot.booked) || 0);
                 const isFull = remaining <= 0;
                 return `
                 <div class="slot-card" data-slot-id="${slot.slot_id}">
@@ -284,7 +289,7 @@
                 <div class="trainer-card__speciality">${trainer.speciality}</div>
                 <a href="https://t.me/${trainer.tg_username}" target="_blank" class="trainer-card__contact-btn">Написать</a>
             </div>
-          `).join('');
+          `).join('') || '<p style="color:var(--text-secondary)">Тренеры не найдены.</p>';
       }
       
       function renderProfile() {
@@ -305,7 +310,7 @@
               const hasChildren = appState.children.length > 0;
               el.profileSection.innerHTML = `
                 <div class="child-switcher">${appState.children.map(child => `<div class="child-tab ${child.child_id === appState.selectedChildId ? 'active' : ''}" data-child-id="${child.child_id}">${child.child_name}</div>`).join('')}</div>
-                ${hasChildren ? `<div class="balance-info">Осталось занятий: <span id="balance-display">${appState.balances[appState.selectedChildId]?.remaining || 0}</span></div>` : '<p>У вас пока не добавлено ни одного ребенка.</p>'}
+                ${hasChildren ? `<div class="balance-info">Осталось занятий: <span id="balance-display">${(appState.balances[appState.selectedChildId] && appState.balances[appState.selectedChildId].remaining) || 0}</span></div>` : '<p>У вас пока не добавлено ни одного ребенка.</p>'}
               `;
               el.profileSection.querySelectorAll('.child-tab').forEach(tab => {
                   tab.addEventListener('click', () => handleChildSelect(tab.dataset.childId));
@@ -359,9 +364,9 @@
               const response = await apiCall('book', { slot_id: slotId, child_id: appState.selectedChildId });
               
               const slot = appState.allSlots.find(s => s.slot_id === slotId);
-              if (slot) slot.booked++;
+              if (slot) slot.booked = Number(slot.booked || 0) + 1;
               
-              appState.balances[appState.selectedChildId] = response.updatedBalance;
+              appState.balances[appState.selectedChildId] = response.updatedBalance || appState.balances[appState.selectedChildId];
               
               renderSlotsForDate(appState.selectedDate);
               renderProfile();
@@ -374,7 +379,6 @@
       
       function handleDayClick(dateKey) {
           appState.selectedDate = dateKey;
-          // We only need to re-render the calendar which will also trigger re-render of slots
           renderCalendar();
       }
 
@@ -392,7 +396,12 @@
           const to = new Date(from);
           to.setDate(from.getDate() + 6);
           try {
-              appState.allSlots = await apiCall('slots', { from: toYYYYMMDD(from), to: toYYYYMMDD(to) });
+              // server expects YYYY-MM-DD
+              const fromStr = toYYYYMMDD(from);
+              const toStr = toYYYYMMDD(to);
+              const slots = await apiCall('slots', { from: fromStr, to: toStr });
+              // slots may be array returned by server
+              appState.allSlots = Array.isArray(slots) ? slots : [];
           } catch (e) {
               appState.allSlots = [];
               el.slotsList.innerHTML = `<p style="color: var(--accent-red)">Не удалось загрузить расписание.</p>`;
@@ -441,6 +450,7 @@
 
         } catch (error) {
           el.loader.textContent = 'Не удалось загрузить данные. Пожалуйста, перезапустите приложение.';
+          console.error('Init error', error);
         }
       }
 
