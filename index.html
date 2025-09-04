@@ -163,7 +163,9 @@
               const errorText = await response.text();
               throw new Error(`HTTP error ${response.status}: ${errorText}`);
           }
-          return await response.json();
+          const data = await response.json();
+          console.log(`API Response for ${action}:`, data); // DEBUG: Log API response
+          return data;
         } catch (error) {
           console.error(`API Error (${action}):`, error);
           tg.showAlert(`Ошибка сети или сервера. Попробуйте позже.`);
@@ -277,6 +279,7 @@
       }
 
       function renderTrainers() {
+          console.log('Rendering trainers:', appState.trainers); // DEBUG
           el.trainersGrid.innerHTML = Object.values(appState.trainers).map(trainer => `
             <div class="trainer-card">
                 <div class="trainer-card__avatar"><img src="${trainer.avatar_url}" alt="${trainer.name}"></div>
@@ -288,6 +291,7 @@
       }
       
       function renderProfile() {
+          console.log('Rendering profile:', appState.user, appState.children); // DEBUG
           if (!appState.user) {
               el.profileSection.innerHTML = `
                 <p>Чтобы записывать детей, пожалуйста, зарегистрируйтесь.</p>
@@ -393,6 +397,10 @@
           to.setDate(from.getDate() + 6);
           try {
               appState.allSlots = await apiCall('slots', { from: toYYYYMMDD(from), to: toYYYYMMDD(to) });
+              console.log('Fetched slots for week:', appState.allSlots); // DEBUG: Check fetched slots
+              if (appState.allSlots.length === 0) {
+                tg.showAlert('Нет слотов в этой неделе. Проверьте даты в Google Sheets или перейдите на другую неделю.');
+              }
           } catch (e) {
               appState.allSlots = [];
               el.slotsList.innerHTML = `<p style="color: var(--accent-red)">Не удалось загрузить расписание.</p>`;
@@ -403,6 +411,7 @@
       async function init() {
         try {
           const bootstrapData = await apiCall('bootstrap');
+          console.log('Bootstrap data:', bootstrapData); // DEBUG: Check initial data
           appState.user = bootstrapData.parent;
           appState.children = bootstrapData.children || [];
           appState.balances = (bootstrapData.balances || []).reduce((acc, b) => ({...acc, [b.child_id]: b}), {});
@@ -434,12 +443,14 @@
               document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
               tab.classList.add('active');
               document.getElementById(tab.dataset.tab).classList.add('active');
+              console.log('Tab clicked:', tab.dataset.tab); // DEBUG: Confirm tab clicks
             });
           });
           el.prevWeekBtn.addEventListener('click', () => changeWeek(-1));
           el.nextWeekBtn.addEventListener('click', () => changeWeek(1));
 
         } catch (error) {
+          console.error('Init error:', error); // DEBUG
           el.loader.textContent = 'Не удалось загрузить данные. Пожалуйста, перезапустите приложение.';
         }
       }
