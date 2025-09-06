@@ -155,7 +155,6 @@
         try {
           const response = await fetch(API_BASE_URL, {
             method: 'POST',
-            // Using text/plain is a common workaround for Google Apps Script's CORS behavior.
             headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
             body: JSON.stringify(body),
           });
@@ -265,7 +264,7 @@
                         <div class="slot-card__details">Тренер: ${trainer.name} | Свободно: ${remaining}/${slot.capacity}</div>
                     </div>
                     <div class="slot-card__action">
-                        <button class="btn" ${isFull ? 'disabled' : ''}>Записаться</button>
+                        <button class="btn" ${isFull || !appState.user ? 'disabled' : ''}>Записаться</button>
                     </div>
                 </div>
                 `
