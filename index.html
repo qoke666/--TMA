@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Расписание Карате — Мои дети</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -33,13 +33,10 @@
       <div class="mb-2">
         <input type="text" id="childName" class="form-control" placeholder="Имя ребенка">
       </div>
-      <div class="mb-2">
-        <input type="number" id="initialRemaining" class="form-control" placeholder="Начальное количество занятий (по умолчанию 10)">
-      </div>
       <div>
         <button onclick="registerChild()" class="btn btn-primary">Добавить</button>
       </div>
-      <div class="small-muted mt-2">Можно добавить нескольких детей — они появятся в списке ниже.</div>
+      <div class="small-muted mt-2">Родители не вводят количество занятий — только имя. Запись добавится в Google Таблицу.</div>
     </div>
 
     <div id="remainingSection" class="card p-3">
@@ -57,27 +54,31 @@
 
 <script>
   const webApp = window.Telegram.WebApp;
-  webApp.ready();
-  const user = webApp.initDataUnsafe ? webApp.initDataUnsafe.user : null;
+  try { webApp.ready(); } catch(e){ /* ignore if not in Telegram */ }
+  const user = webApp && webApp.initDataUnsafe ? webApp.initDataUnsafe.user : null;
   const telegramID = user ? user.id : 'test123';
-  // Заменить на URL вашего опубликованного Web App
+  // Поставь сюда URL твоего опубликованного Web App
   const gasUrl = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec';
 
   async function registerChild() {
     const childName = document.getElementById('childName').value.trim();
-    const initialRemainingRaw = document.getElementById('initialRemaining').value;
-    const initialRemaining = initialRemainingRaw ? Number(initialRemainingRaw) : 10;
     if (!childName) return alert('Введите имя ребенка!');
     try {
       const resp = await fetch(gasUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'addChild', telegramID, childName, initialRemaining })
+        body: JSON.stringify({ action: 'addChild', telegramID, childName })
       });
-      const result = await resp.json();
+      // Попробуем распарсить json, если не удастся — покажем текст ответа (для дебага)
+      let result;
+      try { result = await resp.json(); }
+      catch (e) {
+        const txt = await resp.text();
+        console.error('Non-JSON response:', txt);
+        return alert('Ошибка сервера: ' + txt);
+      }
       if (result.success) {
         document.getElementById('childName').value = '';
-        document.getElementById('initialRemaining').value = '';
         loadData();
         alert('Ребенок добавлен!');
       } else {
@@ -85,7 +86,7 @@
       }
     } catch (err) {
       console.error(err);
-      alert('Ошибка сети');
+      alert('Ошибка сети — проверьте URL Web App и права доступа (доступ должен быть "Anyone, even anonymous")');
     }
   }
 
@@ -94,7 +95,14 @@
     list.innerHTML = '<p class="text-muted">Загрузка...</p>';
     try {
       const resp = await fetch(`${gasUrl}?action=getData&telegramID=${telegramID}`);
-      const data = await resp.json();
+      let data;
+      try { data = await resp.json(); }
+      catch (e) {
+        const txt = await resp.text();
+        console.error('Non-JSON getData response:', txt);
+        list.innerHTML = '<p class="text-danger">Ошибка: ' + txt + '</p>';
+        return;
+      }
       if (!data.success) {
         list.innerHTML = `<p class="text-danger">${data.message || 'Ошибка'}</p>`;
         return;
@@ -104,10 +112,9 @@
         list.innerHTML = '<p>Ребенок(и) не зарегистрированы. Добавьте выше.</p>';
         return;
       }
-      // Построим список
       const html = children.map(ch => {
         return `
-          <div class="mb-2 p-2 border rounded child-row" data-createdat="${ch.createdAt}">
+          <div class="mb-2 p-2 border rounded child-row" data-createdat="${escapeHtml(ch.createdAt)}">
             <div style="flex:1">
               <div><strong>${escapeHtml(ch.childName)}</strong></div>
               <div class="small-muted">Осталось: <span class="remaining">${Number(ch.remaining)}</span> занятий</div>
@@ -124,13 +131,12 @@
       list.innerHTML = html;
     } catch (err) {
       console.error(err);
-      list.innerHTML = '<p class="text-danger">Ошибка сети при загрузке данных.</p>';
+      list.innerHTML = '<p class="text-danger">Ошибка сети при загрузке данных. Проверьте URL веб-приложения и права доступа.</p>';
     }
   }
 
   async function decrement(createdAtEncoded, btn) {
     const createdAt = decodeURIComponent(createdAtEncoded);
-    // оптимистичный UI
     const parent = btn.closest('[data-createdat]');
     const remEl = parent.querySelector('.remaining');
     const current = Number(remEl.innerText);
@@ -174,7 +180,6 @@
       });
       const result = await resp.json();
       if (result.success) {
-        // обновим UI
         const parent = document.querySelector(`[data-createdat="${createdAt}"]`);
         if (parent) parent.querySelector('.remaining').innerText = result.remaining;
       } else {
@@ -199,9 +204,7 @@
       });
       const result = await resp.json();
       if (result.success) {
-        // удалим из UI
         if (parent) parent.remove();
-        // если пусто — покажем сообщение
         const list = document.getElementById('childrenList');
         if (list.children.length === 0) list.innerHTML = '<p>Ребенок(и) не зарегистрированы. Добавьте выше.</p>';
       } else {
