@@ -45,7 +45,7 @@
 
     <script>
         const webApp = window.Telegram.WebApp;
-        try { webApp.ready(); } catch(e){ /* если не в Telegram, игнорируем */ }
+        try { webApp.ready(); } catch(e){ /* если не в Telegram — игнор */ }
         const user = webApp && webApp.initDataUnsafe ? webApp.initDataUnsafe.user : null;
         const telegramID = user ? user.id : 'test123'; // Для теста, если не в Telegram
         const gasUrl = 'https://script.google.com/macros/s/AKfycbyI17STyEsL6vYDBX1d98YElOk9O7KWTwMUL7DxOulDzSkgPXLASnNCfsA1GvNWfM_fEA/exec'; // Замени на свой URL
@@ -55,23 +55,38 @@
             if (!childName) return alert('Введите имя!');
             
             try {
-              const response = await fetch(gasUrl, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'addChild', telegramID, childName })
-              });
-              const result = await response.json();
-              
-              if (result.success) {
-                  alert('Ребенок зарегистрирован!');
-                  document.getElementById('childName').value = '';
-                  loadData();
-              } else {
-                  alert(result.message || 'Ошибка');
-              }
+                // Отправляем как application/x-www-form-urlencoded — это простой запрос без preflight
+                const params = new URLSearchParams();
+                params.append('action', 'addChild');
+                params.append('telegramID', telegramID);
+                params.append('childName', childName);
+                // не добавляем initialRemaining — оставляем дефолт в скрипте
+                
+                const response = await fetch(gasUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                    body: params.toString()
+                });
+                
+                // Попытаемся распарсить JSON
+                let result;
+                try { result = await response.json(); }
+                catch (e) {
+                  const txt = await response.text();
+                  console.error('Non-JSON response:', txt);
+                  return alert('Ошибка сервера: ' + txt);
+                }
+                
+                if (result.success) {
+                    alert('Ребенок зарегистрирован!');
+                    document.getElementById('childName').value = '';
+                    loadData();
+                } else {
+                    alert(result.message || 'Ошибка');
+                }
             } catch (err) {
-              console.error(err);
-              alert('Ошибка сети или неверный URL Web App. Проверь деплой и права доступа.');
+                console.error(err);
+                alert('Ошибка сети или неверный URL Web App. Проверь деплой и права доступа.');
             }
         }
 
@@ -82,40 +97,22 @@
                 const response = await fetch(`${gasUrl}?action=getData&telegramID=${telegramID}`);
                 const data = await response.json();
                 
-                if (data.error) {
+                if (!data.success && !Array.isArray(data.children)) {
                     container.innerHTML = '<p>Ребенок не зарегистрирован. Зарегистрируйте выше.</p>';
                     return;
                 }
 
-                // Если возвращается один объект (как в исходном коде) — покажем все строки, т.к. в твоём оригинале doGet возвращал первый найденный
-                // Но пользователь просил несколько детей — поэтому теперь обработаем все строки из таблицы:
-                // В твоём исходном doGet код возвращал только первый найденный — чтобы оставить поведение максимально близким к твоему отправленному коду,
-                // мы проверяем, если пришёл массив children (новые doGet могут вернуть несколько) — обработаем их, иначе — старый одиночный объект.
-                
-                // Если сервер вернул структуру { children: [...] } — покажем всех детей
-                if (data.children && Array.isArray(data.children)) {
-                    if (data.children.length === 0) {
-                        container.innerHTML = '<p>Ребенок(и) не зарегистрированы. Зарегистрируйте выше.</p>';
-                        return;
-                    }
-                    container.innerHTML = data.children.map(ch => {
-                        return `<div class="child-card card p-2">
-                                    <strong>${escapeHtml(ch.childName)}</strong>
-                                    <div>Осталось: ${escapeHtml(ch.remaining)}</div>
-                                </div>`;
-                    }).join('');
+                const children = data.children || [];
+                if (children.length === 0) {
+                    container.innerHTML = '<p>Ребенок(и) не зарегистрированы. Зарегистрируйте выше.</p>';
                     return;
                 }
-
-                // Если всё как у тебя было (один объект), покажем его
-                if (!data.childName) {
-                    container.innerHTML = '<p>Ребенок(и) не зарегистрированы. Зарегистрируйте выше.</p>';
-                } else {
-                    container.innerHTML = `<div class="child-card card p-2">
-                                              <strong>${escapeHtml(data.childName)}</strong>
-                                              <div>Осталось: ${escapeHtml(data.remaining)}</div>
-                                           </div>`;
-                }
+                container.innerHTML = children.map(ch => {
+                    return `<div class="child-card card p-2">
+                                <strong>${escapeHtml(ch.childName)}</strong>
+                                <div>Осталось: ${escapeHtml(ch.remaining)}</div>
+                            </div>`;
+                }).join('');
             } catch (err) {
                 console.error(err);
                 container.innerHTML = '<p class="text-danger">Ошибка сети при загрузке данных.</p>';
