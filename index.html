@@ -22,7 +22,7 @@
       background:var(--page-bg);
       font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
       color:#222;
-      padding-top: 70px;
+      padding-top: 60px;
       font-size:14px;
     }
 
@@ -30,34 +30,46 @@
     .topbar{
       position: fixed;
       top: 0; left:0; right:0;
-      height:60px;
+      height:50px;
       background:linear-gradient(90deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
       backdrop-filter: blur(6px);
       display:flex;
       align-items:center;
       box-shadow: 0 4px 12px rgba(30,40,60,0.06);
       z-index: 1000;
-      padding: 0 10px;
+      padding: 0 8px;
     }
     .brand{
       display:flex; align-items:center; gap:6px;
       font-weight:700; color:var(--accent);
-      font-size:14px;
+      font-size:13px;
+      flex-shrink: 0;
     }
     .brand .logo{
-      width:30px;height:30px;border-radius:6px;
+      width:28px;height:28px;border-radius:6px;
       background:linear-gradient(135deg,var(--accent),#7cc3ff);
       display:flex;align-items:center;justify-content:center;color:white;font-weight:700;
       box-shadow: 0 4px 12px rgba(43,140,255,0.18);
+      font-size:11px;
+    }
+    .topbar-address{
       font-size:12px;
+      font-weight:600;
+      color:#0b1a2b;
+      text-align:right;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 50%;
     }
 
     /* nav menu */
     .menu{
-      display:flex; gap:4px; flex-wrap: nowrap; margin-bottom: 10px;
+      display:flex; gap:4px; flex-wrap: nowrap; margin-bottom: 8px;
     }
     .menu .nav-item button{
-      background:transparent; border:0; padding:5px 8px; border-radius:6px;
+      background:transparent; border:0; padding:4px 8px; border-radius:6px;
       color:#0b1a2b; font-weight:600; font-size:12px;
     }
     .menu .nav-item button.active{
@@ -73,12 +85,12 @@
     .back-btn{
       background: transparent;
       border: 1px solid rgba(10,20,40,0.06);
-      padding: 5px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
       font-weight: 600;
       font-size: 12px;
       color: var(--accent);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       display: inline-block;
     }
     .back-btn:hover{
@@ -90,80 +102,81 @@
     .app {
       max-width: 100%;
       margin: 0 auto;
-      padding: 10px;
+      padding: 8px;
     }
 
     .card-soft{
       background:var(--card-bg);
-      border-radius:10px;
+      border-radius:8px;
       box-shadow: 0 6px 20px rgba(40,50,80,0.04);
-      padding:12px;
-      margin-bottom:12px;
+      padding:10px;
+      margin-bottom:10px;
     }
 
     /* schedule */
     .group-time {
       display:flex; justify-content:space-between; align-items:center;
-      gap:8px; padding:8px; border-radius:6px;
+      gap:6px; padding:6px; border-radius:6px;
       transition: transform .18s ease, box-shadow .18s;
       background: linear-gradient(180deg, rgba(250,250,255,1), rgba(247,250,255,1));
       border: 1px solid rgba(20,30,60,0.03);
     }
     .group-time:hover{ transform: translateY(-2px); box-shadow: 0 8px 20px rgba(22,35,62,0.06); }
 
-    .group-title{ font-weight:700; font-size:0.95rem; }
-    .group-hours{ color:var(--muted); font-weight:600; font-size:0.85rem; }
+    .group-title{ font-weight:700; font-size:0.9rem; }
+    .group-hours{ color:var(--muted); font-weight:600; font-size:0.8rem; }
 
     /* trainer */
     .trainer{
-      display:flex; gap:10px; align-items:center;
+      display:flex; gap:8px; align-items:center;
     }
     .trainer .avatar{
-      width:50px;height:50px;border-radius:8px;
+      width:48px;height:48px;border-radius:8px;
       background:linear-gradient(135deg,#ffd89b,#ffb199);
       display:flex;align-items:center;justify-content:center;font-weight:700;color:#222;
-      font-size:14px; box-shadow: 0 6px 20px rgba(255,170,100,0.12);
+      font-size:13px; box-shadow: 0 6px 20px rgba(255,170,100,0.12);
     }
-    .address{ color:var(--muted); font-size:0.8rem; margin-top:4px; }
+    .address{ color:var(--muted); font-size:0.75rem; margin-top:4px; }
 
     /* profile section */
-    #profileSection .form-control{ border-radius:6px; font-size:0.85rem; padding:6px; }
+    #profileSection .form-control{ border-radius:6px; font-size:0.8rem; padding:5px; }
     .child-card {
       display:flex; justify-content:space-between; align-items:center;
-      gap:8px; padding:8px; border-radius:6px; border:1px solid rgba(10,20,40,0.035);
+      gap:6px; padding:6px; border-radius:6px; border:1px solid rgba(10,20,40,0.035);
       background: linear-gradient(180deg,#fff,#fbfdff);
     }
-    .child-meta { color:var(--muted); font-size:0.8rem; }
-    .btn-ghost { background:transparent; border:1px solid rgba(10,20,40,0.06); border-radius:6px; padding:4px 8px; font-size:0.8rem; }
+    .child-meta { color:var(--muted); font-size:0.75rem; }
+    .btn-ghost { background:transparent; border:1px solid rgba(10,20,40,0.06); border-radius:6px; padding:3px 6px; font-size:0.75rem; }
 
     /* responsive tweaks for Telegram WebApp */
     @media (max-width:768px){
-      body { padding-top:80px; }
-      .topbar { height:70px; flex-wrap:wrap; padding:6px 8px; }
-      .brand { font-size:13px; }
-      .brand .logo { width:28px; height:28px; font-size:10px; }
+      body { padding-top:70px; }
+      .topbar { height:60px; flex-wrap:wrap; padding:6px 6px; }
+      .brand { font-size:12px; }
+      .brand .logo { width:26px; height:26px; font-size:10px; }
+      .topbar-address { font-size:11px; max-width: 45%; }
       .trainer { flex-direction:column; align-items:flex-start; }
-      .trainer .avatar { width:40px; height:40px; font-size:12px; }
+      .trainer .avatar { width:36px; height:36px; font-size:11px; }
       .group-time { flex-direction:column; align-items:flex-start; }
-      .app { padding:8px; }
-      .card-soft { padding:10px; margin-bottom:10px; }
-      .address { font-size:0.75rem; }
-      .row.g-3 { gap:8px !important; }
-      .form-control { font-size:0.8rem; padding:5px; }
-      .btn { font-size:0.8rem; padding:5px 8px; }
-      .menu .nav-item button { font-size:11px; padding:4px 6px; }
-      .back-btn { font-size:11px; padding:4px 8px; }
-      iframe { height:180px; }
+      .app { padding:6px; }
+      .card-soft { padding:8px; margin-bottom:8px; }
+      .address { font-size:0.7rem; }
+      .row.g-3 { gap:6px !important; }
+      .form-control { font-size:0.75rem; padding:4px; }
+      .btn { font-size:0.75rem; padding:4px 6px; }
+      .menu .nav-item button { font-size:11px; padding:3px 6px; }
+      .back-btn { font-size:11px; padding:3px 6px; }
+      iframe { height:160px; }
     }
     @media (max-width:576px){
-      .topbar { height:80px; }
-      .brand { flex-direction:column; align-items:flex-start; gap:3px; }
-      .topbar .ms-auto { font-size:0.75rem; }
-      .group-title { font-size:0.9rem; }
-      .group-hours { font-size:0.8rem; }
+      .topbar { height:70px; }
+      .brand { flex-direction:column; align-items:flex-start; gap:2px; }
+      .topbar-address { font-size:10px; max-width: 40%; }
+      .group-title { font-size:0.85rem; }
+      .group-hours { font-size:0.75rem; }
       .menu { flex-wrap: wrap; gap:3px; }
       .menu .nav-item button { font-size:10px; padding:3px 5px; }
-      .back-btn { font-size:10px; padding:3px 6px; }
+      .back-btn { font-size:10px; padding:3px 5px; }
     }
   </style>
 </head>
@@ -172,22 +185,19 @@
     <div class="brand">
       <div class="logo">KS</div>
       <div>
-        Карате<br><small style="font-weight:600;color:#1f2b3a;opacity:.6">Студия — расписание и профиль</small>
+        Карате<br><small style="font-weight:600;color:#1f2b3a;opacity:.6">Студия — расписание</small>
       </div>
     </div>
 
-    <div class="ms-auto d-flex align-items-center gap-2">
-      <div class="small" style="color:var(--muted)">Адрес:</div>
-      <div style="font-weight:700">Апрельская ул., 1, Красноярск</div>
-    </div>
+    <div class="ms-auto topbar-address">Апрельская ул., 1</div>
   </div>
 
   <main class="app">
     <!-- HOME -->
     <section id="homeSection" class="mb-3">
       <div class="card-soft mb-3">
-        <h2 style="margin-bottom:6px;font-size:1.1rem">Расписание сегодня</h2>
-        <p class="small" style="color:var(--muted); margin-bottom:10px;">Группы по возрасту — удобное распределение времени занятий</p>
+        <h2 style="margin-bottom:6px;font-size:1.05rem">Расписание сегодня</h2>
+        <p class="small" style="color:var(--muted); margin-bottom:8px;">Группы по возрасту — удобное распределение времени</p>
         <nav class="menu">
           <div class="nav-item"><button id="nav-home" class="active" onclick="showSection('home')">Главная</button></div>
           <div class="nav-item"><button id="nav-schedule" onclick="showSection('schedule')">Расписание</button></div>
@@ -239,11 +249,11 @@
       </div>
 
       <div class="card-soft">
-        <h5 style="font-size:1rem">Как нас найти</h5>
-        <p class="address">Проходим через арку, поднимаемся по лестнице — студия на 2 этаже. Рядом — станция метро "Победа", парковка во дворе.</p>
+        <h5 style="font-size:0.95rem">Как нас найти</h5>
+        <p class="address">Проходим через арку, поднимаемся по лестнице — студия на 2 этаже. Рядом — станция метро "Победа".</p>
         <iframe
           src="https://www.google.com/maps?q=56.0105,92.8525&z=15&output=embed"
-          style="width:100%;height:180px;border:0;border-radius:8px;margin-top:8px;"
+          style="width:100%;height:160px;border:0;border-radius:8px;margin-top:6px;"
           loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
     </section>
@@ -252,7 +262,7 @@
     <section id="scheduleSection" class="mb-3" style="display:none;">
       <div class="card-soft">
         <button class="back-btn" onclick="showSection('home')">Назад</button>
-        <h3 style="font-size:1.1rem">Полное расписание</h3>
+        <h3 style="font-size:1.05rem">Полное расписание</h3>
         <p class="small" style="color:var(--muted)">Группы и время занятий</p>
 
         <div class="row g-3 mt-2">
@@ -293,24 +303,24 @@
     <section id="profileSection" style="display:none;">
       <div class="card-soft mb-2">
         <button class="back-btn" onclick="showSection('home')">Назад</button>
-        <h3 style="font-size:1.1rem">Мой профиль</h3>
+        <h3 style="font-size:1.05rem">Мой профиль</h3>
         <p class="small" style="color:var(--muted)">Здесь можно зарегистрировать ребёнка и посмотреть остатки занятий.</p>
 
         <div class="row g-3 mt-2">
           <div class="col-md-6">
             <div>
-              <label class="form-label" style="font-size:0.85rem">Имя ребёнка</label>
+              <label class="form-label" style="font-size:0.8rem">Имя ребёнка</label>
               <input id="childNameInput" class="form-control" placeholder="Иван">
             </div>
             <div class="mt-2 d-flex gap-2">
               <button class="btn btn-primary" onclick="registerChild()">Добавить</button>
               <button class="btn btn-outline-secondary" onclick="loadChildren()">Обновить</button>
             </div>
-            <div class="small text-muted mt-2" style="font-size:0.75rem">Родителям не нужно вводить количество занятий — только имя.</div>
+            <div class="small text-muted mt-2" style="font-size:0.7rem">Родителям не нужно вводить количество занятий — только имя.</div>
           </div>
 
           <div class="col-md-6">
-            <div style="font-weight:700;font-size:0.95rem">Ваши дети</div>
+            <div style="font-weight:700;font-size:0.9rem">Ваши дети</div>
             <div id="childrenList" class="mt-2">
               <div class="small text-muted">Загрузка...</div>
             </div>
@@ -319,8 +329,8 @@
       </div>
 
       <div class="card-soft">
-        <h5 style="font-size:1rem">Контакты и заметки</h5>
-        <p class="small" style="color:var(--muted)">Если нужно поменять остатки занятий — делаем это через админку тренера. Для экстренных вопросов звоните тренеру.</p>
+        <h5 style="font-size:0.95rem">Контакты и заметки</h5>
+        <p class="small" style="color:var(--muted)">Если нужно поменять остатки занятий — делаем это через админку тренера.</p>
       </div>
     </section>
   </main>
