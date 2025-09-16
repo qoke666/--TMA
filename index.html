@@ -66,8 +66,8 @@
       </div>
     </div>
     <div class="topbar-right">
-      <div class="small-muted">Апрельская ул., 1</div>
-      <div class="small-muted">Красноярск, 660050</div>
+      <div class="small-muted">ул. Спортивная, 12</div>
+      <div class="small-muted">Тел: +7 (900) 123-45-67</div>
     </div>
   </header>
 
@@ -107,7 +107,7 @@
           <div>
             <div style="font-weight:700">Павел Шестеров</div>
             <div class="small-muted">Главный тренер • 8 лет опыта</div>
-            <div class="address">Апрельская ул., 1, Красноярск, Красноярский край, Россия, 660050</div>
+            <div class="address">Студия: ул. Спортивная, 12 — вход с торца</div>
           </div>
         </div>
       </div>
@@ -115,10 +115,8 @@
       <div class="card-soft">
         <h3>Как нас найти</h3>
         <p class="small-muted">Проходим через арку, поднимаемся на 2 этаж. Парковка во дворе.</p>
-        <!-- карта по адресу -->
-        <iframe
-          src="https://www.google.com/maps?q=Апрельская+ул.,+1,+Красноярск,+Красноярский+край,+Россия,+660050&z=15&output=embed"
-          style="width:100%;height:200px;border:0;border-radius:10px;" loading="lazy"></iframe>
+        <!-- компактная карта -->
+        <iframe src="https://www.google.com/maps?q=48.8566,2.3522&z=15&output=embed" style="width:100%;height:200px;border:0;border-radius:10px;" loading="lazy"></iframe>
       </div>
     </section>
 
@@ -162,36 +160,15 @@
 
   <script>
     // ========== Настройки (замени gasUrl на свой) ==========
-    const gasUrl = 'https://script.google.com/macros/s/AKfycbyI17STyEsL6vYDBX1d98YElOk9O7KWTwMUL7DxOulDzSkgPXLASnNCfsA1GvNWfM_fEA/exec';
+    const gasUrl = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec';
     // Тренер: ссылка Telegram -> поменяй на свою (пример: 'https://t.me/username' или 'tg://resolve?domain=username')
-    const trainerTelegram = 'https://t.me/anachoretes';
+    const trainerTelegram = 'https://t.me/your_trainer_username';
 
-    // ---------- Получение telegramID (WebApp -> URL param -> fallback) ----------
+    // Telegram WebApp (если используется)
     const webApp = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
     try { webApp && webApp.ready(); } catch(e){}
-    let telegramID = null;
-
-    // 1) Попробуем получить из Telegram WebApp (если страница открыта внутри Telegram)
-    if (webApp && webApp.initDataUnsafe && webApp.initDataUnsafe.user && webApp.initDataUnsafe.user.id) {
-      telegramID = webApp.initDataUnsafe.user.id;
-      console.info('telegramID from WebApp:', telegramID);
-    }
-
-    // 2) Если не нашли — попробуем взять из URL (?telegramID= или ?tid=)
-    if (!telegramID) {
-      const params = new URLSearchParams(window.location.search);
-      const urlTid = params.get('telegramID') || params.get('tid');
-      if (urlTid) {
-        telegramID = urlTid;
-        console.info('telegramID from URL:', telegramID);
-      }
-    }
-
-    // 3) fallback для локального теста
-    if (!telegramID) {
-      telegramID = 'test123';
-      console.info('Используется тестовый telegramID=', telegramID, ' — откройте WebApp через Telegram или добавьте ?telegramID=YOUR_ID в URL для теста.');
-    }
+    const user = webApp && webApp.initDataUnsafe ? webApp.initDataUnsafe.user : null;
+    const telegramID = user ? user.id : 'test123';
 
     // Navigation helpers
     function navigate(page){
@@ -205,8 +182,10 @@
       if (page === 'profile') document.getElementById('btnProfile').classList.add('active');
       // load children on profile
       if (page === 'profile') loadChildren();
+      // scroll to top of main for better UX on mobile
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    // on desktop we still have topbar; on small screens show bottom nav
     function updateNavVisibility(){
       if (window.innerWidth <= 768){
         document.getElementById('bottomNav').style.display = 'flex';
@@ -222,6 +201,7 @@
 
     // ========== Trainer click ==========
     function openTrainerTelegram(){
+      // открываем в новом окне — пользователь заменит trainerTelegram на нужную ссылку
       window.open(trainerTelegram, '_blank');
     }
 
@@ -261,7 +241,7 @@
         }
       } catch (err) {
         console.error(err);
-        alert('Ошибка сети или неверный URL WebApp. Проверьте деплой и права доступа.');
+        alert('Ошибка сети или неверный URL WebApp. Проверь деплой и права доступа.');
       }
     }
 
