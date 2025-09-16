@@ -3,219 +3,320 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Карате — расписание и профиль (моб. версия)</title>
+  <title>Карате — расписание и профиль</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root{
       --accent:#2B8CFF;
       --muted:#6c757d;
-      --card-bg:#ffffff;
-      --page-bg:#f4f7fb;
-      --radius:12px;
+      --card-bg: #ffffff;
+      --page-bg: #f4f7fb;
     }
-    html,body{height:100%; margin:0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--page-bg); color:#122; -webkit-font-smoothing:antialiased;}
-    /* Topbar */
-    .topbar{position:fixed; top:0; left:0; right:0; height:68px; display:flex; align-items:center; gap:12px; padding:10px 14px; backdrop-filter: blur(6px); background: rgba(255,255,255,0.85); box-shadow: 0 6px 18px rgba(20,30,60,0.05); z-index:999;}
-    .brand{display:flex; align-items:center; gap:10px;}
-    .logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#7cc3ff);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
-    .brand-title{font-weight:700; font-size:15px;}
-    .topbar-right{margin-left:auto; font-size:13px; color:var(--muted); display:flex; gap:8px; align-items:center;}
-    /* Main app container */
-    main.app { max-width:980px; margin:84px auto 84px; padding:14px; }
-    .card-soft{background:var(--card-bg); border-radius:var(--radius); padding:14px; box-shadow:0 10px 30px rgba(20,30,60,0.04); margin-bottom:12px;}
-    h2,h3{margin:0 0 8px 0;}
-    .small-muted{color:var(--muted); font-size:0.92rem;}
-    /* schedule blocks */
-    .group-time{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px; border-radius:10px; background:linear-gradient(180deg,#fff,#fbfdff); border:1px solid rgba(10,20,40,0.03); margin-bottom:8px;}
-    .group-title{font-weight:700;}
-    .group-hours{color:var(--muted); font-weight:600}
+    html,body{height:100%;}
+    body{
+      background:var(--page-bg);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color:#222;
+      padding-top: 80px;
+    }
+
+    /* Navbar */
+    .topbar{
+      position: fixed;
+      top: 0; left:0; right:0;
+      height:72px;
+      background:linear-gradient(90deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
+      backdrop-filter: blur(6px);
+      display:flex;
+      align-items:center;
+      box-shadow: 0 6px 18px rgba(30,40,60,0.06);
+      z-index: 1000;
+      padding: 0 18px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:700; color:var(--accent);
+      font-size:18px;
+    }
+    .brand .logo{
+      width:42px;height:42px;border-radius:10px;
+      background:linear-gradient(135deg,var(--accent),#7cc3ff);
+      display:flex;align-items:center;justify-content:center;color:white;font-weight:700;
+      box-shadow: 0 6px 18px rgba(43,140,255,0.18);
+    }
+
+    /* nav menu */
+    .menu{
+      margin-left:24px;
+      display:flex; gap:6px;
+    }
+    .menu .nav-item button{
+      background:transparent; border:0; padding:8px 12px; border-radius:10px;
+      color:#0b1a2b; font-weight:600;
+    }
+    .menu .nav-item button.active{
+      background: rgba(43,140,255,0.12); color: var(--accent);
+      box-shadow: none;
+    }
+
+    /* container */
+    .app {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .card-soft{
+      background:var(--card-bg);
+      border-radius:14px;
+      box-shadow: 0 8px 30px rgba(40,50,80,0.04);
+      padding:18px;
+    }
+
+    /* schedule */
+    .group-time {
+      display:flex; justify-content:space-between; align-items:center;
+      gap:12px; padding:12px; border-radius:10px;
+      transition: transform .18s ease, box-shadow .18s;
+      background: linear-gradient(180deg, rgba(250,250,255,1), rgba(247,250,255,1));
+      border: 1px solid rgba(20,30,60,0.03);
+    }
+    .group-time:hover{ transform: translateY(-4px); box-shadow: 0 10px 30px rgba(22,35,62,0.06); }
+
+    .group-title{ font-weight:700; font-size:1.05rem; }
+    .group-hours{ color:var(--muted); font-weight:600; }
+
     /* trainer */
-    .trainer{display:flex; gap:12px; align-items:center; cursor:pointer;}
-    .avatar{width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,#ffd89b,#ffb199);display:flex;align-items:center;justify-content:center;font-weight:700;color:#222;font-size:20px}
-    .address{color:var(--muted); margin-top:6px;}
-    /* Profile section */
-    .form-control{border-radius:10px;}
-    .btn-main{background:var(--accent); color:white; border:0; padding:10px 14px; border-radius:12px; font-weight:700;}
-    .btn-secondary{background:#fff;border:1px solid rgba(10,20,40,0.06); padding:8px 12px; border-radius:10px;}
-    .child-card{display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:10px; border:1px solid rgba(10,20,40,0.035); background:linear-gradient(180deg,#fff,#fbfdff); margin-bottom:8px;}
-    .child-meta{color:var(--muted); font-size:0.92rem;}
-    /* Bottom nav (mobile) */
-    .bottom-nav{display:none;}
-    /* responsive layout for mobile */
+    .trainer{
+      display:flex; gap:14px; align-items:center;
+    }
+    .trainer .avatar{
+      width:78px;height:78px;border-radius:12px;
+      background:linear-gradient(135deg,#ffd89b,#ffb199);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#222;
+      font-size:20px; box-shadow: 0 8px 26px rgba(255,170,100,0.12);
+    }
+    .address{ color:var(--muted); font-size:0.95rem; margin-top:8px; }
+
+    /* profile section */
+    #profileSection .form-control{ border-radius:10px; }
+    .child-card {
+      display:flex; justify-content:space-between; align-items:center;
+      gap:12px; padding:12px; border-radius:10px; border:1px solid rgba(10,20,40,0.035);
+      background: linear-gradient(180deg,#fff,#fbfdff);
+    }
+    .child-meta { color:var(--muted); font-size:0.9rem; }
+    .btn-ghost { background:transparent; border:1px solid rgba(10,20,40,0.06); border-radius:9px; padding:6px 10px; }
+
+    /* responsive tweaks */
     @media (max-width:768px){
-      main.app{margin:92px 12px 92px;}
-      .topbar-right{display:none;}
-      .brand-title{font-size:14px;}
-      .group-time{padding:14px;}
-      .avatar{width:56px;height:56px;font-size:18px}
-      .btn-main{width:100%;}
-      /* bottom nav visible on small screens */
-      .bottom-nav{position:fixed; left:8px; right:8px; bottom:10px; display:flex; gap:8px; justify-content:space-between; padding:8px; background:rgba(255,255,255,0.95); border-radius:14px; box-shadow:0 10px 40px rgba(10,20,40,0.08); z-index:1000;}
-      .bottom-nav button{flex:1; padding:10px 8px; border-radius:10px; border:0; background:transparent; font-weight:700; color:var(--muted);}
-      .bottom-nav button.active{background:linear-gradient(90deg,var(--accent),#6ec3ff); color:#fff;}
+      .menu { display:none; }
+      body { padding-top:92px; }
+      .trainer { flex-direction:row; }
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
+  <div class="topbar">
     <div class="brand">
       <div class="logo">KS</div>
       <div>
-        <div class="brand-title">Карате — Студия</div>
-        <div class="small-muted" style="font-size:12px">расписание и профиль</div>
+        Карате<br><small style="font-weight:600;color:#1f2b3a;opacity:.6">Студия — расписание и профиль</small>
       </div>
     </div>
-    <div class="topbar-right">
-      <div class="small-muted">ул. Спортивная, 12</div>
-      <div class="small-muted">Тел: +7 (900) 123-45-67</div>
+
+    <nav class="menu ms-3">
+      <div class="nav-item"><button id="nav-home" class="active" onclick="showSection('home')">Главная</button></div>
+      <div class="nav-item"><button id="nav-schedule" onclick="showSection('schedule')">Расписание</button></div>
+      <div class="nav-item"><button id="nav-profile" onclick="showSection('profile')">Мой профиль</button></div>
+    </nav>
+
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <div class="small" style="color:var(--muted)">Адрес:</div>
+      <div style="font-weight:700">ул. Спортивная, 12, офис 3</div>
     </div>
-  </header>
+  </div>
 
   <main class="app">
     <!-- HOME -->
-    <section id="homeSection" class="card-soft" aria-label="Главная">
-      <h2>Расписание и тренер</h2>
-      <p class="small-muted">Группы по возрасту — выберите удобное время</p>
+    <section id="homeSection" class="mb-4">
+      <div class="card-soft mb-4">
+        <h2 style="margin-bottom:8px">Расписание сегодня</h2>
+        <p class="small" style="color:var(--muted); margin-bottom:12px;">Группы по возрасту — удобное распределение времени занятий</p>
 
-      <div style="margin-top:12px">
-        <div class="group-time">
-          <div>
-            <div class="group-title">Новые школьники</div>
-            <div class="group-hours">17:30 — 18:30</div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="group-time">
+              <div>
+                <div class="group-title">Новые школьники</div>
+                <div class="group-hours">17:30 — 18:30</div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="group-time">
-          <div>
-            <div class="group-title">Дошкольники</div>
-            <div class="group-hours">18:30 — 19:30</div>
+          <div class="col-md-4">
+            <div class="group-time">
+              <div>
+                <div class="group-title">Дошкольники</div>
+                <div class="group-hours">18:30 — 19:30</div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="group-time">
-          <div>
-            <div class="group-title">Старшая группа</div>
-            <div class="group-hours">19:30 — 21:00</div>
+          <div class="col-md-4">
+            <div class="group-time">
+              <div>
+                <div class="group-title">Старшая группа</div>
+                <div class="group-hours">19:30 — 21:00</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div style="margin-top:14px" class="card-soft">
-        <!-- Trainer clickable -->
-        <div class="trainer" role="button" onclick="openTrainerTelegram()" title="Открыть Telegram тренера">
-          <div class="avatar">ПШ</div>
+      <div class="card-soft mb-4 d-flex gap-3 align-items-center">
+        <div class="trainer">
+          <div class="avatar">AK</div>
           <div>
-            <div style="font-weight:700">Павел Шестеров</div>
-            <div class="small-muted">Главный тренер • 8 лет опыта</div>
-            <div class="address">Студия: ул. Спортивная, 12 — вход с торца</div>
+            <div style="font-weight:700">Алексей Ковалёв</div>
+            <div class="small" style="color:var(--muted)">Главный тренер — 6 дан, опыт 12 лет</div>
+            <div class="address">Студия: ул. Спортивная, 12 • Тел: +7 (900) 123-45-67</div>
           </div>
+        </div>
+        <div class="ms-auto text-end">
+          <div class="small-muted" style="color:var(--muted)">Следующий набор</div>
+          <div style="font-weight:700">1 октября</div>
         </div>
       </div>
 
       <div class="card-soft">
-        <h3>Как нас найти</h3>
-        <p class="small-muted">Проходим через арку, поднимаемся на 2 этаж. Парковка во дворе.</p>
-        <!-- компактная карта -->
-        <iframe src="https://www.google.com/maps?q=48.8566,2.3522&z=15&output=embed" style="width:100%;height:200px;border:0;border-radius:10px;" loading="lazy"></iframe>
+        <h5>Как нас найти</h5>
+        <p class="address">Проходим через арку, поднимаемся по лестнице — студия на 2 этаже. Рядом — станция метро "Победа", парковка во дворе.</p>
+        <iframe
+          src="https://www.google.com/maps?q=48.8566,2.3522&z=15&output=embed"
+          style="width:100%;height:220px;border:0;border-radius:10px;margin-top:10px;"
+          loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </section>
+
+    <!-- SCHEDULE (separate page also) -->
+    <section id="scheduleSection" class="mb-4" style="display:none;">
+      <div class="card-soft">
+        <h3>Полное расписание</h3>
+        <p class="small" style="color:var(--muted)">Группы и время занятий</p>
+
+        <div class="row g-3 mt-3">
+          <div class="col-12 col-md-6">
+            <div class="group-time">
+              <div>
+                <div class="group-title">Новые школьники</div>
+                <div class="group-hours">17:30 — 18:30</div>
+                <div class="small" style="color:var(--muted);margin-top:6px">Возраст: 7–10 лет</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="group-time">
+              <div>
+                <div class="group-title">Дошкольники</div>
+                <div class="group-hours">18:30 — 19:30</div>
+                <div class="small" style="color:var(--muted);margin-top:6px">Возраст: 4–6 лет</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 mt-3">
+            <div class="group-time">
+              <div>
+                <div class="group-title">Старшая группа</div>
+                <div class="group-hours">19:30 — 21:00</div>
+                <div class="small" style="color:var(--muted);margin-top:6px">Возраст: 11+ лет</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
     <!-- PROFILE -->
-    <section id="profileSection" class="card-soft" style="margin-top:12px; display:none;" aria-label="Профиль">
-      <h2>Мой профиль</h2>
-      <p class="small-muted">Зарегистрируйте ребёнка — остальное показывается автоматически</p>
+    <section id="profileSection" style="display:none;">
+      <div class="card-soft mb-3">
+        <h3>Мой профиль</h3>
+        <p class="small" style="color:var(--muted)">Здесь можно зарегистрировать ребёнка и посмотреть остатки занятий.</p>
 
-      <div style="margin-top:10px; display:flex; gap:10px; flex-direction:column;">
-        <input id="childNameInput" class="form-control" placeholder="Имя ребёнка" aria-label="Имя ребёнка">
-        <div style="display:flex; gap:8px;">
-          <button class="btn-main" onclick="registerChild()">Добавить ребёнка</button>
-          <button class="btn-secondary" onclick="loadChildren()">Обновить</button>
-        </div>
-        <div id="childrenList" style="margin-top:10px;">
-          <div class="small-muted">Загрузка...</div>
+        <div class="row g-3 mt-3">
+          <div class="col-md-6">
+            <div>
+              <label class="form-label">Имя ребёнка</label>
+              <input id="childNameInput" class="form-control" placeholder="Иван">
+            </div>
+            <div class="mt-2 d-flex gap-2">
+              <button class="btn btn-primary" onclick="registerChild()">Добавить</button>
+              <button class="btn btn-outline-secondary" onclick="loadChildren()">Обновить</button>
+            </div>
+            <div class="small text-muted mt-2">Родителям не нужно вводить количество занятий — только имя.</div>
+          </div>
+
+          <div class="col-md-6">
+            <div style="font-weight:700">Ваши дети</div>
+            <div id="childrenList" class="mt-2">
+              <div class="small text-muted">Загрузка...</div>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
 
-    <!-- SCHEDULE DETAILED (optional) -->
-    <section id="scheduleSection" class="card-soft" style="margin-top:12px; display:none;">
-      <h2>Подробное расписание</h2>
-      <p class="small-muted">Возрастные группы и время</p>
-
-      <div style="margin-top:12px;">
-        <div class="group-time"><div><div class="group-title">Новые школьники</div><div class="group-hours">17:30 — 18:30</div></div></div>
-        <div class="group-time"><div><div class="group-title">Дошкольники</div><div class="group-hours">18:30 — 19:30</div></div></div>
-        <div class="group-time"><div><div class="group-title">Старшая группа</div><div class="group-hours">19:30 — 21:00</div></div></div>
+      <!-- optionally quick actions -->
+      <div class="card-soft">
+        <h5>Контакты и заметки</h5>
+        <p class="small" style="color:var(--muted)">Если нужно поменять остатки занятий — делаем это через админку тренера. Для экстренных вопросов звоните тренеру.</p>
       </div>
     </section>
-
   </main>
 
-  <!-- Bottom nav for mobile -->
-  <div class="bottom-nav" id="bottomNav" role="navigation" aria-label="Навигация">
-    <button id="btnHome" class="active" onclick="navigate('home')">Главная</button>
-    <button id="btnSchedule" onclick="navigate('schedule')">Расписание</button>
-    <button id="btnProfile" onclick="navigate('profile')">Профиль</button>
-  </div>
-
   <script>
-    // ========== Настройки (замени gasUrl на свой) ==========
+    // === Настройки API ===
+    // ЗАМЕНИТЕ gasUrl на ваш URL web app (deploy -> Web app -> URL /exec)
     const gasUrl = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec';
-    // Тренер: ссылка Telegram -> поменяй на свою (пример: 'https://t.me/username' или 'tg://resolve?domain=username')
-    const trainerTelegram = 'https://t.me/your_trainer_username';
 
-    // Telegram WebApp (если используется)
+    // Telegram WebApp init (необязательно, но оставил)
     const webApp = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-    try { webApp && webApp.ready(); } catch(e){}
+    try { webApp && webApp.ready(); } catch(e){ /* ignore */ }
     const user = webApp && webApp.initDataUnsafe ? webApp.initDataUnsafe.user : null;
     const telegramID = user ? user.id : 'test123';
 
-    // Navigation helpers
-    function navigate(page){
-      document.getElementById('homeSection').style.display = page === 'home' ? '' : 'none';
-      document.getElementById('scheduleSection').style.display = page === 'schedule' ? '' : 'none';
-      document.getElementById('profileSection').style.display = page === 'profile' ? '' : 'none';
-      // bottom nav active state
-      document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
-      if (page === 'home') document.getElementById('btnHome').classList.add('active');
-      if (page === 'schedule') document.getElementById('btnSchedule').classList.add('active');
-      if (page === 'profile') document.getElementById('btnProfile').classList.add('active');
-      // load children on profile
-      if (page === 'profile') loadChildren();
-      // scroll to top of main for better UX on mobile
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    // === Навигация ===
+    function setActiveNav(id) {
+      document.querySelectorAll('.menu .nav-item button').forEach(b => b.classList.remove('active'));
+      const btn = document.getElementById('nav-' + id);
+      if (btn) btn.classList.add('active');
     }
-    // on desktop we still have topbar; on small screens show bottom nav
-    function updateNavVisibility(){
-      if (window.innerWidth <= 768){
-        document.getElementById('bottomNav').style.display = 'flex';
-      } else {
-        document.getElementById('bottomNav').style.display = 'none';
-      }
+    function showSection(name) {
+      // sections: home, schedule, profile
+      document.getElementById('homeSection').style.display = name === 'home' ? '' : 'none';
+      document.getElementById('scheduleSection').style.display = name === 'schedule' ? '' : 'none';
+      document.getElementById('profileSection').style.display = name === 'profile' ? '' : 'none';
+      setActiveNav(name);
+      if (name === 'profile') loadChildren();
     }
-    window.addEventListener('resize', updateNavVisibility);
-    updateNavVisibility();
 
     // initial
-    navigate('home');
+    showSection('home');
 
-    // ========== Trainer click ==========
-    function openTrainerTelegram(){
-      // открываем в новом окне — пользователь заменит trainerTelegram на нужную ссылку
-      window.open(trainerTelegram, '_blank');
-    }
-
-    // ========== API: registerChild (form-urlencoded), loadChildren ==========
-    async function registerChild(){
-      const input = document.getElementById('childNameInput');
-      const name = (input.value || '').trim();
-      if (!name) { alert('Введите имя ребёнка'); return; }
+    // === Работа с API: registerChild (form-urlencoded), loadChildren ===
+    async function registerChild() {
+      const nameInput = document.getElementById('childNameInput');
+      const childName = (nameInput.value || '').trim();
+      if (!childName) { alert('Введите имя ребёнка'); return; }
 
       try {
         const params = new URLSearchParams();
-        params.append('action','addChild');
+        params.append('action', 'addChild');
         params.append('telegramID', telegramID);
-        params.append('childName', name);
+        params.append('childName', childName);
 
         const resp = await fetch(gasUrl, {
           method: 'POST',
@@ -232,40 +333,41 @@
           return;
         }
 
-        if (result.success){
-          input.value = '';
+        if (result.success) {
+          nameInput.value = '';
           await loadChildren();
-          showToast('Ребёнок добавлен');
+          showTinyToast('Ребёнок добавлен');
         } else {
           alert(result.message || 'Ошибка при добавлении');
         }
       } catch (err) {
         console.error(err);
-        alert('Ошибка сети или неверный URL WebApp. Проверь деплой и права доступа.');
+        alert('Ошибка сети или неверный URL WebApp. Проверьте деплой и права доступа.');
       }
     }
 
-    async function loadChildren(){
+    async function loadChildren() {
       const list = document.getElementById('childrenList');
-      list.innerHTML = '<div class="small-muted">Загрузка...</div>';
+      list.innerHTML = '<div class="small text-muted">Загрузка...</div>';
       try {
         const resp = await fetch(`${gasUrl}?action=getData&telegramID=${telegramID}`);
         const data = await resp.json();
-        const children = Array.isArray(data.children) ? data.children : [];
+        // ожидаем { success: true, children: [...] } (в зависимости от реализации)
+        const children = (data.children && Array.isArray(data.children)) ? data.children : [];
 
-        if (children.length === 0){
-          list.innerHTML = '<div class="small-muted">Ребёнок(и) не зарегистрированы.</div>';
+        if (children.length === 0) {
+          list.innerHTML = '<div class="small text-muted">Ребёнок(и) не зарегистрированы.</div>';
           return;
         }
 
         list.innerHTML = children.map(ch => {
-          return `<div class="child-card">
+          return `<div class="mb-2 child-card">
                     <div>
                       <div style="font-weight:700">${escapeHtml(ch.childName)}</div>
                       <div class="child-meta">Осталось занятий: <strong>${Number(ch.remaining)}</strong></div>
                     </div>
-                    <div style="min-width:80px; text-align:right">
-                      <button class="btn-secondary" onclick="alert('Если нужно изменить остаток — обратитесь к тренеру')">править</button>
+                    <div style="min-width:120px; text-align:right">
+                      <button class="btn btn-sm btn-ghost" onclick="promptSetRemaining('${encodeURIComponent(ch.childName)}')">править</button>
                     </div>
                   </div>`;
         }).join('');
@@ -277,25 +379,39 @@
 
     function escapeHtml(text){
       if (text === undefined || text === null) return '';
-      return String(text).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+      return String(text)
+        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+        .replaceAll('"','&quot;').replaceAll("'",'&#039;');
+    }
+
+    function promptSetRemaining(childNameEncoded){
+      // Простой placeholder: тренер/админ должен менять количество в таблице; здесь можно подать подсказку.
+      const name = decodeURIComponent(childNameEncoded);
+      alert('Если нужно изменить количество занятий для ' + name + ', свяжитесь с тренером — изменения делаются через админку.');
     }
 
     // tiny toast
-    function showToast(msg){
+    function showTinyToast(msg){
       const el = document.createElement('div');
-      el.style.position='fixed'; el.style.left='50%'; el.style.transform='translateX(-50%)'; el.style.bottom='110px';
-      el.style.background='var(--accent)'; el.style.color='#fff'; el.style.padding='10px 14px'; el.style.borderRadius='10px'; el.style.boxShadow='0 8px 30px rgba(20,40,80,0.12)'; el.style.fontWeight=700; el.style.zIndex=2000;
+      el.style.position = 'fixed';
+      el.style.right = '18px';
+      el.style.bottom = '18px';
+      el.style.padding = '10px 14px';
+      el.style.background = 'linear-gradient(90deg,var(--accent),#6ec3ff)';
+      el.style.color = '#fff';
+      el.style.borderRadius = '10px';
+      el.style.boxShadow = '0 10px 30px rgba(10,20,40,0.12)';
+      el.style.fontWeight = 600;
       el.innerText = msg;
       document.body.appendChild(el);
-      setTimeout(()=> el.style.opacity='0',1400);
-      setTimeout(()=> el.remove(),2000);
+      setTimeout(()=> el.style.opacity='0', 1700);
+      setTimeout(()=> el.remove(), 2200);
     }
 
-    // Accessibility: allow Enter key to submit child name
-    document.addEventListener('keydown', function(e){
-      const input = document.getElementById('childNameInput');
-      if (document.activeElement === input && e.key === 'Enter') registerChild();
-    });
+    // автозагрузка детей при старте, если профиль открыт
+    // (не вызывать loadChildren на стартовой странице)
+    // loadChildren();
+
   </script>
 </body>
 </html>
