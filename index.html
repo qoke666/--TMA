@@ -1,312 +1,84 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Детская Студия (Макет)</title>
-  <style>
-    :root { --bg-main: #101010; --bg-secondary: #1C1C1C; --text-main: #FFFFFF; --text-secondary: #8E8E93; --accent-blue: #007AFF; --accent-green: #34C759; --border-color: #2D2D2D; }
-    @font-face { font-family: 'Inter'; src: url('https://rsms.me/inter/font-files/Inter-Regular.woff2?v=3.19') format('woff2'); font-weight: 400; }
-    @font-face { font-family: 'Inter'; src: url('https://rsms.me/inter/font-files/Inter-Medium.woff2?v=3.19') format('woff2'); font-weight: 500; }
-    body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; background-color: var(--bg-main); color: var(--text-main); padding: 16px; -webkit-font-smoothing: antialiased; }
-    .container { max-width: 800px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .header__logo svg { width: 40px; height: 40px; }
-    .promo { background-color: var(--bg-secondary); border-radius: 16px; padding: 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-    .promo__text { flex: 1; }
-    .promo__title { font-size: 24px; font-weight: 700; margin: 0 0 8px 0; }
-    .promo__subtitle { font-size: 16px; color: var(--text-secondary); margin: 0; }
-    .promo__image img { width: 100px; height: 100px; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
-    .tab { padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 20px; border: none; font-weight: 500; cursor: pointer; color: var(--text-secondary); }
-    .tab.active { color: var(--text-main); border-bottom: 2px solid var(--accent-blue); }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .section-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; }
-    .calendar-container, .profile-section, .trainers-grid-container { background-color: var(--bg-secondary); border-radius: 16px; padding: 20px; }
-    .week-selector { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .week-selector__arrow { cursor: pointer; padding: 8px; }
-    .week-selector__date { font-size: 18px; font-weight: 600; }
-    .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 20px; text-align: center; }
-    .day { padding: 10px 5px; border-radius: 8px; transition: background-color 0.2s; opacity: 0.5; }
-    .day.selectable { opacity: 1; cursor: pointer; }
-    .day.active { background-color: var(--accent-blue); }
-    .day__name { font-size: 12px; color: var(--text-secondary); }
-    .day__date { font-weight: 600; }
-    .slot-card { background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-    .slot-card__time { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-    .slot-card__details { font-size: 14px; color: var(--text-secondary); }
-    .child-card { background-color: var(--bg-main); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
-    .child-card__name { font-size: 18px; font-weight: 600; }
-    .child-card__dob { font-size: 14px; color: var(--text-secondary); }
-    .child-card__balance { font-size: 14px; color: var(--accent-green); margin-top: 8px; }
-    .trainer-card { text-align: center; margin-bottom: 20px; }
-    .trainer-card__avatar img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 12px; }
-    .trainer-card__name { font-size: 18px; font-weight: 600; }
-    .trainer-card__speciality { color: var(--text-secondary); }
-    .add-child-form { margin-top: 20px; }
-    .add-child-form input { background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 12px; color: var(--text-main); width: 100%; box-sizing: border-box; }
-    .add-child-form button { background-color: var(--accent-blue); border: none; border-radius: 8px; padding: 12px; color: var(--text-main); font-weight: 500; cursor: pointer; width: 100%; }
-    .loading { text-align: center; color: var(--text-secondary); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание Карате</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { background-color: #f8f9fa; padding: 20px; }
+        .container { max-width: 600px; margin: auto; }
+        .schedule { margin-top: 20px; }
+    </style>
 </head>
-
 <body>
-  <div class="container">
-    <div id="app-body">
-      <header class="header">
-        <div class="header__logo">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="20" fill="white"/><path d="M20 31.6667C26.4435 31.6667 31.6667 26.4435 31.6667 20C31.6667 13.5565 26.4435 8.33334 20 8.33334C13.5565 8.33334 8.33337 13.5565 8.33337 20C8.33337 26.4435 13.5565 31.6667 20 31.6667Z" fill="#007AFF"/></svg>
+    <div class="container">
+        <h1 class="text-center mb-4">Расписание занятий по карате</h1>
+        
+        <!-- Расписание (статическое, можно динамизировать) -->
+        <div class="schedule card p-3 mb-4">
+            <h5>Расписание:</h5>
+            <ul class="list-group">
+                <li class="list-group-item">Понедельник: 18:00 - 19:30</li>
+                <li class="list-group-item">Среда: 18:00 - 19:30</li>
+                <li class="list-group-item">Пятница: 17:00 - 18:30</li>
+            </ul>
         </div>
-      </header>
-      <main>
-        <section class="promo">
-          <div class="promo__text">
-            <h1 class="promo__title">Детская Студия</h1>
-            <p class="promo__subtitle">Вся информация о занятиях в одном месте.</p>
-          </div>
-          <div class="promo__image">
-            <img src="https://em-content.zobj.net/source/apple/354/person-cartwheeling_1f938.png" alt="Гимнастика">
-          </div>
-        </section>
-
-        <nav class="tabs">
-          <div class="tab active" data-tab="schedule">Расписание</div>
-          <div class="tab" data-tab="trainers">Тренеры</div>
-          <div class="tab" data-tab="profile">Профиль</div>
-        </nav>
-
-        <div class="tab-content active" id="schedule">
-          <div class="calendar-container">
-            <div class="week-selector">
-                <div class="week-selector__arrow" id="prev-week"> &lt; </div>
-                <div class="week-selector__date" id="week-display"></div>
-                <div class="week-selector__arrow" id="next-week"> &gt; </div>
-            </div>
-            <div class="days-grid" id="days-grid-container"></div>
-            <div class="slots-list" id="slots-list-container"></div>
-          </div>
+        
+        <!-- Регистрация и просмотр -->
+        <div id="registerSection" class="card p-3 mb-4">
+            <h5>Зарегистрировать ребенка</h5>
+            <input type="text" id="childName" class="form-control mb-2" placeholder="Имя ребенка">
+            <button onclick="registerChild()" class="btn btn-primary">Зарегистрировать</button>
         </div>
-
-        <div class="tab-content" id="trainers">
-          <div class="trainers-grid-container" id="trainers-grid-container"></div>
+        
+        <div id="remainingSection" class="card p-3">
+            <h5>Оставшиеся занятия</h5>
+            <p id="remainingInfo">Загрузка...</p>
+            <button onclick="loadData()" class="btn btn-secondary">Обновить</button>
         </div>
-
-        <div class="tab-content" id="profile">
-          <div class="profile-section" id="profile-section-container">
-            <h2 class="section-title">Ваши дети</h2>
-            <div id="children-list"></div>
-            <form class="add-child-form" id="add-child-form">
-              <input type="text" id="child-name" placeholder="Имя ребенка" required>
-              <input type="date" id="child-birthdate" required>
-              <button type="submit">Добавить ребенка</button>
-            </form>
-          </div>
-        </div>
-      </main>
     </div>
-  </div>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      if (window.Telegram?.WebApp) {
-        Telegram.WebApp.ready();
-        Telegram.WebApp.expand();
-      }
+    <script>
+        const webApp = window.Telegram.WebApp;
+        webApp.ready();
+        const user = webApp.initDataUnsafe.user;
+        const telegramID = user ? user.id : 'test123'; // Для теста, если не в Telegram
+        const gasUrl = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec'; // Замени на свой URL
 
-      const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec'; // Замените на ваш URL Apps Script
-
-      const state = {
-        userId: Telegram.WebApp.initDataUnsafe?.user?.id || 'test_user', // Получаем user_id из Telegram
-        children: [],
-        balances: {},
-        trainers: {},
-        allSlots: [],
-        currentWeekStart: getStartOfWeek(new Date()),
-        selectedDate: toYYYYMMDD(new Date())
-      };
-
-      const el = {
-        weekDisplay: document.getElementById('week-display'),
-        daysGrid: document.getElementById('days-grid-container'),
-        slotsList: document.getElementById('slots-list-container'),
-        trainersGrid: document.getElementById('trainers-grid-container'),
-        childrenList: document.getElementById('children-list'),
-        addChildForm: document.getElementById('add-child-form'),
-        childName: document.getElementById('child-name'),
-        childBirthdate: document.getElementById('child-birthdate'),
-        prevWeekBtn: document.getElementById('prev-week'),
-        nextWeekBtn: document.getElementById('next-week')
-      };
-
-      function getStartOfWeek(date) { const d = new Date(date); d.setHours(0,0,0,0); const day = d.getDay(); const diff = d.getDate() - day + (day === 0 ? -6 : 1); return new Date(d.setDate(diff)); }
-      function toYYYYMMDD(date) { return date.toISOString().split('T')[0]; }
-      function formatDate(date, options) { return date.toLocaleDateString('ru-RU', options); }
-
-      async function fetchData(type) {
-        try {
-          const response = await fetch(`${APPS_SCRIPT_URL}?type=${type}&user_id=${state.userId}`);
-          if (!response.ok) throw new Error('Network error');
-          return await response.json();
-        } catch (error) {
-          console.error(`Error fetching ${type}:`, error);
-          showNotification(`Ошибка загрузки данных: ${type}`);
-          return {};
-        }
-      }
-
-      async function loadAllData() {
-        const [profileData, trainersData, slotsData] = await Promise.all([
-          fetchData('profile'),
-          fetchData('trainers'),
-          fetchData('slots')
-        ]);
-
-        state.children = profileData.children || [];
-        state.balances = profileData.balances || {};
-        state.trainers = trainersData.trainers?.reduce((acc, t) => ({ ...acc, [t.trainer_id]: t }), {}) || {};
-        state.allSlots = slotsData.slots || [];
-
-        renderProfile();
-        renderTrainers();
-        renderCalendar();
-      }
-
-      function renderTrainers() {
-        el.trainersGrid.innerHTML = `<h2 class="section-title">Наши тренеры</h2>` +
-          (Object.values(state.trainers).map(trainer => `
-            <div class="trainer-card">
-                <div class="trainer-card__avatar"><img src="${trainer.avatar_url || 'https://via.placeholder.com/80'}" alt="${trainer.name}"></div>
-                <div class="trainer-card__name">${trainer.name}</div>
-                <div class="trainer-card__speciality">${trainer.speciality}</div>
-            </div>`).join('') || '<p class="loading">Загрузка...</p>');
-      }
-
-      function renderProfile() {
-        el.childrenList.innerHTML = state.children.map(child => {
-          const balance = state.balances[child.child_id] || 0;
-          return `
-            <div class="child-card">
-                <div class="child-card__name">${child.child_name}</div>
-                <div class="child-card__dob">Дата рождения: ${formatDate(new Date(child.birthdate), {day:'numeric', month:'long', year:'numeric'})}</div>
-                <div class="child-card__balance">Осталось занятий: ${balance}</div>
-            </div>`;
-        }).join('') || '<p class="loading">Загрузка...</p>';
-      }
-
-      function renderCalendar() {
-        const weekStart = state.currentWeekStart;
-        const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 6);
-        el.weekDisplay.textContent = `${formatDate(weekStart, {day:'numeric', month:'short'})} - ${formatDate(weekEnd, {day:'numeric', month:'short'})}`;
-        el.daysGrid.innerHTML = '';
-
-        for (let i = 0; i < 7; i++) {
-          const dayDate = new Date(weekStart); dayDate.setDate(weekStart.getDate() + i);
-          const dayKey = toYYYYMMDD(dayDate);
-          const dayEl = document.createElement('div');
-          dayEl.className = 'day';
-          dayEl.dataset.date = dayKey;
-          dayEl.innerHTML = `<div class="day__name">${formatDate(dayDate, {weekday: 'short'})}</div><div class="day__date">${dayDate.getDate()}</div>`;
-          if (state.allSlots.some(s => s.date === dayKey)) {
-            dayEl.classList.add('selectable');
-            dayEl.addEventListener('click', () => {
-              state.selectedDate = dayKey;
-              document.querySelectorAll('.day.active').forEach(d => d.classList.remove('active'));
-              dayEl.classList.add('active');
-              renderSlotsForDate(dayKey);
+        async function registerChild() {
+            const childName = document.getElementById('childName').value;
+            if (!childName) return alert('Введите имя!');
+            
+            const response = await fetch(gasUrl, {
+                method: 'POST',
+                body: JSON.stringify({ telegramID, childName })
             });
-          }
-          if (dayKey === state.selectedDate) dayEl.classList.add('active');
-          el.daysGrid.appendChild(dayEl);
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Ребенок зарегистрирован!');
+                loadData();
+            } else {
+                alert(result.message || 'Ошибка');
+            }
         }
-        renderSlotsForDate(state.selectedDate);
-      }
 
-      function renderSlotsForDate(dateKey) {
-        if (!dateKey) {
-          el.slotsList.innerHTML = '<p>Выберите день.</p>';
-          return;
+        async function loadData() {
+            const response = await fetch(`${gasUrl}?action=getData&telegramID=${telegramID}`);
+            const data = await response.json();
+            
+            if (data.error) {
+                document.getElementById('remainingInfo').innerText = 'Ребенок не зарегистрирован. Зарегистрируйте выше.';
+            } else {
+                document.getElementById('remainingInfo').innerText = `${data.childName}: ${data.remaining} занятий осталось.`;
+                document.getElementById('registerSection').style.display = 'none'; // Скрываем регистрацию после успеха
+            }
         }
-        const slotsForDay = state.allSlots.filter(s => s.date === dateKey);
-        el.slotsList.innerHTML = slotsForDay.length > 0 ? slotsForDay.map(slot => {
-          const trainer = state.trainers[slot.trainer_id] || { name: 'Тренер' };
-          return `<div class="slot-card">
-                    <div class="slot-card__time">${slot.time}</div>
-                    <div class="slot-card__details">Тренер: ${trainer.name}</div>
-                  </div>`;
-        }).join('') : '<p>На выбранный день занятий нет.</p>';
-      }
 
-      async function addChild(name, birthdate) {
-        try {
-          const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'add_child', user_id: state.userId, child_name: name, birthdate })
-          });
-          if (!response.ok) throw new Error('Network error');
-          const result = await response.json();
-          if (result.status === 'ok') {
-            state.children.push({ child_id: result.child_id, child_name: name, birthdate });
-            state.balances[result.child_id] = 0; // Начальный баланс
-            renderProfile();
-            showNotification('Ребенок добавлен');
-          } else {
-            showNotification('Ошибка добавления');
-          }
-        } catch (error) {
-          console.error('Error adding child:', error);
-          showNotification('Ошибка добавления');
-        }
-      }
-
-      function changeWeek(direction) {
-        state.currentWeekStart.setDate(state.currentWeekStart.getDate() + (7 * direction));
-        state.selectedDate = toYYYYMMDD(state.currentWeekStart);
-        renderCalendar();
-      }
-
-      function showNotification(message) {
-        const notif = document.createElement('div');
-        notif.textContent = message;
-        notif.style.position = 'fixed'; notif.style.bottom = '20px'; notif.style.left = '50%'; notif.style.transform = 'translateX(-50%)';
-        notif.style.background = 'var(--accent-green)'; notif.style.padding = '10px 20px'; notif.style.borderRadius = '8px';
-        document.body.appendChild(notif);
-        setTimeout(() => notif.remove(), 3000);
-      }
-
-      function init() {
-        loadAllData();
-
-        document.querySelectorAll('.tab').forEach(tab => {
-          tab.addEventListener('click', (e) => {
-            document.querySelectorAll('.tab.active, .tab-content.active').forEach(activeEl => activeEl.classList.remove('active'));
-            const tabId = e.currentTarget.dataset.tab;
-            e.currentTarget.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-          });
-        });
-
-        el.prevWeekBtn.addEventListener('click', () => changeWeek(-1));
-        el.nextWeekBtn.addEventListener('click', () => changeWeek(1));
-
-        el.addChildForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          const name = el.childName.value.trim();
-          const birthdate = el.childBirthdate.value;
-          if (name && birthdate) {
-            addChild(name, birthdate);
-            el.childName.value = '';
-            el.childBirthdate.value = '';
-          } else {
-            showNotification('Заполните все поля');
-          }
-        });
-      }
-
-      init();
-    });
-  </script>
+        // Автозагрузка при старте
+        loadData();
+    </script>
 </body>
 </html>
