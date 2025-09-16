@@ -65,6 +65,9 @@
         const telegramID = user ? user.id : 'test123'; // Для теста
         const gasUrl = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec'; // Замени на свой URL GAS
 
+        console.log('Debug: TelegramID =', telegramID); // Отладка ID
+        console.log('Debug: GAS URL =', gasUrl); // Отладка URL
+
         let allChildren = [];
         let selectedChildIndex = -1;
 
@@ -75,13 +78,25 @@
                 return;
             }
             
+            console.log('Debug: Registering child:', childName, 'with ID:', telegramID); // Отладка
+            
             try {
                 const response = await fetch(gasUrl, {
                     method: 'POST',
+                    mode: 'cors', // Явно CORS
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ telegramID, childName })
                 });
+                
+                console.log('Debug: POST Response status:', response.status); // Отладка статус
+                console.log('Debug: POST Response headers:', response.headers); // Отладка headers
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const result = await response.json();
+                console.log('Debug: POST Result:', result); // Отладка ответа
                 
                 if (result.success) {
                     alert('Ребенок зарегистрирован!');
@@ -91,7 +106,8 @@
                     showError(result.message || 'Ошибка регистрации');
                 }
             } catch (error) {
-                showError('Ошибка: ' + error.message);
+                console.error('Debug: POST Error:', error); // Отладка ошибки
+                showError('Ошибка регистрации: ' + error.message);
             }
         }
 
@@ -100,12 +116,22 @@
             loadingInfo.innerText = 'Загрузка данных...';
             clearError();
             
+            console.log('Debug: Loading data for ID:', telegramID); // Отладка
+            
             try {
-                const response = await fetch(`${gasUrl}?action=getData&telegramID=${telegramID}`);
+                const response = await fetch(`${gasUrl}?action=getData&telegramID=${telegramID}`, {
+                    method: 'GET',
+                    mode: 'cors' // Явно CORS
+                });
+                
+                console.log('Debug: GET Response status:', response.status); // Отладка статус
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error: ${response.status}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
+                
                 const data = await response.json();
+                console.log('Debug: GET Data:', data); // Отладка ответа
                 
                 if (data.error) {
                     document.getElementById('childrenList').innerText = 'Нет зарегистрированных детей.';
@@ -119,6 +145,7 @@
                 allChildren = data.children;
                 showChildrenList();
             } catch (error) {
+                console.error('Debug: GET Error:', error); // Отладка ошибки
                 showError('Ошибка загрузки: ' + error.message);
             }
         }
