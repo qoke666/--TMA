@@ -1,84 +1,230 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Расписание Карате</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body { background-color: #f8f9fa; padding: 20px; }
-        .container { max-width: 600px; margin: auto; }
-        .schedule { margin-top: 20px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Расписание Карате — Мои дети</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body { background-color: #f8f9fa; padding: 20px; }
+    .container { max-width: 760px; margin: auto; }
+    .schedule { margin-top: 20px; }
+    .child-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .child-controls button { margin-left:6px; }
+    .small-muted { font-size:0.85rem; color:#6c757d; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="text-center mb-4">Расписание занятий по карате</h1>
-        
-        <!-- Расписание (статическое, можно динамизировать) -->
-        <div class="schedule card p-3 mb-4">
-            <h5>Расписание:</h5>
-            <ul class="list-group">
-                <li class="list-group-item">Понедельник: 18:00 - 19:30</li>
-                <li class="list-group-item">Среда: 18:00 - 19:30</li>
-                <li class="list-group-item">Пятница: 17:00 - 18:30</li>
-            </ul>
-        </div>
-        
-        <!-- Регистрация и просмотр -->
-        <div id="registerSection" class="card p-3 mb-4">
-            <h5>Зарегистрировать ребенка</h5>
-            <input type="text" id="childName" class="form-control mb-2" placeholder="Имя ребенка">
-            <button onclick="registerChild()" class="btn btn-primary">Зарегистрировать</button>
-        </div>
-        
-        <div id="remainingSection" class="card p-3">
-            <h5>Оставшиеся занятия</h5>
-            <p id="remainingInfo">Загрузка...</p>
-            <button onclick="loadData()" class="btn btn-secondary">Обновить</button>
-        </div>
+  <div class="container">
+    <h1 class="text-center mb-3">Расписание занятий по карате</h1>
+
+    <div class="schedule card p-3 mb-4">
+      <h5>Расписание:</h5>
+      <ul class="list-group">
+        <li class="list-group-item">Понедельник: 18:00 - 19:30</li>
+        <li class="list-group-item">Среда: 18:00 - 19:30</li>
+        <li class="list-group-item">Пятница: 17:00 - 18:30</li>
+      </ul>
     </div>
 
-    <script>
-        const webApp = window.Telegram.WebApp;
-        webApp.ready();
-        const user = webApp.initDataUnsafe.user;
-        const telegramID = user ? user.id : 'test123'; // Для теста, если не в Telegram
-        const gasUrl = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec'; // Замени на свой URL
+    <div id="registerSection" class="card p-3 mb-4">
+      <h5>Добавить ребенка</h5>
+      <div class="mb-2">
+        <input type="text" id="childName" class="form-control" placeholder="Имя ребенка">
+      </div>
+      <div class="mb-2">
+        <input type="number" id="initialRemaining" class="form-control" placeholder="Начальное количество занятий (по умолчанию 10)">
+      </div>
+      <div>
+        <button onclick="registerChild()" class="btn btn-primary">Добавить</button>
+      </div>
+      <div class="small-muted mt-2">Можно добавить нескольких детей — они появятся в списке ниже.</div>
+    </div>
 
-        async function registerChild() {
-            const childName = document.getElementById('childName').value;
-            if (!childName) return alert('Введите имя!');
-            
-            const response = await fetch(gasUrl, {
-                method: 'POST',
-                body: JSON.stringify({ telegramID, childName })
-            });
-            const result = await response.json();
-            
-            if (result.success) {
-                alert('Ребенок зарегистрирован!');
-                loadData();
-            } else {
-                alert(result.message || 'Ошибка');
-            }
-        }
+    <div id="remainingSection" class="card p-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="m-0">Оставшиеся занятия</h5>
+        <div>
+          <button onclick="loadData()" class="btn btn-outline-secondary btn-sm">Обновить</button>
+        </div>
+      </div>
+      <div id="childrenList">
+        <p class="text-muted">Загрузка...</p>
+      </div>
+    </div>
+  </div>
 
-        async function loadData() {
-            const response = await fetch(`${gasUrl}?action=getData&telegramID=${telegramID}`);
-            const data = await response.json();
-            
-            if (data.error) {
-                document.getElementById('remainingInfo').innerText = 'Ребенок не зарегистрирован. Зарегистрируйте выше.';
-            } else {
-                document.getElementById('remainingInfo').innerText = `${data.childName}: ${data.remaining} занятий осталось.`;
-                document.getElementById('registerSection').style.display = 'none'; // Скрываем регистрацию после успеха
-            }
-        }
+<script>
+  const webApp = window.Telegram.WebApp;
+  webApp.ready();
+  const user = webApp.initDataUnsafe ? webApp.initDataUnsafe.user : null;
+  const telegramID = user ? user.id : 'test123';
+  // Заменить на URL вашего опубликованного Web App
+  const gasUrl = 'https://script.google.com/macros/s/AKfycbwdVdDFU-_w7VK_t-u0tTNbnm4YwhTspaBKUuq6JwUOlAqKiFLFPcQ_W1My1pTNKRl-7A/exec';
 
-        // Автозагрузка при старте
+  async function registerChild() {
+    const childName = document.getElementById('childName').value.trim();
+    const initialRemainingRaw = document.getElementById('initialRemaining').value;
+    const initialRemaining = initialRemainingRaw ? Number(initialRemainingRaw) : 10;
+    if (!childName) return alert('Введите имя ребенка!');
+    try {
+      const resp = await fetch(gasUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'addChild', telegramID, childName, initialRemaining })
+      });
+      const result = await resp.json();
+      if (result.success) {
+        document.getElementById('childName').value = '';
+        document.getElementById('initialRemaining').value = '';
         loadData();
-    </script>
+        alert('Ребенок добавлен!');
+      } else {
+        alert(result.message || 'Ошибка добавления');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Ошибка сети');
+    }
+  }
+
+  async function loadData() {
+    const list = document.getElementById('childrenList');
+    list.innerHTML = '<p class="text-muted">Загрузка...</p>';
+    try {
+      const resp = await fetch(`${gasUrl}?action=getData&telegramID=${telegramID}`);
+      const data = await resp.json();
+      if (!data.success) {
+        list.innerHTML = `<p class="text-danger">${data.message || 'Ошибка'}</p>`;
+        return;
+      }
+      const children = data.children || [];
+      if (children.length === 0) {
+        list.innerHTML = '<p>Ребенок(и) не зарегистрированы. Добавьте выше.</p>';
+        return;
+      }
+      // Построим список
+      const html = children.map(ch => {
+        return `
+          <div class="mb-2 p-2 border rounded child-row" data-createdat="${ch.createdAt}">
+            <div style="flex:1">
+              <div><strong>${escapeHtml(ch.childName)}</strong></div>
+              <div class="small-muted">Осталось: <span class="remaining">${Number(ch.remaining)}</span> занятий</div>
+              <div class="small-muted">ID записи: ${escapeHtml(ch.createdAt)}</div>
+            </div>
+            <div class="child-controls text-end">
+              <button class="btn btn-sm btn-outline-primary" onclick="decrement('${encodeURIComponent(ch.createdAt)}', this)">-1</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="promptSetRemaining('${encodeURIComponent(ch.createdAt)}')">править</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteChild('${encodeURIComponent(ch.createdAt)}')">удалить</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      list.innerHTML = html;
+    } catch (err) {
+      console.error(err);
+      list.innerHTML = '<p class="text-danger">Ошибка сети при загрузке данных.</p>';
+    }
+  }
+
+  async function decrement(createdAtEncoded, btn) {
+    const createdAt = decodeURIComponent(createdAtEncoded);
+    // оптимистичный UI
+    const parent = btn.closest('[data-createdat]');
+    const remEl = parent.querySelector('.remaining');
+    const current = Number(remEl.innerText);
+    if (!confirm(`Уменьшить количество занятий для ${parent.querySelector('strong').innerText} на 1?`)) return;
+    try {
+      const resp = await fetch(gasUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'decrement', telegramID, createdAt })
+      });
+      const result = await resp.json();
+      if (result.success) {
+        remEl.innerText = result.remaining;
+      } else {
+        alert(result.message || 'Ошибка');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Ошибка сети');
+    }
+  }
+
+  function promptSetRemaining(createdAtEncoded) {
+    const createdAt = decodeURIComponent(createdAtEncoded);
+    const parent = document.querySelector(`[data-createdat="${createdAt}"]`);
+    const name = parent.querySelector('strong').innerText;
+    const current = Number(parent.querySelector('.remaining').innerText);
+    const value = prompt(`Установить количество занятий для ${name}:`, String(current));
+    if (value === null) return;
+    const num = Number(value);
+    if (isNaN(num) || num < 0) return alert('Введи корректное неотрицательное число');
+    setRemaining(createdAt, num);
+  }
+
+  async function setRemaining(createdAt, newRemaining) {
+    try {
+      const resp = await fetch(gasUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'setRemaining', telegramID, createdAt, remaining: newRemaining })
+      });
+      const result = await resp.json();
+      if (result.success) {
+        // обновим UI
+        const parent = document.querySelector(`[data-createdat="${createdAt}"]`);
+        if (parent) parent.querySelector('.remaining').innerText = result.remaining;
+      } else {
+        alert(result.message || 'Ошибка');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Ошибка сети');
+    }
+  }
+
+  async function deleteChild(createdAtEncoded) {
+    const createdAt = decodeURIComponent(createdAtEncoded);
+    const parent = document.querySelector(`[data-createdat="${createdAt}"]`);
+    const name = parent ? parent.querySelector('strong').innerText : 'ребенок';
+    if (!confirm(`Удалить запись ${name}? Это действие необратимо.`)) return;
+    try {
+      const resp = await fetch(gasUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deleteChild', telegramID, createdAt })
+      });
+      const result = await resp.json();
+      if (result.success) {
+        // удалим из UI
+        if (parent) parent.remove();
+        // если пусто — покажем сообщение
+        const list = document.getElementById('childrenList');
+        if (list.children.length === 0) list.innerHTML = '<p>Ребенок(и) не зарегистрированы. Добавьте выше.</p>';
+      } else {
+        alert(result.message || 'Ошибка');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Ошибка сети');
+    }
+  }
+
+  function escapeHtml(text) {
+    if (!text && text !== 0) return '';
+    return String(text)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#039;');
+  }
+
+  // автозагрузка
+  loadData();
+</script>
 </body>
 </html>
