@@ -166,11 +166,32 @@
     // Тренер: ссылка Telegram -> поменяй на свою (пример: 'https://t.me/username' или 'tg://resolve?domain=username')
     const trainerTelegram = 'https://t.me/anachoretes';
 
-    // Telegram WebApp (если используется)
+    // ---------- Получение telegramID (WebApp -> URL param -> fallback) ----------
     const webApp = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
     try { webApp && webApp.ready(); } catch(e){}
-    const user = webApp && webApp.initDataUnsafe ? webApp.initDataUnsafe.user : null;
-    const telegramID = user ? user.id : 'test123';
+    let telegramID = null;
+
+    // 1) Попробуем получить из Telegram WebApp (если страница открыта внутри Telegram)
+    if (webApp && webApp.initDataUnsafe && webApp.initDataUnsafe.user && webApp.initDataUnsafe.user.id) {
+      telegramID = webApp.initDataUnsafe.user.id;
+      console.info('telegramID from WebApp:', telegramID);
+    }
+
+    // 2) Если не нашли — попробуем взять из URL (?telegramID= или ?tid=)
+    if (!telegramID) {
+      const params = new URLSearchParams(window.location.search);
+      const urlTid = params.get('telegramID') || params.get('tid');
+      if (urlTid) {
+        telegramID = urlTid;
+        console.info('telegramID from URL:', telegramID);
+      }
+    }
+
+    // 3) fallback для локального теста
+    if (!telegramID) {
+      telegramID = 'test123';
+      console.info('Используется тестовый telegramID=', telegramID, ' — откройте WebApp через Telegram или добавьте ?telegramID=YOUR_ID в URL для теста.');
+    }
 
     // Navigation helpers
     function navigate(page){
