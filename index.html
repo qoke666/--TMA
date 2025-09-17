@@ -17,251 +17,81 @@
       --text-dark: #212529;
       --text-light: #495057;
       --shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+      /* Добавлено для подсветки текущего дня */
+      --today-bg: #fffbdd;
+      --today-border: #ffc107;
     }
     
     html, body {
-      height: 100%;
-      margin: 0;
-      overflow-x: hidden;
+      height: 100%; margin: 0; overflow-x: hidden;
     }
     
     body {
       background: var(--page-bg);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      color: var(--text-dark);
-      padding: 16px;
-      font-size: 16px;
-      -webkit-font-smoothing: antialiased;
+      color: var(--text-dark); padding: 16px; font-size: 16px; -webkit-font-smoothing: antialiased;
     }
     
-    .app {
-      max-width: 800px;
-      margin: 0 auto;
-    }
+    .app { max-width: 800px; margin: 0 auto; }
 
     /* Navigation Menu */
-    .menu {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-      padding-bottom: 8px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
+    .menu { display: flex; gap: 8px; margin-bottom: 24px; padding-bottom: 8px; overflow-x: auto; scrollbar-width: none; }
     .menu::-webkit-scrollbar { display: none; }
     
-    .menu .nav-item button {
-      background: transparent;
-      border: 1px solid var(--border-color);
-      padding: 10px 20px;
-      border-radius: 25px;
-      color: var(--text-light);
-      font-weight: 600;
-      font-size: 14px;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .menu .nav-item button.active {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
-      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
-    }
-    .menu .nav-item button:hover:not(.active) {
-      background: var(--accent-light);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
+    .menu .nav-item button { background: transparent; border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 25px; color: var(--text-light); font-weight: 600; font-size: 14px; white-space: nowrap; cursor: pointer; transition: all 0.3s ease; }
+    .menu .nav-item button.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2); }
+    .menu .nav-item button:hover:not(.active) { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
     
     /* Cards */
-    .card-soft {
-      background: var(--card-bg);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      padding: 24px;
-      margin-bottom: 24px;
-      border: 1px solid #f0f0f0;
-    }
-
-    h2, h3, h5 {
-        font-weight: 700;
-        color: var(--text-dark);
-    }
+    .card-soft { background: var(--card-bg); border-radius: 20px; box-shadow: var(--shadow); padding: 24px; margin-bottom: 24px; border: 1px solid #f0f0f0; }
+    h2, h3, h5 { font-weight: 700; color: var(--text-dark); }
     
     .section-title { margin-bottom: 8px; font-size: 22px; }
     .section-subtitle { color: var(--muted); margin-bottom: 20px; font-size: 15px; }
 
     /* Back Button */
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: transparent;
-      border: none;
-      font-weight: 600;
-      font-size: 16px;
-      color: var(--accent);
-      margin-bottom: 16px;
-      cursor: pointer;
-    }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: none; font-weight: 600; font-size: 16px; color: var(--accent); margin-bottom: 16px; cursor: pointer; }
     
     /* Schedule Calendar */
-    .calendar-week {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .calendar-day {
-      text-align: center;
-      padding: 10px 5px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-      border: 2px solid transparent;
-    }
-    .calendar-day.has-events {
-      background-color: var(--accent-light);
-      border: 2px solid var(--accent);
-      font-weight: 700;
-      color: var(--accent);
-    }
-    .calendar-day:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.07);
-    }
+    .calendar-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 20px; }
+    .calendar-day { text-align: center; padding: 10px 5px; border-radius: 12px; transition: all 0.2s ease-in-out; border: 2px solid transparent; }
+    .calendar-day.has-events { cursor: pointer; background-color: var(--accent-light); border: 2px solid var(--accent); font-weight: 700; color: var(--accent); }
+    .calendar-day.has-events:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.07); }
+    /* Добавлен стиль для подсветки текущего дня */
+    .calendar-day.is-today { background-color: var(--today-bg); border-color: var(--today-border); }
     .day-name { font-size: 12px; color: var(--muted); font-weight: 500; }
     .day-number { font-size: 18px; font-weight: 600; }
 
     /* Modal */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0, 0, 0, 0.5);
-      animation: fadeIn 0.3s;
-    }
-    .modal-content {
-      background-color: #fff;
-      margin: 15% auto;
-      padding: 24px;
-      border: 0;
-      border-radius: 20px;
-      max-width: 500px;
-      width: 90%;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      animation: slideIn 0.3s;
-    }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.5); animation: fadeIn 0.3s; }
+    .modal-content { background-color: #fff; margin: 15% auto; padding: 24px; border: 0; border-radius: 20px; max-width: 500px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.1); animation: slideIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .close-button {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+    .close-button { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
     .close-button:hover, .close-button:focus { color: #000; }
     
-    .group-time {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px;
-      border-radius: 12px;
-      background: var(--page-bg);
-      border: 1px solid var(--border-color);
-      margin-bottom: 12px;
-    }
+    .group-time { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: 12px; background: var(--page-bg); border: 1px solid var(--border-color); margin-bottom: 12px; }
     .group-title { font-weight: 600; font-size: 17px; }
     .group-hours { color: var(--muted); font-weight: 500; font-size: 15px; }
 
     /* Trainer Card */
-    .trainer-card {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        text-decoration: none;
-        color: inherit;
-        transition: transform 0.2s ease;
-    }
-    .trainer-card:hover {
-        transform: scale(1.02);
-    }
-    .trainer-card .avatar {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #007bff, #0056b3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        color: #fff;
-        font-size: 24px;
-        flex-shrink: 0;
-    }
+    .trainer-card { display: flex; align-items: center; gap: 20px; text-decoration: none; color: inherit; transition: transform 0.2s ease; }
+    .trainer-card:hover { transform: scale(1.02); }
+    .trainer-card .avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #007bff, #0056b3); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 24px; flex-shrink: 0; }
     .trainer-info .name { font-size: 18px; font-weight: 700; }
     .trainer-info .title { color: var(--muted); font-size: 14px; }
-    .trainer-arrow {
-        margin-left: auto;
-        font-size: 24px;
-        color: var(--accent);
-    }
+    .trainer-arrow { margin-left: auto; font-size: 24px; color: var(--accent); }
 
     /* Profile Section */
-    #profileSection .form-control {
-      border-radius: 12px;
-      font-size: 16px;
-      padding: 12px 16px;
-      border: 1px solid var(--border-color);
-      background-color: var(--page-bg);
-    }
-     #profileSection .form-control:focus {
-        border-color: var(--accent);
-        box-shadow: 0 0 0 2px var(--accent-light);
-    }
-    .profile-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .profile-header .avatar {
-      width: 60px; height: 60px; border-radius: 50%;
-      background: linear-gradient(135deg, #6f42c1, #a985d7);
-      color: white; font-size: 24px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .child-card {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 15px;
-        padding: 16px;
-        border-radius: 15px;
-        background: linear-gradient(135deg, #f8f9fa, #ffffff);
-        border: 1px solid var(--border-color);
-        margin-bottom: 12px;
-    }
+    #profileSection .form-control { border-radius: 12px; font-size: 16px; padding: 12px 16px; border: 1px solid var(--border-color); background-color: var(--page-bg); }
+     #profileSection .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+    .profile-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .profile-header .avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6f42c1, #a985d7); color: white; font-size: 24px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .child-card { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 16px; border-radius: 15px; background: linear-gradient(135deg, #f8f9fa, #ffffff); border: 1px solid var(--border-color); margin-bottom: 12px; }
     .child-info .name { font-weight: 600; font-size: 18px; }
-    .child-info .lessons {
-        font-size: 14px; color: var(--muted);
-    }
+    .child-info .lessons { font-size: 14px; color: var(--muted); }
     .child-info .lessons strong { color: var(--accent); font-size: 16px; }
-    .extra-badge {
-        display: inline-block;
-        background: #e6f7ff; color: #006fa6;
-        padding: 4px 10px; border-radius: 8px;
-        font-weight: 600; font-size: 13px;
-        margin-left: 8px;
-    }
+    .extra-badge { display: inline-block; background: #e6f7ff; color: #006fa6; padding: 4px 10px; border-radius: 8px; font-weight: 600; font-size: 13px; margin-left: 8px; }
 
     /* Responsive */
     @media (max-width: 768px) {
@@ -316,14 +146,14 @@
               <div class="name">Павел Шестеров</div>
               <div class="title">Главный тренер, 6 дан, опыт 12 лет</div>
           </div>
-          <div class="trainer-arrow">&rarr;</div>
+          <div class="trainer-arrow">→</div>
       </a>
 
       <div class="card-soft">
         <h5 class="section-title">Как нас найти</h5>
         <p class="address" style="color: var(--muted); font-size: 15px;">Апрельская ул., 1, Красноярск. Проходим через арку, студия на 2 этаже. Рядом — станция метро "Победа".</p>
         <iframe
-          src="https://www.google.com/maps?q=56.0105,92.8525&z=15&output=embed"
+          src="http://googleusercontent.com/maps/google.com/0"
           style="width:100%;height:150px;border:0;border-radius:16px;margin-top:12px;"
           loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
@@ -331,46 +161,18 @@
 
     <section id="scheduleSection" style="display:none;">
       <div class="card-soft">
-        <button class="back-btn" onclick="showSection('home')">&larr; Назад</button>
+        <button class="back-btn" onclick="showSection('home')">← Назад</button>
         <h2 class="section-title">Расписание на неделю</h2>
         <p class="section-subtitle">Выберите день, чтобы посмотреть время занятий.</p>
         
-        <div class="calendar-week">
-            <div class="calendar-day has-events" onclick="openScheduleModal('Понедельник')">
-                <div class="day-name">ПН</div>
-                <div class="day-number">15</div>
+        <div class="calendar-week" id="calendar-container">
             </div>
-            <div class="calendar-day">
-                <div class="day-name">ВТ</div>
-                <div class="day-number">16</div>
-            </div>
-            <div class="calendar-day has-events" onclick="openScheduleModal('Среда')">
-                <div class="day-name">СР</div>
-                <div class="day-number">17</div>
-            </div>
-            <div class="calendar-day">
-                <div class="day-name">ЧТ</div>
-                <div class="day-number">18</div>
-            </div>
-            <div class="calendar-day has-events" onclick="openScheduleModal('Пятница')">
-                <div class="day-name">ПТ</div>
-                <div class="day-number">19</div>
-            </div>
-            <div class="calendar-day">
-                <div class="day-name">СБ</div>
-                <div class="day-number">20</div>
-            </div>
-            <div class="calendar-day">
-                <div class="day-name">ВС</div>
-                <div class="day-number">21</div>
-            </div>
-        </div>
       </div>
     </section>
 
     <section id="profileSection" style="display:none;">
       <div class="card-soft">
-        <button class="back-btn" onclick="showSection('home')">&larr; Назад</button>
+        <button class="back-btn" onclick="showSection('home')">← Назад</button>
         <div class="profile-header">
             <div class="avatar" id="user-initials"></div>
             <div>
@@ -401,7 +203,7 @@
   
   <div id="scheduleModal" class="modal">
     <div class="modal-content">
-      <span class="close-button" onclick="closeScheduleModal()">&times;</span>
+      <span class="close-button" onclick="closeScheduleModal()">×</span>
       <h3 id="modal-title" style="margin-bottom: 20px;">Расписание на Понедельник</h3>
       <div id="modal-body" class="d-flex flex-column gap-3">
         </div>
@@ -417,7 +219,7 @@
     const user = webApp && webApp.initDataUnsafe ? webApp.initDataUnsafe.user : { first_name: 'User', last_name: ''};
     const telegramID = user && user.id ? user.id : 'test123';
     
-    // === Навигация ===
+    // === Навигация (без изменений) ===
     function setActiveNav(id) {
       document.querySelectorAll('.menu .nav-item button').forEach(b => b.classList.remove('active'));
       const btn = document.getElementById('nav-' + id);
@@ -431,16 +233,12 @@
       setActiveNav(name);
       if (name === 'profile') {
         loadChildren();
-        // Установка инициалов в профиле
         const initials = (user.first_name ? user.first_name[0] : '') + (user.last_name ? user.last_name[0] : '');
         document.getElementById('user-initials').textContent = initials || 'U';
       }
     }
     
-    // Initial load
-    showSection('home');
-    
-    // === Календарь и Модальное окно ===
+    // === Календарь и Модальное окно (без изменений) ===
     const scheduleData = {
         'Понедельник': [
             { title: 'Новые школьники', time: '17:30 — 18:30' },
@@ -456,60 +254,78 @@
             { title: 'Смешанная группа', time: '18:00 — 19:30' }
         ]
     };
-
     function openScheduleModal(day) {
         const modal = document.getElementById('scheduleModal');
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
-
         modalTitle.textContent = `Расписание на ${day}`;
         const events = scheduleData[day] || [];
-        
         if (events.length > 0) {
-            modalBody.innerHTML = events.map(event => `
-                <div class="group-time">
-                    <div class="group-title">${event.title}</div>
-                    <div class="group-hours"><strong>${event.time}</strong></div>
-                </div>
-            `).join('');
+            modalBody.innerHTML = events.map(event => `<div class="group-time"><div class="group-title">${event.title}</div><div class="group-hours"><strong>${event.time}</strong></div></div>`).join('');
         } else {
             modalBody.innerHTML = '<p>На этот день занятий нет.</p>';
         }
-        
         modal.style.display = 'block';
     }
-
-    function closeScheduleModal() {
-        document.getElementById('scheduleModal').style.display = 'none';
-    }
-
+    function closeScheduleModal() { document.getElementById('scheduleModal').style.display = 'none'; }
     window.onclick = function(event) {
         const modal = document.getElementById('scheduleModal');
         if (event.target == modal) {
             modal.style.display = 'none';
         }
     }
+    
+    // === ДОБАВЛЕН КОД ДЛЯ АВТОМАТИЧЕСКОГО КАЛЕНДАРЯ ===
+    function renderCalendar() {
+        const calendarContainer = document.getElementById('calendar-container');
+        if (!calendarContainer) return;
 
-    // === Работа с API: registerChild, loadChildren ===
+        // Здесь вы задаете дни, в которые есть тренировки
+        const trainingDays = {
+            'Понедельник': true, 'Вторник': false, 'Среда': true,
+            'Четверг': false, 'Пятница': true, 'Суббота': false, 'Воскресенье': false,
+        };
+
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0-Вс, 1-Пн, ...
+        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        const monday = new Date(today);
+        monday.setDate(today.getDate() + daysToMonday);
+
+        let calendarHtml = '';
+        const dayNames = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
+        const fullDayNames = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+
+        for (let i = 0; i < 7; i++) {
+            const currentDay = new Date(monday);
+            currentDay.setDate(monday.getDate() + i);
+            const isTrainingDay = trainingDays[fullDayNames[i]];
+            const isToday = currentDay.toDateString() === today.toDateString();
+            let dayClass = 'calendar-day';
+            if (isTrainingDay) dayClass += ' has-events';
+            if (isToday) dayClass += ' is-today';
+            const onClickAction = isTrainingDay ? `onclick="openScheduleModal('${fullDayNames[i]}')"` : '';
+            calendarHtml += `<div class="${dayClass}" ${onClickAction}><div class="day-name">${dayNames[i]}</div><div class="day-number">${currentDay.getDate()}</div></div>`;
+        }
+        calendarContainer.innerHTML = calendarHtml;
+    }
+
+    // === Работа с API (без изменений) ===
     async function registerChild() {
       const nameInput = document.getElementById('childNameInput');
       const childName = (nameInput.value || '').trim();
       if (!childName) { alert('Введите имя ребёнка'); return; }
-
       try {
         const params = new URLSearchParams();
         params.append('action', 'addChild');
         params.append('telegramID', telegramID);
         params.append('childName', childName);
-
         const resp = await fetch(gasUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
           body: params.toString()
         });
-        
         const result = await resp.json();
-
         if (result.success) {
           nameInput.value = '';
           await loadChildren();
@@ -522,7 +338,6 @@
         alert('Ошибка сети. Проверьте URL WebApp.');
       }
     }
-
     async function loadChildren() {
       const list = document.getElementById('childrenList');
       list.innerHTML = '<div class="small text-muted">Загрузка...</div>';
@@ -530,35 +345,24 @@
         const resp = await fetch(`${gasUrl}?action=getData&telegramID=${telegramID}`);
         const data = await resp.json();
         const children = (data.children && Array.isArray(data.children)) ? data.children : [];
-
         if (children.length === 0) {
           list.innerHTML = '<div class="small text-muted">У вас пока нет зарегистрированных детей.</div>';
           return;
         }
-
         list.innerHTML = children.map(ch => {
           const extra = ch.extra ? Number(ch.extra) : 0;
           const extraHtml = extra > 0 ? `<span class="extra-badge">+${extra} отработок</span>` : '';
-          return `<div class="child-card">
-                      <div class="child-info">
-                          <div class="name">${escapeHtml(ch.childName)}</div>
-                          <div class="lessons">Осталось занятий: <strong>${Number(ch.remaining)}</strong> ${extraHtml}</div>
-                      </div>
-                  </div>`;
+          return `<div class="child-card"><div class="child-info"><div class="name">${escapeHtml(ch.childName)}</div><div class="lessons">Осталось занятий: <strong>${Number(ch.remaining)}</strong> ${extraHtml}</div></div></div>`;
         }).join('');
       } catch (err) {
         console.error(err);
         list.innerHTML = '<div class="small text-danger">Ошибка загрузки данных.</div>';
       }
     }
-
     function escapeHtml(text) {
       if (text === undefined || text === null) return '';
-      return String(text).replace(/[&<>"']/g, match => ({
-          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      }[match]));
+      return String(text).replace(/[&<>"']/g, match => ({ '&': '&', '<': '<', '>': '>', '"': '"', "'": ''' }[match]));
     }
-    
     function showTinyToast(msg){
       const el = document.createElement('div');
       el.style.position = 'fixed';
@@ -577,18 +381,16 @@
       el.style.transition = 'opacity 0.3s, bottom 0.3s';
       el.innerText = msg;
       document.body.appendChild(el);
-      
-      setTimeout(() => {
-        el.style.opacity = '1';
-        el.style.bottom = '30px';
-      }, 10);
-      
-      setTimeout(() => {
-        el.style.opacity = '0';
-        el.style.bottom = '20px';
-      }, 2700);
+      setTimeout(() => { el.style.opacity = '1'; el.style.bottom = '30px'; }, 10);
+      setTimeout(() => { el.style.opacity = '0'; el.style.bottom = '20px'; }, 2700);
       setTimeout(() => el.remove(), 3000);
     }
+
+    // === Запуск приложения ===
+    document.addEventListener('DOMContentLoaded', () => {
+        showSection('home');
+        renderCalendar(); // Вызываем создание календаря при загрузке страницы
+    });
   </script>
 </body>
 </html>
