@@ -375,31 +375,34 @@
     const user = webApp && webApp.initDataUnsafe ? webApp.initDataUnsafe.user : { first_name: 'User', last_name: ''};
     const telegramID = user && user.id ? user.id : 'test123';
 
-    // ===== Schedule template: map weekday index (0=Sun..6=Sat) to events =====
-    // You can edit these entries. They will apply every week.
-    const scheduleDataByWeekday = {
-      // Monday (1)
-      1: [
-        { title: 'Новые школьники', time: '17:30 — 18:30' },
-        { title: 'Дошкольники', time: '18:30 — 19:30' },
-        { title: 'Старшая группа', time: '19:30 — 21:00' }
-      ],
-      // Wednesday (3)
-      3: [
-        { title: 'Новые школьники', time: '17:30 — 18:30' },
-        { title: 'Дошкольники', time: '18:30 — 19:30' },
-        { title: 'Старшая группа', time: '19:30 — 21:00' }
-      ],
-      // Friday (5)
-      5: [
-        { title: 'Смешанная группа', time: '18:00 — 19:30' }
-      ]
-      // add more weekdays if needed
-    };
+    // Schedule cache from API
+    let scheduleCache = [];
 
     // Russian weekday names short/long
     const RU_WEEKDAYS_SHORT = ['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
     const RU_WEEKDAYS_LONG = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+
+    // Load schedule from API (no telegramID)
+    async function loadSchedule() {
+      try {
+        const resp = await fetch(`${gasUrl}?action=getSchedule`);
+        const data = await resp.json();
+        if (data.success) {
+          scheduleCache = data.schedule || [];
+        } else {
+          console.error('Failed to load schedule');
+          scheduleCache = [];
+        }
+      } catch (err) {
+        console.error(err);
+        scheduleCache = [];
+      }
+    }
+
+    // Get events for a specific weekday
+    function getEventsForWeekday(wd) {
+      return scheduleCache.filter(ev => Number(ev.weekday) === wd) || [];
+    }
 
     // === Navigation ===
     function setActiveNav(id) {
@@ -436,7 +439,7 @@
         const dayName = RU_WEEKDAYS_SHORT[wd];
         const dayNum = d.getDate();
         const isToday = isSameDate(d, new Date());
-        const events = scheduleDataByWeekday[wd] || [];
+        const events = getEventsForWeekday(wd);
         const hasEvents = events.length > 0;
         const el = document.createElement('button');
         el.className = 'calendar-day' + (hasEvents ? ' has-events' : '') + (isToday ? ' today' : '');
@@ -452,7 +455,7 @@
     function renderTodayEvents() {
       const today = new Date();
       const wd = today.getDay();
-      const events = scheduleDataByWeekday[wd] || [];
+      const events = getEventsForWeekday(wd);
       const title = document.getElementById('todayTitle');
       const subtitle = document.getElementById('todaySubtitle');
       const todayEvents = document.getElementById('todayEvents');
@@ -464,7 +467,7 @@
         todayEvents.innerHTML = events.map(ev => `
           <div class="group-time" role="article">
             <div>
-              <div class="group-title">${escapeHtml(ev.title)}</div>
+              <div class="group-title">${escapeHtml(ev.group || ev.title)}</div>
               <div class="group-hours">${escapeHtml(ev.note || '')}</div>
             </div>
             <div class="group-hours"><strong>${escapeHtml(ev.time)}</strong></div>
@@ -479,14 +482,14 @@
       const modalTitle = document.getElementById('modal-title');
       const modalBody = document.getElementById('modal-body');
       const wd = dateObj.getDay();
-      const events = scheduleDataByWeekday[wd] || [];
+      const events = getEventsForWeekday(wd);
       modalTitle.textContent = `Расписание на ${RU_WEEKDAYS_LONG[wd]}, ${formatFullDate(dateObj)}`;
       if (events.length === 0) {
         modalBody.innerHTML = '<div class="group-time"><div><div class="group-title">На этот день занятий нет.</div></div></div>';
       } else {
         modalBody.innerHTML = events.map(ev => `
           <div class="group-time">
-            <div><div class="group-title">${escapeHtml(ev.title)}</div><div class="group-hours" style="color:var(--muted)">${escapeHtml(ev.note || '')}</div></div>
+            <div><div class="group-title">${escapeHtml(ev.group || ev.title)}</div><div class="group-hours" style="color:var(--muted)">${escapeHtml(ev.note || '')}</div></div>
             <div class="group-hours"><strong>${escapeHtml(ev.time)}</strong></div>
           </div>
         `).join('');
@@ -521,7 +524,8 @@
     }
 
     // schedule initial render + schedule to rerender at next midnight
-    function renderScheduleAndSetMidnightUpdate() {
+    async function renderScheduleAndSetMidnightUpdate() {
+      await loadSchedule(); // Load from API
       buildWeekStrip();
       renderTodayEvents();
       // clear previous timer if any
@@ -652,7 +656,8 @@
         const d = new Date(today);
         d.setDate(today.getDate() + i);
         const wd = d.getDay();
-        const hasEvents = (scheduleDataByWeekday[wd] && scheduleDataByWeekday[wd].length > 0);
+        const events = getEventsForWeekday(wd);
+        const hasEvents = events.length > 0;
         const el = document.createElement('div');
         el.className = 'calendar-day' + (hasEvents ? ' has-events' : '');
         el.innerHTML = `<div class="day-name">${RU_WEEKDAYS_SHORT[wd]}</div><div class="day-number">${d.getDate()}</div>`;
