@@ -113,6 +113,7 @@
     }
     .child-meta { color:var(--muted); font-size:14px; }
     .btn-ghost { background:transparent; border:1px solid rgba(10,20,40,0.06); border-radius:8px; padding:10px 20px; font-size:14px; font-weight:500; cursor: pointer; }
+    .extra-badge { display:inline-block; background:#e6f7ff; color:#006fa6; padding:4px 8px; border-radius:8px; font-weight:700; margin-left:8px; font-size:13px; }
 
     /* responsive tweaks for Telegram WebApp */
     @media (max-width:768px){
@@ -370,10 +371,13 @@
         }
 
         list.innerHTML = children.map(ch => {
+          // отображаем extra (отработки) рядом с основным количеством занятий
+          const extra = ch.extra !== undefined && ch.extra !== null ? Number(ch.extra) : 0;
+          const extraHtml = extra > 0 ? `<span class="extra-badge">Отработок: ${extra}</span>` : `<span class="extra-badge" style="opacity:0.45">Отработок: ${extra}</span>`;
           return `<div class="child-card">
                     <div>
                       <div style="font-weight:600;font-size:18px">${escapeHtml(ch.childName)}</div>
-                      <div class="child-meta">Осталось занятий: <strong>${Number(ch.remaining)}</strong></div>
+                      <div class="child-meta">Осталось занятий: <strong>${Number(ch.remaining)}</strong> ${extraHtml}</div>
                     </div>
                     <div style="min-width:100px; text-align:right">
                       <button class="btn btn-sm btn-ghost" onclick="promptSetRemaining('${encodeURIComponent(ch.childName)}')">править</button>
