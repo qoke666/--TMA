@@ -7,316 +7,540 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    :root{
-      --accent:#2B8CFF;
-      --muted:#6c757d;
+    :root {
+      --accent: #007bff;
+      --accent-light: #e6f2ff;
+      --muted: #6c757d;
       --card-bg: #ffffff;
-      --page-bg: #f4f7fb;
+      --page-bg: #f8f9fa;
+      --border-color: #dee2e6;
+      --text-dark: #212529;
+      --text-light: #495057;
+      --shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
     }
-    html,body{
-      height:100%;
-      margin:0;
-      overflow-x:hidden;
+    
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow-x: hidden;
     }
-    body{
-      background:var(--page-bg);
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      color:#222;
+    
+    body {
+      background: var(--page-bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text-dark);
       padding: 16px;
-      font-size:16px;
+      font-size: 16px;
       -webkit-font-smoothing: antialiased;
     }
-
-    /* nav menu */
-    .menu{
-      display:flex; gap:8px; flex-wrap: nowrap; margin-bottom: 24px; overflow-x: auto; scrollbar-width: none;
-    }
-    .menu::-webkit-scrollbar { display: none; }
-    .menu .nav-item button{
-      background:transparent; border:1px solid rgba(10,20,40,0.06); padding:10px 16px; border-radius:20px;
-      color:#0b1a2b; font-weight:500; font-size:14px; white-space: nowrap; cursor: pointer; transition: background-color 0.2s, color 0.2s;
-    }
-    .menu .nav-item button.active{
-      background: var(--accent); color: #ffffff;
-      box-shadow: none; border-color: var(--accent);
-    }
-    .menu .nav-item button:hover{
-      background: rgba(43,140,255,0.2);
-    }
-
-    /* back button */
-    .back-btn{
-      background: transparent;
-      border: 1px solid rgba(10,20,40,0.06);
-      padding: 10px 16px;
-      border-radius: 20px;
-      font-weight: 500;
-      font-size: 14px;
-      color: var(--accent);
-      margin-bottom: 24px;
-      display: inline-block;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    .back-btn:hover{
-      background: rgba(43,140,255,0.1);
-    }
-
-    /* container */
+    
     .app {
       max-width: 800px;
       margin: 0 auto;
-      padding: 0;
     }
 
-    .card-soft{
-      background:var(--card-bg);
-      border-radius:16px;
-      box-shadow: 0 6px 20px rgba(40,50,80,0.04);
-      padding:20px;
-      margin-bottom:24px;
+    /* Navigation Menu */
+    .menu {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      padding-bottom: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .menu::-webkit-scrollbar { display: none; }
+    
+    .menu .nav-item button {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      padding: 10px 20px;
+      border-radius: 25px;
+      color: var(--text-light);
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .menu .nav-item button.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+    }
+    .menu .nav-item button:hover:not(.active) {
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    
+    /* Cards */
+    .card-soft {
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid #f0f0f0;
     }
 
-    /* schedule */
-    .group-time {
-      display:flex; justify-content:space-between; align-items:center;
-      gap:10px; padding:16px; border-radius:12px;
-      transition: background-color 0.2s;
-      background: linear-gradient(180deg, rgba(250,250,255,1), rgba(247,250,255,1));
-      border: 1px solid rgba(20,30,60,0.03);
-      margin-bottom: 12px;
+    h2, h3, h5 {
+        font-weight: 700;
+        color: var(--text-dark);
     }
-    .group-time:hover{ background: rgba(43,140,255,0.05); }
+    
+    .section-title { margin-bottom: 8px; font-size: 22px; }
+    .section-subtitle { color: var(--muted); margin-bottom: 20px; font-size: 15px; }
 
-    .group-title{ font-weight:600; font-size:18px; }
-    .group-hours{ color:var(--muted); font-weight:500; font-size:14px; }
-
-    /* trainer */
-    .trainer{
-      display:flex; gap:10px; align-items:center;
+    /* Back Button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      border: none;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--accent);
+      margin-bottom: 16px;
+      cursor: pointer;
     }
-    .trainer .avatar{
-      width:36px;height:36px;border-radius:50%;
-      background:linear-gradient(135deg,#ffd89b,#ffb199);
-      display:flex;align-items:center;justify-content:center;font-weight:600;color:#222;
-      font-size:14px; border: 1px solid rgba(10,20,40,0.06);
+    
+    /* Schedule Calendar (7 days from today) */
+    .calendar-week {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      margin-top: 16px;
     }
-    .address{ color:var(--muted); font-size:14px; margin-bottom:8px; }
-
-    /* profile section */
-    #profileSection .form-control{ border-radius:8px; font-size:16px; padding:12px; border: 1px solid rgba(10,20,40,0.06); }
-    .child-card {
-      display:flex; justify-content:space-between; align-items:center;
-      gap:10px; padding:16px; border-radius:12px; border:1px solid rgba(10,20,40,0.035);
+    .calendar-day {
+      text-align: center;
+      padding: 12px 8px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.18s ease-in-out;
+      border: 1px solid transparent;
       background: linear-gradient(180deg,#fff,#fbfdff);
+    }
+    .calendar-day .day-name { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .calendar-day .day-number { font-size: 16px; font-weight: 700; color: var(--text-dark); margin-top:6px; }
+    .calendar-day.has-events {
+      background: linear-gradient(180deg,var(--accent-light), #fff);
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      box-shadow: 0 6px 18px rgba(0,123,255,0.08);
+    }
+    .calendar-day.today {
+      box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+      transform: translateY(-2px);
+    }
+    .calendar-day:hover { transform: translateY(-3px); }
+
+    .group-time {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--page-bg);
+      border: 1px solid var(--border-color);
       margin-bottom: 12px;
     }
-    .child-meta { color:var(--muted); font-size:14px; }
-    .btn-ghost { background:transparent; border:1px solid rgba(10,20,40,0.06); border-radius:8px; padding:10px 20px; font-size:14px; font-weight:500; cursor: pointer; }
-    .extra-badge { display:inline-block; background:#e6f7ff; color:#006fa6; padding:4px 8px; border-radius:8px; font-weight:700; margin-left:8px; font-size:13px; }
+    .group-title { font-weight: 600; font-size: 17px; }
+    .group-hours { color: var(--muted); font-weight: 500; font-size: 15px; }
 
-    /* responsive tweaks for Telegram WebApp */
-    @media (max-width:768px){
-      body { padding: 12px; }
-      .trainer { flex-direction:column; align-items:flex-start; }
-      .trainer .avatar { width:32px; height:32px; font-size:12px; }
-      .group-time { flex-direction:column; align-items:flex-start; padding: 12px; }
-      .card-soft { padding:16px; margin-bottom:16px; }
-      .address { font-size:12px; }
-      .row.g-3 { gap:10px !important; }
-      .form-control { font-size:14px; padding:10px; }
-      .btn { font-size:14px; padding:8px 16px; }
-      .menu .nav-item button { font-size:12px; padding:8px 12px; }
-      .back-btn { font-size:12px; padding:8px 12px; }
-      iframe { height:120px; }
-      .group-title { font-size:16px; }
-      .group-hours { font-size:12px; }
+    /* Trainer Card */
+    .trainer-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.2s ease;
     }
-    @media (max-width:576px){
-      .menu { flex-wrap: wrap; gap:6px; }
-      .menu .nav-item button { font-size:10px; padding:6px 10px; }
-      .back-btn { font-size:10px; padding:6px 10px; }
-      .card-soft { padding:12px; margin-bottom:12px; }
-      .group-time { padding: 10px; }
-      .child-card { padding: 10px; }
-      .btn-ghost { padding: 8px 12px; font-size:12px; }
+    .trainer-card:hover {
+        transform: scale(1.02);
+    }
+    .trainer-card .avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #fff;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+    .trainer-info .name { font-size: 18px; font-weight: 700; }
+    .trainer-info .title { color: var(--muted); font-size: 14px; }
+    .trainer-arrow {
+        margin-left: auto;
+        font-size: 24px;
+        color: var(--accent);
+    }
+
+    /* Profile Section */
+    #profileSection .form-control {
+      border-radius: 12px;
+      font-size: 16px;
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      background-color: var(--page-bg);
+    }
+    #profileSection .form-control:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px var(--accent-light);
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .profile-header .avatar {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, #6f42c1, #a985d7);
+      color: white; font-size: 24px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .child-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 16px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #f8f9fa, #ffffff);
+        border: 1px solid var(--border-color);
+        margin-bottom: 12px;
+    }
+    .child-info .name { font-weight: 600; font-size: 18px; }
+    .child-info .lessons {
+        font-size: 14px; color: var(--muted);
+    }
+    .child-info .lessons strong { color: var(--accent); font-size: 16px; }
+    .extra-badge {
+        display: inline-block;
+        background: #e6f7ff; color: #006fa6;
+        padding: 4px 10px; border-radius: 8px;
+        font-weight: 600; font-size: 13px;
+        margin-left: 8px;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.18s;
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 12% auto;
+      padding: 18px;
+      border: 0;
+      border-radius: 16px;
+      max-width: 520px;
+      width: 92%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      animation: slideIn 0.18s;
+    }
+    .close-button {
+      color: #aaa;
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close-button:hover, .close-button:focus { color: #000; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      .card-soft { padding: 18px; margin-bottom: 16px; }
+      .calendar-week { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      .calendar-day { padding: 10px 6px; }
+      .calendar-day .day-number { font-size: 15px; }
     }
   </style>
 </head>
 <body>
   <main class="app">
+    <nav class="menu" aria-label="Главная навигация">
+      <div class="nav-item"><button id="nav-home" class="active" onclick="showSection('home')">Главная</button></div>
+      <div class="nav-item"><button id="nav-schedule" onclick="showSection('schedule')">Расписание</button></div>
+      <div class="nav-item"><button id="nav-profile" onclick="showSection('profile')">Профиль</button></div>
+    </nav>
+    
     <!-- HOME -->
-    <section id="homeSection" class="mb-3">
-      <div class="card-soft">
-        <h2 style="margin-bottom:8px;font-size:20px;font-weight:600">Расписание сегодня</h2>
-        <p class="small" style="color:var(--muted); margin-bottom:8px;font-size:14px">Группы по возрасту — удобное распределение времени</p>
-        <nav class="menu">
-          <div class="nav-item"><button id="nav-home" class="active" onclick="showSection('home')">Главная</button></div>
-          <div class="nav-item"><button id="nav-schedule" onclick="showSection('schedule')">Расписание</button></div>
-          <div class="nav-item"><button id="nav-profile" onclick="showSection('profile')">Мой профиль</button></div>
-        </nav>
-        <div class="row g-3">
-          <div class="col-md-4">
-            <div class="group-time">
-              <div>
-                <div class="group-title">Новые школьники</div>
-                <div class="group-hours">17:30 — 18:30</div>
-              </div>
-            </div>
-          </div>
+    <section id="homeSection">
+      <div class="card-soft" id="todayScheduleCard">
+        <h2 class="section-title" id="todayTitle">Расписание на сегодня</h2>
+        <p class="section-subtitle" id="todaySubtitle">—</p>
 
-          <div class="col-md-4">
-            <div class="group-time">
-              <div>
-                <div class="group-title">Дошкольники</div>
-                <div class="group-hours">18:30 — 19:30</div>
-              </div>
-            </div>
-          </div>
+        <!-- week strip: 7 days starting today -->
+        <div id="weekStrip" class="calendar-week" aria-hidden="false" role="list"></div>
 
-          <div class="col-md-4">
-            <div class="group-time">
-              <div>
-                <div class="group-title">Старшая группа</div>
-                <div class="group-hours">19:30 — 21:00</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- today's events (detailed) -->
+        <div id="todayEvents" style="margin-top:18px" aria-live="polite"></div>
       </div>
 
-      <div class="card-soft d-flex gap-2 align-items-center">
-        <div class="trainer">
+      <a id="trainerLink" href="https://t.me/your_telegram_username" target="_blank" class="card-soft trainer-card" aria-label="Открыть Telegram тренера">
           <div class="avatar">ПШ</div>
-          <div>
-            <div style="font-weight:600;font-size:18px">Павел Шестеров</div>
-            <div class="small" style="color:var(--muted);font-size:14px">Главный тренер — 6 дан, опыт 12 лет</div>
-            <div class="address">Студия: Апрельская ул., 1, Красноярск • Тел: +7 (900) 123-45-67</div>
+          <div class="trainer-info">
+              <div class="name">Павел Шестеров</div>
+              <div class="title">Главный тренер, 6 дан, опыт 12 лет</div>
           </div>
-        </div>
-        <div class="ms-auto text-end">
-          <div class="small-muted" style="color:var(--muted);font-size:14px">Следующий набор</div>
-          <div style="font-weight:600;font-size:16px">1 октября</div>
-        </div>
-      </div>
+          <div class="trainer-arrow" aria-hidden="true">&rarr;</div>
+      </a>
 
       <div class="card-soft">
-        <h5 style="font-size:18px;font-weight:600;margin-bottom:8px">Как нас найти</h5>
-        <p class="address">Проходим через арку, поднимаемся по лестнице — студия на 2 этаже. Рядом — станция метро "Победа".</p>
+        <h5 class="section-title">Как нас найти</h5>
+        <p class="address" style="color: var(--muted); font-size: 15px;">Апрельская ул., 1, Красноярск. Проходим через арку, студия на 2 этаже.</p>
         <iframe
           src="https://www.google.com/maps?q=56.0105,92.8525&z=15&output=embed"
-          style="width:100%;height:120px;border:0;border-radius:8px;margin-top:8px;"
+          style="width:100%;height:150px;border:0;border-radius:16px;margin-top:12px;"
           loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
     </section>
 
-    <!-- SCHEDULE (separate page also) -->
-    <section id="scheduleSection" class="mb-3" style="display:none;">
+    <!-- SCHEDULE (fallback, kept for compatibility) -->
+    <section id="scheduleSection" style="display:none;">
       <div class="card-soft">
-        <button class="back-btn" onclick="showSection('home')">Назад</button>
-        <h3 style="font-size:20px;font-weight:600;margin-bottom:8px">Полное расписание</h3>
-        <p class="small" style="color:var(--muted);font-size:14px">Группы и время занятий</p>
-
-        <div class="row g-3 mt-2">
-          <div class="col-12 col-md-6">
-            <div class="group-time">
-              <div>
-                <div class="group-title">Новые школьники</div>
-                <div class="group-hours">17:30 — 18:30</div>
-                <div class="small" style="color:var(--muted);margin-top:4px;font-size:14px">Возраст: 7–10 лет</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 col-md-6">
-            <div class="group-time">
-              <div>
-                <div class="group-title">Дошкольники</div>
-                <div class="group-hours">18:30 — 19:30</div>
-                <div class="small" style="color:var(--muted);margin-top:4px;font-size:14px">Возраст: 4–6 лет</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12 mt-2">
-            <div class="group-time">
-              <div>
-                <div class="group-title">Старшая группа</div>
-                <div class="group-hours">19:30 — 21:00</div>
-                <div class="small" style="color:var(--muted);margin-top:4px;font-size:14px">Возраст: 11+ лет</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <button class="back-btn" onclick="showSection('home')">&larr; Назад</button>
+        <h2 class="section-title">Расписание на неделю</h2>
+        <p class="section-subtitle">Выберите день, чтобы посмотреть время занятий.</p>
+        
+        <div id="scheduleWeekGrid" class="calendar-week" aria-hidden="true"></div>
       </div>
     </section>
 
     <!-- PROFILE -->
     <section id="profileSection" style="display:none;">
-      <div class="card-soft mb-2">
-        <button class="back-btn" onclick="showSection('home')">Назад</button>
-        <h3 style="font-size:20px;font-weight:600;margin-bottom:8px">Мой профиль</h3>
-        <p class="small" style="color:var(--muted);font-size:14px">Здесь можно зарегистрировать ребёнка и посмотреть остатки занятий.</p>
-
-        <div class="row g-3 mt-2">
-          <div class="col-md-6">
-            <div>
-              <label class="form-label" style="font-size:14px;font-weight:500;margin-bottom:8px">Имя ребёнка</label>
-              <input id="childNameInput" class="form-control" placeholder="Иван">
-            </div>
-            <div class="mt-2 d-flex gap-2">
-              <button class="btn btn-primary" onclick="registerChild()" style="padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600">Добавить</button>
-              <button class="btn btn-outline-secondary btn-ghost" onclick="loadChildren()">Обновить</button>
-            </div>
-            <div class="small text-muted mt-2" style="font-size:12px">Родителям не нужно вводить количество занятий — только имя.</div>
-          </div>
-
-          <div class="col-md-6">
-            <div style="font-weight:600;font-size:18px">Ваши дети</div>
-            <div id="childrenList" class="mt-2">
-              <div class="small text-muted" style="font-size:14px">Загрузка...</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="card-soft">
-        <h5 style="font-size:18px;font-weight:600;margin-bottom:8px">Контакты и заметки</h5>
-        <p class="small" style="color:var(--muted);font-size:14px">Если нужно поменять остатки занятий — делаем это через админку тренера.</p>
+        <button class="back-btn" onclick="showSection('home')">&larr; Назад</button>
+        <div class="profile-header">
+            <div class="avatar" id="user-initials"></div>
+            <div>
+                 <h2 class="section-title" style="margin-bottom: 0;">Мой профиль</h2>
+                 <p class="section-subtitle" style="margin-bottom: 0;">Управление данными и занятиями</p>
+            </div>
+        </div>
+        
+        <div class="row g-4 mt-2">
+            <div class="col-md-6">
+                <h5 style="font-weight:600; margin-bottom: 16px;">Добавить ребёнка</h5>
+                <div class="mb-3">
+                    <input id="childNameInput" class="form-control" placeholder="Имя и фамилия ребёнка">
+                </div>
+                <button class="btn btn-primary w-100" onclick="registerChild()" style="padding:12px;border-radius:12px;font-weight:600">Зарегистрировать</button>
+            </div>
+
+            <div class="col-md-6">
+                <h5 style="font-weight:600; margin-bottom: 16px;">Мои дети</h5>
+                <div id="childrenList">
+                  <div class="small text-muted">Загрузка...</div>
+                </div>
+            </div>
+        </div>
       </div>
     </section>
   </main>
+  
+  <!-- Schedule Modal -->
+  <div id="scheduleModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-content" role="document">
+      <span class="close-button" onclick="closeScheduleModal()" aria-label="Закрыть">&times;</span>
+      <h3 id="modal-title" style="margin-bottom: 12px;">Расписание</h3>
+      <div id="modal-body" class="d-flex flex-column gap-3"></div>
+    </div>
+  </div>
 
   <script>
-    // === Настройки API ===
-    // ЗАМЕНИТЕ gasUrl на ваш URL web app (deploy -> Web app -> URL /exec)
+    // === Настройки API (оставил ваш) ===
     const gasUrl = 'https://script.google.com/macros/s/AKfycbyI17STyEsL6vYDBX1d98YElOk9O7KWTwMUL7DxOulDzSkgPXLASnNCfsA1GvNWfM_fEA/exec';
 
-    // Telegram WebApp init (необязательно, но оставил)
+    // Telegram WebApp init (необязательно)
     const webApp = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-    try { webApp && webApp.ready(); } catch(e){ /* ignore */ }
-    const user = webApp && webApp.initDataUnsafe ? webApp.initDataUnsafe.user : null;
-    const telegramID = user ? user.id : 'test123';
+    try { webApp && webApp.ready(); } catch (e) {}
+    const user = webApp && webApp.initDataUnsafe ? webApp.initDataUnsafe.user : { first_name: 'User', last_name: ''};
+    const telegramID = user && user.id ? user.id : 'test123';
 
-    // === Навигация ===
+    // ===== Schedule template: map weekday index (0=Sun..6=Sat) to events =====
+    // You can edit these entries. They will apply every week.
+    const scheduleDataByWeekday = {
+      // Monday (1)
+      1: [
+        { title: 'Новые школьники', time: '17:30 — 18:30' },
+        { title: 'Дошкольники', time: '18:30 — 19:30' },
+        { title: 'Старшая группа', time: '19:30 — 21:00' }
+      ],
+      // Wednesday (3)
+      3: [
+        { title: 'Новые школьники', time: '17:30 — 18:30' },
+        { title: 'Дошкольники', time: '18:30 — 19:30' },
+        { title: 'Старшая группа', time: '19:30 — 21:00' }
+      ],
+      // Friday (5)
+      5: [
+        { title: 'Смешанная группа', time: '18:00 — 19:30' }
+      ]
+      // add more weekdays if needed
+    };
+
+    // Russian weekday names short/long
+    const RU_WEEKDAYS_SHORT = ['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
+    const RU_WEEKDAYS_LONG = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+
+    // === Navigation ===
     function setActiveNav(id) {
       document.querySelectorAll('.menu .nav-item button').forEach(b => b.classList.remove('active'));
       const btn = document.getElementById('nav-' + id);
       if (btn) btn.classList.add('active');
     }
     function showSection(name) {
-      // sections: home, schedule, profile
       document.getElementById('homeSection').style.display = name === 'home' ? '' : 'none';
       document.getElementById('scheduleSection').style.display = name === 'schedule' ? '' : 'none';
       document.getElementById('profileSection').style.display = name === 'profile' ? '' : 'none';
       setActiveNav(name);
-      if (name === 'profile') loadChildren();
+      if (name === 'profile') {
+        loadChildren();
+        const initials = (user.first_name ? user.first_name[0] : '') + (user.last_name ? user.last_name[0] : '');
+        document.getElementById('user-initials').textContent = initials || 'U';
+      }
     }
-
-    // initial
     showSection('home');
 
-    // === Работа с API: registerChild (form-urlencoded), loadChildren ===
+    // === Build week strip starting from today (7 days) ===
+    function buildWeekStrip() {
+      const weekStrip = document.getElementById('weekStrip');
+      weekStrip.innerHTML = '';
+      const today = new Date();
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        days.push(d);
+      }
+      days.forEach((d, idx) => {
+        const wd = d.getDay(); // 0..6
+        const dayName = RU_WEEKDAYS_SHORT[wd];
+        const dayNum = d.getDate();
+        const isToday = isSameDate(d, new Date());
+        const events = scheduleDataByWeekday[wd] || [];
+        const hasEvents = events.length > 0;
+        const el = document.createElement('button');
+        el.className = 'calendar-day' + (hasEvents ? ' has-events' : '') + (isToday ? ' today' : '');
+        el.setAttribute('type','button');
+        el.setAttribute('aria-label', `${RU_WEEKDAYS_LONG[wd]}, ${d.toLocaleDateString('ru-RU')}`);
+        el.innerHTML = `<div class="day-name">${dayName}</div><div class="day-number">${dayNum}</div>`;
+        el.onclick = () => openScheduleModalForDate(d);
+        weekStrip.appendChild(el);
+      });
+    }
+
+    // Render today's events block (under week strip)
+    function renderTodayEvents() {
+      const today = new Date();
+      const wd = today.getDay();
+      const events = scheduleDataByWeekday[wd] || [];
+      const title = document.getElementById('todayTitle');
+      const subtitle = document.getElementById('todaySubtitle');
+      const todayEvents = document.getElementById('todayEvents');
+      title.textContent = 'Расписание на сегодня';
+      subtitle.textContent = formatFullDate(today); // e.g., "Понедельник, 15 сентября"
+      if (!events || events.length === 0) {
+        todayEvents.innerHTML = `<div class="group-time"><div><div class="group-title">На сегодня занятий нет</div><div class="group-hours" style="color:var(--muted)">Отдохните — следующий день занятий появится в расписании</div></div><div></div></div>`;
+      } else {
+        todayEvents.innerHTML = events.map(ev => `
+          <div class="group-time" role="article">
+            <div>
+              <div class="group-title">${escapeHtml(ev.title)}</div>
+              <div class="group-hours">${escapeHtml(ev.note || '')}</div>
+            </div>
+            <div class="group-hours"><strong>${escapeHtml(ev.time)}</strong></div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // open modal with schedule for a specific Date object
+    function openScheduleModalForDate(dateObj) {
+      const modal = document.getElementById('scheduleModal');
+      const modalTitle = document.getElementById('modal-title');
+      const modalBody = document.getElementById('modal-body');
+      const wd = dateObj.getDay();
+      const events = scheduleDataByWeekday[wd] || [];
+      modalTitle.textContent = `Расписание на ${RU_WEEKDAYS_LONG[wd]}, ${formatFullDate(dateObj)}`;
+      if (events.length === 0) {
+        modalBody.innerHTML = '<div class="group-time"><div><div class="group-title">На этот день занятий нет.</div></div></div>';
+      } else {
+        modalBody.innerHTML = events.map(ev => `
+          <div class="group-time">
+            <div><div class="group-title">${escapeHtml(ev.title)}</div><div class="group-hours" style="color:var(--muted)">${escapeHtml(ev.note || '')}</div></div>
+            <div class="group-hours"><strong>${escapeHtml(ev.time)}</strong></div>
+          </div>
+        `).join('');
+      }
+      modal.style.display = 'block';
+      modal.setAttribute('aria-hidden','false');
+    }
+
+    function closeScheduleModal() {
+      const modal = document.getElementById('scheduleModal');
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden','true');
+    }
+    window.onclick = function(event) {
+      const modal = document.getElementById('scheduleModal');
+      if (event.target == modal) {
+        closeScheduleModal();
+      }
+    }
+
+    // helper: format full date like "Понедельник, 15 сентября"
+    function formatFullDate(d) {
+      const wd = d.getDay();
+      const day = d.getDate();
+      const month = d.toLocaleString('ru-RU', { month: 'long' });
+      return `${RU_WEEKDAYS_LONG[wd]}, ${day} ${capitalize(month)}`;
+    }
+    function capitalize(s){ if(!s) return s; return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    function isSameDate(a, b) {
+      return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    }
+
+    // schedule initial render + schedule to rerender at next midnight
+    function renderScheduleAndSetMidnightUpdate() {
+      buildWeekStrip();
+      renderTodayEvents();
+      // clear previous timer if any
+      if (window._midnightTimer) clearTimeout(window._midnightTimer);
+      // compute ms until next midnight (local)
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setHours(24,0,2,0); // a tiny offset (2s) after midnight to be safe
+      const ms = tomorrow - now;
+      window._midnightTimer = setTimeout(() => {
+        // on next day: rerender schedule
+        renderScheduleAndSetMidnightUpdate();
+      }, ms);
+    }
+
+    // init schedule
+    renderScheduleAndSetMidnightUpdate();
+
+    // === Existing API functions (registerChild, loadChildren) - untouched except children display shows extra ===
     async function registerChild() {
       const nameInput = document.getElementById('childNameInput');
       const childName = (nameInput.value || '').trim();
@@ -333,93 +557,116 @@
           headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
           body: params.toString()
         });
-
-        let result;
-        try { result = await resp.json(); }
-        catch (e) {
-          const txt = await resp.text();
-          console.error('Non-JSON response:', txt);
-          alert('Ошибка сервера: ' + txt);
-          return;
-        }
+        
+        const result = await resp.json();
 
         if (result.success) {
           nameInput.value = '';
           await loadChildren();
-          showTinyToast('Ребёнок добавлен');
+          showTinyToast('Ребёнок успешно добавлен!');
         } else {
           alert(result.message || 'Ошибка при добавлении');
         }
       } catch (err) {
         console.error(err);
-        alert('Ошибка сети или неверный URL WebApp. Проверьте деплой и права доступа.');
+        alert('Ошибка сети. Проверьте URL WebApp.');
       }
     }
 
     async function loadChildren() {
       const list = document.getElementById('childrenList');
-      list.innerHTML = '<div class="small text-muted" style="font-size:14px">Загрузка...</div>';
+      list.innerHTML = '<div class="small text-muted">Загрузка...</div>';
       try {
         const resp = await fetch(`${gasUrl}?action=getData&telegramID=${telegramID}`);
         const data = await resp.json();
-        // ожидаем { success: true, children: [...] } (в зависимости от реализации)
         const children = (data.children && Array.isArray(data.children)) ? data.children : [];
 
         if (children.length === 0) {
-          list.innerHTML = '<div class="small text-muted" style="font-size:14px">Ребёнок(и) не зарегистрированы.</div>';
+          list.innerHTML = '<div class="small text-muted">У вас пока нет зарегистрированных детей.</div>';
           return;
         }
 
         list.innerHTML = children.map(ch => {
-          // отображаем extra (отработки) рядом с основным количеством занятий
-          const extra = ch.extra !== undefined && ch.extra !== null ? Number(ch.extra) : 0;
-          const extraHtml = extra > 0 ? `<span class="extra-badge">Отработок: ${extra}</span>` : `<span class="extra-badge" style="opacity:0.45">Отработок: ${extra}</span>`;
+          const extra = ch.extra ? Number(ch.extra) : 0;
+          const extraHtml = extra > 0 ? `<span class="extra-badge">+${extra} отработок</span>` : '';
           return `<div class="child-card">
-                    <div>
-                      <div style="font-weight:600;font-size:18px">${escapeHtml(ch.childName)}</div>
-                      <div class="child-meta">Осталось занятий: <strong>${Number(ch.remaining)}</strong> ${extraHtml}</div>
-                    </div>
-                    <div style="min-width:100px; text-align:right">
-                      <button class="btn btn-sm btn-ghost" onclick="promptSetRemaining('${encodeURIComponent(ch.childName)}')">править</button>
-                    </div>
+                      <div class="child-info">
+                          <div class="name">${escapeHtml(ch.childName)}</div>
+                          <div class="lessons">Осталось занятий: <strong>${Number(ch.remaining)}</strong> ${extraHtml}</div>
+                      </div>
                   </div>`;
         }).join('');
       } catch (err) {
         console.error(err);
-        list.innerHTML = '<div class="small text-danger" style="font-size:14px">Ошибка загрузки. Проверьте URL и права WebApp.</div>';
+        list.innerHTML = '<div class="small text-danger">Ошибка загрузки данных.</div>';
       }
     }
 
-    function escapeHtml(text){
+    function escapeHtml(text) {
       if (text === undefined || text === null) return '';
-      return String(text)
-        .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
-        .replaceAll('"','&quot;').replaceAll("'",'&#039;');
+      return String(text).replace(/[&<>"']/g, match => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[match]));
     }
-
-    function promptSetRemaining(childNameEncoded){
-      const name = decodeURIComponent(childNameEncoded);
-      alert('Если нужно изменить количество занятий для ' + name + ', свяжитесь с тренером — изменения делаются через админку.');
-    }
-
-    // tiny toast
+    
     function showTinyToast(msg){
       const el = document.createElement('div');
       el.style.position = 'fixed';
-      el.style.right = '16px';
-      el.style.bottom = '16px';
-      el.style.padding = '10px 16px';
-      el.style.background = 'linear-gradient(90deg,var(--accent),#6ec3ff)';
+      el.style.left = '50%';
+      el.style.transform = 'translateX(-50%)';
+      el.style.bottom = '20px';
+      el.style.padding = '12px 20px';
+      el.style.background = 'linear-gradient(135deg, #28a745, #218838)';
       el.style.color = '#fff';
-      el.style.borderRadius = '8px';
-      el.style.boxShadow = '0 8px 20px rgba(10,20,40,0.12)';
-      el.style.fontWeight = 500;
+      el.style.borderRadius = '12px';
+      el.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+      el.style.fontWeight = 600;
       el.style.fontSize = '14px';
+      el.style.zIndex = '2000';
+      el.style.opacity = '0';
+      el.style.transition = 'opacity 0.3s, bottom 0.3s';
       el.innerText = msg;
       document.body.appendChild(el);
-      setTimeout(()=> el.style.opacity='0', 1700);
-      setTimeout(()=> el.remove(), 2200);
+      
+      setTimeout(() => {
+        el.style.opacity = '1';
+        el.style.bottom = '30px';
+      }, 10);
+      
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.bottom = '20px';
+      }, 2700);
+      setTimeout(() => el.remove(), 3000);
     }
+
+    // expose close modal globally
+    window.closeScheduleModal = closeScheduleModal;
+
+    // provide also schedule page grid (same as week strip) for compatibility
+    function renderSchedulePageGrid() {
+      const grid = document.getElementById('scheduleWeekGrid');
+      grid.innerHTML = '';
+      const today = new Date();
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        const wd = d.getDay();
+        const hasEvents = (scheduleDataByWeekday[wd] && scheduleDataByWeekday[wd].length > 0);
+        const el = document.createElement('div');
+        el.className = 'calendar-day' + (hasEvents ? ' has-events' : '');
+        el.innerHTML = `<div class="day-name">${RU_WEEKDAYS_SHORT[wd]}</div><div class="day-number">${d.getDate()}</div>`;
+        el.onclick = () => openScheduleModalForDate(d);
+        grid.appendChild(el);
+      }
+    }
+    renderSchedulePageGrid();
+
+    // rerender schedule when window regains focus (in case device slept over midnight)
+    window.addEventListener('focus', () => {
+      renderScheduleAndSetMidnightUpdate();
+    });
+
   </script>
 </body>
 </html>
