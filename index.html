@@ -134,7 +134,6 @@
     .menu {
       display: flex;
       justify-content: center;
-      /* --- ИЗМЕНЕНИЕ 1: Фон сделан прозрачным --- */
       background: transparent;
       padding: 6px 0;
       position: sticky;
@@ -242,7 +241,6 @@
         box-shadow: 0 12px 32px rgba(255, 77, 77, 0.7);
     }
     
-    /* --- ИЗМЕНЕНИЕ 3: Стили для новой анимации перехода --- */
     #transition-particles {
         position: fixed;
         top: 0;
@@ -252,10 +250,12 @@
         z-index: 10000;
         pointer-events: none;
         opacity: 0;
-        transition: opacity 0.3s ease-in-out;
+        /* --- ИЗМЕНЕНИЕ: Плавное появление и исчезновение холста анимации --- */
+        transition: opacity 0.5s ease-in-out; 
     }
     #transition-particles.active {
         opacity: 1;
+        pointer-events: all; /* Включаем, чтобы анимация работала */
     }
 
     #event {
@@ -569,14 +569,10 @@
       transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
       text-decoration: none;
     }
-    .modal
-
- .contact-button:hover {
+    .modal .contact-button:hover {
       background: linear-gradient(135deg, #b8e002, #d5fd02);
       transform: scale(1.05);
-      box-shadow: 0 6px 
-
-16px rgba(213, 253, 2, 0.3);
+      box-shadow: 0 6px 16px rgba(213, 253, 2, 0.3);
     }
     .modal .close-button {
       padding: 8px 16px;
@@ -1084,62 +1080,77 @@
 
     trackEvent('webapp_open');
     
-    // --- ИЗМЕНЕНИЕ 3: Обновленная логика с анимацией летучих мышей ---
+    // --- ИЗМЕНЕНИЕ: Полностью новая логика перехода ---
     const transitionParticlesEl = document.getElementById('transition-particles');
     let transitionInstance;
+    let isTransitioning = false; // Флаг для предотвращения двойных нажатий
 
-    // Конфигурация для анимации летучих мышей
+    // --- ИЗМЕНЕНИЕ: Новая, более качественная графика летучей мыши в base64 ---
+    const batBase64 = "data:image/png;base64,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";
+
     const batTransitionConfig = {
-      fpsLimit: 60,
+      fpsLimit: 120,
+      // --- ИЗМЕНЕНИЕ: Убран фон, анимация на прозрачном холсте ---
       background: {
-          color: "#000"
+          color: "transparent"
       },
       particles: {
         number: {
-          value: 150,
+          value: 0 // Частицы создаются эмиттером, а не изначально
         },
         color: {
-          value: "#222"
+          value: "#333" // Цвет не так важен, т.к. используется изображение
         },
         shape: {
           type: "image",
           image: {
-            // Простое SVG изображение летучей мыши
-            src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23555'%3E%3Cpath d='M12 2.5c-4.05 0-7.7 2.5-9.4 6.2-.7 1.5-1.1 3.1-1.1 4.8 0 2.9 1.2 5.5 3.1 7.4 1.3 1.2 2.9 2.1 4.7 2.6.1 0 .2.1.3.1s.2 0 .3-.1c1.8-.5 3.4-1.3 4.7-2.6 1.9-1.9 3.1-4.5 3.1-7.4 0-1.7-.4-3.3-1.1-4.8C19.7 5 16.05 2.5 12 2.5zm-3.9 13.9c-.3.3-.7.3-1 0-.3-.3-.3-.7 0-1l3.5-3.5-3.5-3.5c-.3-.3-.3-.7 0-1s.7-.3 1 0l4.5 4.5c.3.3.3.7 0 1l-4.5 4.5z'/%3E%3C/svg%3E",
-            width: 100,
-            height: 100
+            src: batBase64,
+            width: 128,
+            height: 128
           }
         },
         opacity: {
-          value: { min: 0.3, max: 0.8 }
+          value: { min: 0.5, max: 1.0 }
         },
         size: {
-          value: { min: 10, max: 25 }
+          value: { min: 20, max: 40 }
         },
         move: {
           enable: true,
-          speed: 8,
-          direction: "left-to-right",
-          straight: false,
+          speed: {min: 8, max: 14},
+          // Направление игнорируется, когда эмиттер задает свое
+          direction: "none",
           random: true,
+          straight: false,
           outModes: "out"
         }
       },
-      fullScreen: {
-          enable: true,
-          zIndex: 1
-      },
-      interactivity: {
-          events: {
-              onHover: {
-                  enable: false
-              }
+      // --- ИЗМЕНЕНИЕ: Эмиттер для создания направленного потока ---
+      emitters: {
+          // Направление полета стаи
+          direction: "bottom-left", 
+          // Как быстро и сколько частиц создавать
+          rate: {
+              quantity: 25,
+              delay: 0.05
+          },
+          // Позиция появления стаи (правый верхний угол)
+          position: {
+              x: 100,
+              y: 0
+          },
+          // Эмиттер будет работать 0.8с, создаст 1 волну и исчезнет
+          life: {
+              duration: 0.8,
+              count: 1
           }
       }
     };
 
     document.querySelectorAll('.menu-item').forEach(item => {
       item.addEventListener('click', () => {
+        if (isTransitioning) return; // Блокируем клик во время анимации
+
         const targetSectionId = item.dataset.section;
         const isGothic = targetSectionId === 'event';
         const isCurrentlyGothic = document.body.classList.contains('gothic-theme');
@@ -1149,13 +1160,15 @@
             return;
         }
         
-        // Показываем контейнер для анимации и запускаем ее
+        isTransitioning = true;
+        
+        // Показываем холст и запускаем анимацию
         transitionParticlesEl.classList.add('active');
         tsParticles.load('transition-particles', batTransitionConfig).then(container => {
             transitionInstance = container;
         });
 
-        // Задержка для проигрывания анимации
+        // В середине анимации (когда экран покрыт мышами) меняем тему
         setTimeout(() => {
             if (isGothic) {
                 document.body.classList.add('gothic-theme');
@@ -1163,17 +1176,17 @@
                 document.body.classList.remove('gothic-theme');
             }
             switchSection(targetSectionId);
-            
             tsParticles.load("tsparticles", getParticlesConfig(isGothic));
+        }, 800); // Тайминг подбирается под скорость анимации
 
-            // Запускаем обратную анимацию (если нужно) и скрываем оверлей
-            if(transitionInstance) {
-                // Можно добавить логику обратного полета мышей, но для простоты просто скрываем
+        // Когда анимация завершилась и мыши улетели, скрываем холст
+        setTimeout(() => {
+            transitionParticlesEl.classList.remove('active');
+            if (transitionInstance) {
                 transitionInstance.destroy();
             }
-            transitionParticlesEl.classList.remove('active');
-
-        }, 1200); // Длительность анимации
+            isTransitioning = false; // Снимаем блокировку
+        }, 2000); // Общая длительность анимации + задержка
       });
     });
 
@@ -1423,7 +1436,6 @@
               <option value="ASO">ASO</option>
               <option value="SEO">SEO</option>
             </select>
-            < تبلیغات
             <label>Какой бюджет в среднем ты использовал?</label>
             <select name="budget" required>
               <option value="" disabled selected>Выберите бюджет</option>
