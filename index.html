@@ -19,6 +19,29 @@
       position: relative;
       transition: background 0.8s ease-in-out, color 0.8s ease-in-out;
     }
+    
+    /* Дополнительные эффекты для готической темы */
+    body.gothic-theme::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 20% 80%, rgba(255, 77, 77, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(139, 3, 3, 0.1) 0%, transparent 50%),
+            linear-gradient(45deg, transparent 48%, rgba(255, 77, 77, 0.02) 50%, transparent 52%);
+        pointer-events: none;
+        z-index: -1;
+        animation: gothicShimmer 8s ease-in-out infinite;
+    }
+
+    @keyframes gothicShimmer {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.6; }
+    }
+
     #tsparticles {
       position: fixed;
       top: 0;
@@ -167,6 +190,22 @@
       background: #d5fd02;
       color: #080808;
     }
+
+    /* Готические стили для меню */
+    body.gothic-theme .menu-item {
+        background: rgba(43, 15, 15, 0.6);
+        color: #ffb3b3;
+        border: 1px solid rgba(255, 77, 77, 0.3);
+        text-shadow: 0 0 5px rgba(255, 77, 77, 0.3);
+    }
+
+    body.gothic-theme .menu-item.active,
+    body.gothic-theme .menu-item:hover {
+        background: linear-gradient(135deg, #ff4d4d, #8a0303);
+        color: #1a0000;
+        box-shadow: 0 0 15px rgba(255, 77, 77, 0.6);
+        text-shadow: none;
+    }
     
     #event-button {
         background-color: #4a0d0d;
@@ -219,6 +258,53 @@
         text-shadow: 0 0 8px #ff4d4d;
     }
     
+    /* Стили для старорусского текста в ивенте */
+    body.gothic-theme #event h2 {
+        font-size: 42px;
+        font-family: 'Marck Script', cursive;
+        text-shadow: 2px 2px 0 #000, 0 0 10px #ff4d4d;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        position: relative;
+    }
+
+    body.gothic-theme #event h2::before,
+    body.gothic-theme #event h2::after {
+        content: '✦';
+        color: #ff4d4d;
+        font-size: 24px;
+        position: absolute;
+        top: -5px;
+    }
+
+    body.gothic-theme #event h2::before { left: -30px; }
+    body.gothic-theme #event h2::after { right: -30px; }
+
+    .old-russian-text {
+        font-size: 20px;
+        line-height: 1.8;
+        max-width: 700px;
+        margin: 24px auto;
+        padding: 20px;
+        background: rgba(43, 15, 15, 0.3);
+        border: 2px solid #5c1f1f;
+        border-radius: 15px;
+        position: relative;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .old-russian-text::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="%23ff4d4d" opacity="0.1"/><circle cx="75" cy="75" r="0.5" fill="%23ff4d4d" opacity="0.05"/><circle cx="50" cy="10" r="0.8" fill="%23b30000" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        pointer-events: none;
+        border-radius: 15px;
+    }
+    
     body.gothic-theme .card {
         background: #2b0f0f;
         border: 1px solid #5c1f1f;
@@ -239,6 +325,25 @@
     body.gothic-theme .promo-card:hover {
         background: linear-gradient(135deg, #b30000, #ff4d4d);
         box-shadow: 0 12px 32px rgba(255, 77, 77, 0.7);
+    }
+
+    /* Готические стили для кнопки регистрации */
+    body.gothic-theme .register-button {
+        background: linear-gradient(135deg, #8a0303, #4a0d0d);
+        color: #ffb3b3;
+        border: 2px solid #ff4d4d;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        box-shadow: 0 0 20px rgba(255, 77, 77, 0.4);
+        font-family: 'Marck Script', cursive;
+        font-size: 18px;
+        padding: 15px 30px;
+    }
+
+    body.gothic-theme .register-button:hover {
+        background: linear-gradient(135deg, #ff4d4d, #8a0303);
+        color: #1a0000;
+        box-shadow: 0 0 30px rgba(255, 77, 77, 0.7);
+        transform: scale(1.05);
     }
     
     #transition-particles {
@@ -971,14 +1076,15 @@
     </div>
   </section>
 
+  <!-- Обновленная секция ивента со старорусским стилем -->
   <section id="event" class="section">
-    <h2 class="section-title">Вечер Русской Готики</h2>
-    <p>
-      Приглашаем вас окунуться в атмосферу таинственности и мистики на нашем эксклюзивном ивенте. 
-      Вас ждут загадочные декорации, готическая музыка и незабываемые впечатления. 
-      Дресс-код: элегантная готика.
+    <h2 class="section-title">Вѣчеръ Руской Готіи</h2>
+    <p class="old-russian-text">
+      Призываемъ васъ погрузитися въ атмосферу тайны и мистики на нашемъ исключительномъ собраніи. 
+      Ожидаютъ васъ загадочныя украшенія, готическая музыка и незабываемыя впечатлѣнія. 
+      Дрессъ-кодъ: изящная готика.
     </p>
-    <a href="#" class="register-button">Зарегистрироваться</a>
+    <a href="#" class="register-button">Записатися на собранїе</a>
   </section>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -1079,78 +1185,129 @@
 
     trackEvent('webapp_open');
     
-    // --- ИЗМЕНЕНИЕ: Новая логика и конфиг для анимации крови ---
-    const transitionParticlesEl = document.getElementById('transition-particles');
-    let transitionInstance;
-    let isTransitioning = false;
-
-    // Конфигурация для анимации "стекающей крови"
-    const bloodTransitionConfig = {
-        fpsLimit: 120,
-        // Фон, на котором появляются капли, плавно становится черным
+    // Новая конфигурация для туманного перехода
+    const mistTransitionConfig = {
+        fpsLimit: 60,
         background: {
-            color: "#000000"
+            color: {
+                value: "#000000"
+            },
+            opacity: 0.95
         },
         particles: {
             number: {
-                value: 0 // Частицы создаются эмиттером
+                value: 0 // Создаем через эмиттеры
             },
             color: {
-                value: "#8a0303" // Глубокий цвет крови
+                value: [
+                    "#2b0f0f", "#4a0d0d", "#5c1f1f", "#8a0303", "#1a0000"
+                ]
             },
             shape: {
-                type: "circle"
+                type: [
+                    "circle", 
+                    {
+                        type: "image",
+                        src: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIHZpZXdCb3g9IjAgMCAxMCAxMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEgMUg5VjlaIiBmaWxsPSIjMjUwMDAwIi8+CjxwYXRoIGQ9Ik0xIDFMMCAySDJNMCAyVjNIMU0yIDNIM1Y0SDJNNCA0SDZWN0g0TTYgN0g3VjhaIiBmaWxsPSIjRkY0RDREIi8+Cjwvc3ZnPgo="
+                    }
+                ]
             },
             opacity: {
-                value: 1
+                value: { min: 0.3, max: 0.8 },
+                random: true,
+                animation: {
+                    enable: true,
+                    speed: 1,
+                    sync: false,
+                    startValue: "max",
+                    destroyValue: "min",
+                    count: 1
+                }
             },
             size: {
-                value: {
-                    min: 5,
-                    max: 15
+                value: { min: 20, max: 80 },
+                random: true,
+                animation: {
+                    enable: true,
+                    speed: 2,
+                    sync: false,
+                    startValue: "min",
+                    destroyValue: "max"
                 }
             },
             move: {
                 enable: true,
-                speed: 3,
-                direction: "bottom",
+                speed: { min: 0.5, max: 2 },
+                direction: "none",
                 random: true,
                 straight: false,
-                outModes: "out",
-                // Включаем гравитацию для реалистичного падения
-                gravity: {
-                    enable: true,
-                    acceleration: 9.81
+                outModes: {
+                    default: "out",
+                    bottom: "out",
+                    left: "out",
+                    right: "out",
+                    top: "out"
                 },
-                // Заставляем капли "поглощать" друг друга при столкновении
-                collisions: true,
-                absorb: {
+                drift: {
                     enable: true,
-                    speed: 2
+                    random: { enable: true, minimumValue: 0.1 }
+                }
+            },
+            rotate: {
+                value: 0,
+                random: true,
+                animation: {
+                    enable: true,
+                    speed: 5,
+                    sync: false
                 }
             }
         },
-        // Эмиттер, который "роняет" капли сверху
-        emitters: {
-            position: {
-                x: 50,
-                y: 0
+        // Несколько эмиттеров для создания эффекта густеющего тумана
+        emitters: [
+            {
+                position: { x: 0, y: 50 },
+                size: { width: 100, height: 100 },
+                rate: { quantity: 3, delay: 0.1 },
+                life: { duration: 0.8, count: 1 }
             },
-            size: {
-              width: 100,
-              height: 0
+            {
+                position: { x: 100, y: 50 },
+                size: { width: 100, height: 100 },
+                rate: { quantity: 2, delay: 0.2 },
+                life: { duration: 0.8, count: 1 }
             },
-            rate: {
-                quantity: 8,
-                delay: 0.1
-            },
-            life: {
-                duration: 0.6, // Как долго работает эмиттер
-                count: 1 // Создает одну волну и останавливается
+            {
+                position: { x: 50, y: 0 },
+                size: { width: 100, height: 100 },
+                rate: { quantity: 2, delay: 0.3 },
+                life: { duration: 0.8, count: 1 }
             }
-        }
+        ],
+        // Добавляем репульсию для создания более органичного движения
+        interactivity: {
+            events: {
+                onHover: { enable: false },
+                onClick: { enable: false }
+            },
+            modes: {
+                repulse: {
+                    distance: 200,
+                    duration: 0.4,
+                    speed: 1,
+                    easing: "ease-out",
+                    factor: 100,
+                    maxSpeed: 50,
+                    size: 100
+                }
+            }
+        },
+        retina_detect: true
     };
 
+    const transitionParticlesEl = document.getElementById('transition-particles');
+    let transitionInstance;
+    let isTransitioning = false;
 
     document.querySelectorAll('.menu-item').forEach(item => {
       item.addEventListener('click', () => {
@@ -1167,31 +1324,54 @@
         
         isTransitioning = true;
         
+        // Добавляем затемнение перед туманом
+        document.body.style.transition = 'opacity 0.3s ease';
+        document.body.style.opacity = '0.3';
+        
         transitionParticlesEl.classList.add('active');
-        // --- ИЗМЕНЕНИЕ: Запускаем новую анимацию крови ---
-        tsParticles.load('transition-particles', bloodTransitionConfig).then(container => {
+        
+        // Запускаем туманную анимацию
+        tsParticles.load('transition-particles', mistTransitionConfig).then(container => {
             transitionInstance = container;
-        });
+            
+            // Добавляем эффект "пульсации" тумана
+            container.plugins?.density?.enable?.();
+            
+            // Через 1.5 секунды начинаем показывать новую тему
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                if (isGothic) {
+                    document.body.classList.add('gothic-theme');
+                    // Меняем фон на готический
+                    document.body.style.background = '#1a0000 url("https://www.transparenttextures.com/patterns/dark-denim-3.png")';
+                } else {
+                    document.body.classList.remove('gothic-theme');
+                    // Возвращаем обычный фон
+                    document.body.style.background = '#080808';
+                }
+                switchSection(targetSectionId);
+                
+                // Обновляем частицы фона под новую тему
+                tsParticles.load("tsparticles", getParticlesConfig(isGothic));
+            }, 1500);
 
-        // В середине анимации, когда экран уже залит
-        setTimeout(() => {
-            if (isGothic) {
-                document.body.classList.add('gothic-theme');
-            } else {
-                document.body.classList.remove('gothic-theme');
-            }
+            // Убираем туман через 2.8 секунды
+            setTimeout(() => {
+                transitionParticlesEl.classList.remove('active');
+                document.body.style.transition = '';
+                if (transitionInstance) {
+                    transitionInstance.destroy();
+                    transitionInstance = null;
+                }
+                isTransitioning = false;
+            }, 2800);
+        }).catch(err => {
+            console.error('Transition error:', err);
+            // Fallback без анимации
+            document.body.classList.toggle('gothic-theme', isGothic);
             switchSection(targetSectionId);
-            tsParticles.load("tsparticles", getParticlesConfig(isGothic));
-        }, 1200); // Тайминг подбирается под скорость заполнения экрана
-
-        // Когда анимация завершилась, плавно скрываем холст
-        setTimeout(() => {
-            transitionParticlesEl.classList.remove('active');
-            if (transitionInstance) {
-                transitionInstance.destroy();
-            }
             isTransitioning = false;
-        }, 2200); // Общая длительность анимации + время на растворение
+        });
       });
     });
 
