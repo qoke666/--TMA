@@ -30,6 +30,23 @@
     a { text-decoration: none; }
     ul { list-style: none; margin: 0; padding: 0; }
 
+    .menu-top, .carousel {
+        transition: opacity 0.5s ease-in-out, max-height 0.8s ease-in-out, transform 0.8s ease-in-out, margin 0.8s ease-in-out;
+        max-height: 200px;
+        transform: translateY(0);
+        opacity: 1;
+        overflow: hidden;
+    }
+    
+    body.gothic-theme .menu-top,
+    body.gothic-theme .carousel {
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-20px);
+        margin: 0;
+        pointer-events: none;
+    }
+
     .menu-top {
       display: flex;
       justify-content: space-between;
@@ -117,13 +134,16 @@
     .menu {
       display: flex;
       justify-content: center;
-      background: #080808;
+      /* --- ИЗМЕНЕНИЕ 1: Фон сделан прозрачным --- */
+      background: transparent;
       padding: 6px 0;
       position: sticky;
       top: 0;
       z-index: 10;
       max-width: 100%;
+      transition: margin-top 0.8s ease-in-out;
     }
+
     .menu ul {
       display: inline-flex;
       gap: 10px;
@@ -149,7 +169,6 @@
       color: #080808;
     }
     
-    /* Стили для кнопки ивента */
     #event-button {
         background-color: #4a0d0d;
         color: #ffb3b3;
@@ -190,7 +209,6 @@
       color: #d5fd02;
     }
     
-    /* Стили для готической темы */
     body.gothic-theme {
         background: #1a0000 url('https://www.transparenttextures.com/patterns/dark-denim-3.png');
         color: #ffb3b3;
@@ -224,23 +242,20 @@
         box-shadow: 0 12px 32px rgba(255, 77, 77, 0.7);
     }
     
-    /* Анимация трансформации */
-    .transformation-overlay {
+    /* --- ИЗМЕНЕНИЕ 3: Стили для новой анимации перехода --- */
+    #transition-particles {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: #080808;
         z-index: 10000;
-        opacity: 0;
         pointer-events: none;
-        transition: opacity 0.4s ease-in-out;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
     }
-    
-    .transformation-overlay.active {
+    #transition-particles.active {
         opacity: 1;
-        pointer-events: all;
     }
 
     #event {
@@ -762,7 +777,7 @@
 </head>
 <body>
   <div id="tsparticles"></div>
-  <div class="transformation-overlay"></div>
+  <div id="transition-particles"></div>
 
   <div class="menu-top">
     <img class="logo" src="https://i.postimg.cc/90gRT1n1/Frame-2.png" alt="TMA Logo" />
@@ -1069,8 +1084,59 @@
 
     trackEvent('webapp_open');
     
-    // Новая логика для переключения вкладок с анимацией
-    const transformationOverlay = document.querySelector('.transformation-overlay');
+    // --- ИЗМЕНЕНИЕ 3: Обновленная логика с анимацией летучих мышей ---
+    const transitionParticlesEl = document.getElementById('transition-particles');
+    let transitionInstance;
+
+    // Конфигурация для анимации летучих мышей
+    const batTransitionConfig = {
+      fpsLimit: 60,
+      background: {
+          color: "#000"
+      },
+      particles: {
+        number: {
+          value: 150,
+        },
+        color: {
+          value: "#222"
+        },
+        shape: {
+          type: "image",
+          image: {
+            // Простое SVG изображение летучей мыши
+            src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23555'%3E%3Cpath d='M12 2.5c-4.05 0-7.7 2.5-9.4 6.2-.7 1.5-1.1 3.1-1.1 4.8 0 2.9 1.2 5.5 3.1 7.4 1.3 1.2 2.9 2.1 4.7 2.6.1 0 .2.1.3.1s.2 0 .3-.1c1.8-.5 3.4-1.3 4.7-2.6 1.9-1.9 3.1-4.5 3.1-7.4 0-1.7-.4-3.3-1.1-4.8C19.7 5 16.05 2.5 12 2.5zm-3.9 13.9c-.3.3-.7.3-1 0-.3-.3-.3-.7 0-1l3.5-3.5-3.5-3.5c-.3-.3-.3-.7 0-1s.7-.3 1 0l4.5 4.5c.3.3.3.7 0 1l-4.5 4.5z'/%3E%3C/svg%3E",
+            width: 100,
+            height: 100
+          }
+        },
+        opacity: {
+          value: { min: 0.3, max: 0.8 }
+        },
+        size: {
+          value: { min: 10, max: 25 }
+        },
+        move: {
+          enable: true,
+          speed: 8,
+          direction: "left-to-right",
+          straight: false,
+          random: true,
+          outModes: "out"
+        }
+      },
+      fullScreen: {
+          enable: true,
+          zIndex: 1
+      },
+      interactivity: {
+          events: {
+              onHover: {
+                  enable: false
+              }
+          }
+      }
+    };
 
     document.querySelectorAll('.menu-item').forEach(item => {
       item.addEventListener('click', () => {
@@ -1078,15 +1144,18 @@
         const isGothic = targetSectionId === 'event';
         const isCurrentlyGothic = document.body.classList.contains('gothic-theme');
 
-        // Если тема не меняется, просто переключаем вкладку
         if (isGothic === isCurrentlyGothic) {
             switchSection(targetSectionId);
             return;
         }
         
-        // Анимация смены темы
-        transformationOverlay.classList.add('active');
+        // Показываем контейнер для анимации и запускаем ее
+        transitionParticlesEl.classList.add('active');
+        tsParticles.load('transition-particles', batTransitionConfig).then(container => {
+            transitionInstance = container;
+        });
 
+        // Задержка для проигрывания анимации
         setTimeout(() => {
             if (isGothic) {
                 document.body.classList.add('gothic-theme');
@@ -1095,13 +1164,16 @@
             }
             switchSection(targetSectionId);
             
-            // Обновляем частицы для новой темы
             tsParticles.load("tsparticles", getParticlesConfig(isGothic));
 
-            setTimeout(() => {
-                transformationOverlay.classList.remove('active');
-            }, 400);
-        }, 400);
+            // Запускаем обратную анимацию (если нужно) и скрываем оверлей
+            if(transitionInstance) {
+                // Можно добавить логику обратного полета мышей, но для простоты просто скрываем
+                transitionInstance.destroy();
+            }
+            transitionParticlesEl.classList.remove('active');
+
+        }, 1200); // Длительность анимации
       });
     });
 
@@ -1396,7 +1468,7 @@
               <button class="contact-button tg-link" data-link="https://t.me/Nick_Limited" data-role="рекламодатель">
                 <i class="fab fa-telegram-plane"></i> как рекламодатель
               </button>
-              <button class="contact-button tg-link" data-link="https://t.me/D_limited" data-role="веб-мастер">
+              <button class="contact-button tg-link" data-link="https.me/D_limited" data-role="веб-мастер">
                 <i class="fab fa-telegram-plane"></i> как веб-мастер
               </button>
               <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
@@ -1497,7 +1569,7 @@
             modal.querySelector('.apply-form').innerHTML = `
               <p style="text-align: center; font-size: 18px; color: #d5fd02;">Отклик отправлен!</p>
               <p style="text-align: center; font-size: 15px; color: #ccc;">Ответ по вакансии придет в нашем чате.</p>
-              <a href="#" class="bot-button tg-link" data-link="https://t.me/TheLimitedClubHR_bot?start=${response_id}">
+              <a href="#" class="bot-button tg-link" data-link="https.me/TheLimitedClubHR_bot?start=${response_id}">
                 <i class="fab fa-telegram-plane"></i> Перейти в чат
               </a>
               <button type="button" class="close-button"><i class="fas fa-times"></i> Закрыть</button>
