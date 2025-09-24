@@ -6,9 +6,9 @@
   <title>TMA Главная</title>
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Cinzel:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
     body {
       margin: 0;
@@ -25,6 +25,10 @@
       width: 100%;
       height: 100%;
       z-index: -1;
+      transition: opacity 1s ease;
+    }
+    #tsparticles.events-mode {
+      opacity: 0.7;
     }
     a { text-decoration: none; }
     ul { list-style: none; margin: 0; padding: 0; }
@@ -126,16 +130,17 @@
     .menu {
       display: flex;
       justify-content: center;
-      background: #080808;
+      background: rgba(8, 8, 8, 0.9);
       padding: 6px 0;
       position: sticky;
       top: 0;
       z-index: 10;
       max-width: 100%;
-      transition: top 0.3s ease;
+      transition: background 0.5s ease;
     }
-    .menu.event-active {
-      top: 50px;
+    .menu.events-mode {
+      background: rgba(139, 0, 0, 0.2);
+      backdrop-filter: blur(5px);
     }
     .menu ul {
       display: inline-flex;
@@ -157,20 +162,13 @@
       color: #ccc;
       transition: background .3s, color .3s;
     }
-    .menu-item.event {
-      font-family: 'Cinzel', serif;
-      color: #d5fd02;
-      border: 1px solid rgba(213, 253, 2, 0.3);
-      background: rgba(17, 19, 21, 0.5);
-    }
-    .menu-item.event:hover, .menu-item.event.active {
-      background: linear-gradient(135deg, #d5fd02, #b8e002);
-      color: #080808;
-      border-color: #d5fd02;
-    }
     .menu-item.active, .menu-item:hover {
       background: #d5fd02;
       color: #080808;
+    }
+    .menu.events-mode .menu-item.active, .menu.events-mode .menu-item:hover {
+      background: #8b0000;
+      color: #ffffff;
     }
 
     @keyframes scroll-hint {
@@ -187,6 +185,8 @@
       padding: 8px 16px;
       box-sizing: border-box;
       min-height: 100px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
     }
     .section.active {
       display: block;
@@ -198,7 +198,6 @@
       font-weight: 600;
       margin: 8px 0;
       color: #d5fd02;
-      font-family: 'Cinzel', serif;
     }
 
     .grid {
@@ -450,7 +449,6 @@
       margin: 0 0 10px;
       color: #d5fd02;
       font-size: clamp(16px, 4vw, 18px);
-      font-family: 'Cinzel', serif;
     }
     .modal p {
       font-size: clamp(12px, 3.5vw, 13px);
@@ -617,141 +615,6 @@
       font-size: 14px;
     }
 
-    /* Стили для страницы ивента */
-    #event {
-      background: #0a0a0a;
-      position: relative;
-      min-height: 100vh;
-      padding: 80px 16px 16px;
-      overflow: hidden;
-      font-family: 'Cinzel', serif;
-    }
-    #event::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('https://i.postimg.cc/4xB0kN2H/gothic-bg.jpg') center/cover no-repeat;
-      opacity: 0.3;
-      z-index: -1;
-    }
-    #event .event-content {
-      max-width: 600px;
-      margin: 0 auto;
-      text-align: center;
-      background: rgba(17, 19, 21, 0.9);
-      border: 2px solid rgba(213, 253, 2, 0.3);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
-    }
-    #event .event-content h1 {
-      font-size: 28px;
-      color: #d5fd02;
-      margin-bottom: 16px;
-      font-family: 'Cinzel', serif;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    }
-    #event .event-content p {
-      font-size: 16px;
-      color: #ccc;
-      margin-bottom: 24px;
-      font-family: 'Inter', sans-serif;
-    }
-    #event .event-content .register-button {
-      padding: 12px 24px;
-      background: linear-gradient(135deg, #d5fd02, #b8e002);
-      color: #080808;
-      border: none;
-      border-radius: 8px;
-      font-family: 'Cinzel', serif;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    #event .event-content .register-button:hover {
-      background: linear-gradient(135deg, #b8e002, #d5fd02);
-      transform: scale(1.05);
-      box-shadow: 0 8px 20px rgba(213, 253, 2, 0.5);
-    }
-
-    /* Анимация тумана - обновлённая версия */
-    .fog-transition {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 10000;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-    .fog-transition.active {
-      opacity: 1;
-    }
-    .fog-transition .fog-layer {
-      position: absolute;
-      width: 150%; /* Шире для покрытия со сторон */
-      height: 150%;
-      opacity: 0;
-      will-change: transform, opacity;
-      filter: blur(5px) saturate(1.2) brightness(0.9);
-    }
-    .fog-transition.active .fog-layer {
-      animation: fogAnimation calc(3s * var(--stork)) ease-in-out forwards;
-    }
-
-    /* Позиционирование слоёв со всех сторон */
-    .fog-layer-bottom { bottom: -50%; left: -25%; transform-origin: bottom center; }
-    .fog-layer-top { top: -50%; left: -25%; transform-origin: top center; }
-    .fog-layer-left { left: -50%; top: -25%; transform-origin: left center; }
-    .fog-layer-right { right: -50%; top: -25%; transform-origin: right center; }
-
-    /* Разные скорости и стили для слоёв */
-    .fog-layer:nth-child(1) { --stork: 1; opacity: 0.9; filter: blur(4px); }
-    .fog-layer:nth-child(2) { --stork: 1.3; opacity: 0.85; filter: blur(5px); }
-    .fog-layer:nth-child(3) { --stork: 0.8; opacity: 0.95; filter: blur(6px); }
-    .fog-layer:nth-child(4) { --stork: 1.5; opacity: 0.8; filter: blur(3px); }
-    .fog-layer:nth-child(5) { --stork: 1.1; opacity: 0.9; filter: blur(4.5px); }
-    .fog-layer:nth-child(6) { --stork: 0.9; opacity: 0.75; filter: blur(5px); }
-    .fog-layer:nth-child(7) { --stork: 1.4; opacity: 0.85; filter: blur(6px); }
-    .fog-layer:nth-child(8) { --stork: 1.2; opacity: 0.8; filter: blur(4px); }
-    .fog-layer:nth-child(9) { --stork: 0.7; opacity: 0.9; filter: blur(5.5px); }
-    .fog-layer:nth-child(10) { --stork: 1.6; opacity: 0.7; filter: blur(3px); }
-    .fog-layer:nth-child(11) { --stork: 1.0; opacity: 0.85; filter: blur(4px); }
-    .fog-layer:nth-child(12) { --stork: 1.25; opacity: 0.8; filter: blur(5px); }
-    .fog-layer:nth-child(13) { --stork: 0.95; opacity: 0.9; filter: blur(6px); }
-    .fog-layer:nth-child(14) { --stork: 1.35; opacity: 0.75; filter: blur(3.5px); }
-    .fog-layer:nth-child(15) { --stork: 1.05; opacity: 0.85; filter: blur(4.5px); }
-    .fog-layer:nth-child(16) { --stork: 0.85; opacity: 0.8; filter: blur(5px); }
-    .fog-layer:nth-child(17) { --stork: 1.45; opacity: 0.9; filter: blur(6px); }
-    .fog-layer:nth-child(18) { --stork: 1.15; opacity: 0.75; filter: blur(4px); }
-    .fog-layer:nth-child(19) { --stork: 0.75; opacity: 0.85; filter: blur(5.5px); }
-    .fog-layer:nth-child(20) { --stork: 1.55; opacity: 0.8; filter: blur(3px); }
-
-    @keyframes fogAnimation {
-      0% {
-        transform: translate(0, 0) scale(1.5);
-        opacity: 0;
-      }
-      40% {
-        transform: translate(0, 0) scale(1.2);
-        opacity: 0.7;
-      }
-      60% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1; /* Максимальная густота, экран затянут */
-      }
-      100% {
-        transform: translate(0, 0) scale(0.8);
-        opacity: 0; /* Плавное растворение */
-      }
-    }
-
     @media (max-width: 360px) {
       .modal {
         padding: 10px;
@@ -787,16 +650,6 @@
         font-size: 11px;
         padding: 4px 10px;
       }
-      #event .event-content h1 {
-        font-size: 24px;
-      }
-      #event .event-content p {
-        font-size: 14px;
-      }
-      #event .event-content .register-button {
-        font-size: 14px;
-        padding: 10px 20px;
-      }
     }
     @media (max-width: 320px) {
       .modal {
@@ -824,46 +677,189 @@
       transition: width .3s;
       z-index: 2;
     }
+    .events-mode .scroll-indicator {
+      background: #8b0000;
+    }
 
-    @media (prefers-reduced-motion: reduce) {
-      .fog-transition .fog-layer {
+    #fog-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 999;
+      pointer-events: none;
+      display: none;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    #fog-overlay.active {
+      display: block;
+      opacity: 1;
+    }
+    #fog-overlay.condensing {
+      animation: condense 2s ease-in forwards; /* Уменьшено время для UX */
+    }
+    #fog-overlay.dissipating {
+      animation: dissipate 3s ease-out forwards;
+    }
+    .fog-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 100%;
+      background: url('https://i.gifer.com/g0e4.gif') repeat-x;
+      background-size: auto 100%;
+      opacity: 0;
+      animation: fog-opacity 2s ease-in forwards;
+    }
+    .fog-layer1 {
+      animation: move-fog 20s linear infinite, fog-opacity 2s ease-in forwards;
+    }
+    .fog-layer2 {
+      animation: move-fog 30s linear infinite reverse, fog-opacity 2s ease-in forwards 0.5s;
+    }
+    .fog-layer3 {
+      animation: move-fog 15s linear infinite, fog-opacity 2s ease-in forwards 1s;
+    }
+    @keyframes move-fog {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes fog-opacity {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    @keyframes condense {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    @keyframes dissipate {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* --- НОВЫЕ СТИЛИ ДЛЯ СЕКЦИИ EVENTS --- */
+
+    #events.section.active {
+        display: flex;
+    }
+
+    #events {
+        background-color: #000;
+        background-image:
+            url('https://www.transparenttextures.com/patterns/fog.png'),
+            url('https://i.postimg.cc/9fLpYvy9/gothic-window.png'),
+            url('https://www.transparenttextures.com/patterns/concrete-wall.png');
+        background-size: auto, 60% auto, auto;
+        background-position: center bottom, center center, center center;
+        background-repeat: repeat-x, no-repeat, repeat;
+        font-family: 'Old Standard TT', serif;
+        min-height: 100vh;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: background-position 0.1s linear;
+    }
+
+    #events::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        box-shadow: inset 0 0 150px 50px rgba(0, 0, 0, 0.9);
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .event-scroll {
+        background: url('https://i.postimg.cc/zX7f00Tq/parchment-texture.jpg') center/cover;
+        color: #3b2f2f;
+        padding: 40px 30px;
+        border-radius: 5px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(0, 0, 0, 0.5);
+        border: 2px solid #5a4a4a;
+        transform: scale(0.8) translateY(50px);
+        opacity: 0;
+        animation: unroll 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        position: relative;
+        z-index: 2;
+    }
+
+    #events:not(.active) .event-scroll {
         animation: none;
-        filter: blur(2px);
-        opacity: 0.7;
-      }
+        opacity: 0;
+    }
+
+    @keyframes unroll {
+        to {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+    }
+
+    #events .section-title {
+        font-size: clamp(28px, 6vw, 42px);
+        color: #8b0000;
+        text-shadow: 1px 1px 1px #5a4a4a;
+        margin: 0 0 15px 0;
+        animation: none;
+    }
+
+    #events .event-description {
+        font-size: clamp(16px, 3vw, 18px);
+        color: #3b2f2f;
+        font-style: normal;
+        text-shadow: none;
+        margin-bottom: 25px;
+    }
+
+    #events .register-button {
+        font-family: 'Old Standard TT', serif;
+        font-size: clamp(18px, 4vw, 22px);
+        font-weight: 700;
+        color: #ffebcd;
+        background-color: #8b0000;
+        background-image: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 40%);
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 5px solid #6b0000;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.6), inset 0 -5px 10px rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    #events .register-button:hover {
+        background-color: #b22222;
+        transform: scale(1.05) translateY(-5px);
+        box-shadow: 0 10px 25px rgba(139,0,0,0.8), inset 0 -5px 10px rgba(0,0,0,0.4);
+    }
+
+    #events .register-button::before,
+    #events .register-button::after {
+        display: none;
     }
   </style>
 </head>
 <body>
   <div id="tsparticles"></div>
 
-  <!-- Контейнер для анимации тумана - обновлённый с несколькими слоями со всех сторон -->
-  <div class="fog-transition">
-    <!-- Слои снизу -->
-    <img class="fog-layer fog-layer-bottom" src="https://i.postimg.cc/Z5sGSDGN/fog1.png" alt="fog layer bottom 1">
-    <img class="fog-layer fog-layer-bottom" src="https://i.postimg.cc/zvNM7mgs/fog2.png" alt="fog layer bottom 2">
-    <img class="fog-layer fog-layer-bottom" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer bottom 3">
-    <img class="fog-layer fog-layer-bottom" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer bottom 4">
-    <img class="fog-layer fog-layer-bottom" src="https://i.postimg.cc/8zxZwQ8Z/fog4.png" alt="fog layer bottom 5">
-    <!-- Слои сверху -->
-    <img class="fog-layer fog-layer-top" src="https://i.postimg.cc/Z5sGSDGN/fog1.png" alt="fog layer top 1">
-    <img class="fog-layer fog-layer-top" src="https://i.postimg.cc/zvNM7mgs/fog2.png" alt="fog layer top 2">
-    <img class="fog-layer fog-layer-top" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer top 3">
-    <img class="fog-layer fog-layer-top" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer top 4">
-    <img class="fog-layer fog-layer-top" src="https://i.postimg.cc/8zxZwQ8Z/fog4.png" alt="fog layer top 5">
-    <!-- Слои слева -->
-    <img class="fog-layer fog-layer-left" src="https://i.postimg.cc/Z5sGSDGN/fog1.png" alt="fog layer left 1">
-    <img class="fog-layer fog-layer-left" src="https://i.postimg.cc/zvNM7mgs/fog2.png" alt="fog layer left 2">
-    <img class="fog-layer fog-layer-left" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer left 3">
-    <img class="fog-layer fog-layer-left" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer left 4">
-    <img class="fog-layer fog-layer-left" src="https://i.postimg.cc/8zxZwQ8Z/fog4.png" alt="fog layer left 5">
-    <!-- Слои справа -->
-    <img class="fog-layer fog-layer-right" src="https://i.postimg.cc/Z5sGSDGN/fog1.png" alt="fog layer right 1">
-    <img class="fog-layer fog-layer-right" src="https://i.postimg.cc/zvNM7mgs/fog2.png" alt="fog layer right 2">
-    <img class="fog-layer fog-layer-right" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer right 3">
-    <img class="fog-layer fog-layer-right" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer right 4">
-    <img class="fog-layer fog-layer-right" src="https://i.postimg.cc/8zxZwQ8Z/fog4.png" alt="fog layer right 5">
-  </div>
+  <audio id="event-sound" src="https://cdn.pixabay.com/audio/2023/10/31/14-41-16-915_200x200.mp3" preload="auto"></audio>
 
   <div class="menu-top">
     <img class="logo" src="https://i.postimg.cc/90gRT1n1/Frame-2.png" alt="TMA Logo" />
@@ -899,7 +895,7 @@
       <li class="menu-item" data-section="articles">Статьи</li>
       <li class="menu-item" data-section="cases">Кейсы</li>
       <li class="menu-item" data-section="vacancies">Вакансии</li>
-      <li class="menu-item event" data-section="event">Ивент</li>
+      <li class="menu-item" data-section="events">Ивенты</li>
     </ul>
   </nav>
 
@@ -1063,13 +1059,21 @@
     </div>
   </section>
 
-  <section id="event" class="section">
-    <div class="event-content">
-      <h1>Мероприятие в стиле русской готики</h1>
-      <p>Присоединяйтесь к нашему эксклюзивному событию 23 августа! Погрузитесь в атмосферу русской готики, где тайны и мистика переплетаются с современными технологиями. Вас ждут уникальные выступления, networking и незабываемые впечатления.</p>
-      <button class="register-button">Зарегистрироваться</button>
+  <section id="events" class="section">
+    <div class="event-scroll">
+        <h2 class="section-title">Ночное Собрание</h2>
+        <p class="event-description">
+            Когда луна взойдет, а тени удлинятся, мы соберемся, чтобы вершить судьбы. Присоединяйся к нашему тайному ивенту.
+        </p>
+        <button class="register-button tg-link" data-link="https://t.me/TheLimitedClubHR_bot">Вступить</button>
     </div>
   </section>
+
+  <div id="fog-overlay">
+    <div class="fog-layer fog-layer1"></div>
+    <div class="fog-layer fog-layer2"></div>
+    <div class="fog-layer fog-layer3"></div>
+  </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
@@ -1082,33 +1086,51 @@
     });
     window.addEventListener('load', () => {
       AOS.refresh();
-      console.log('AOS refreshed');
     });
 
-    if (typeof tsParticles !== 'undefined') {
-      tsParticles.load("tsparticles", {
-        fpsLimit: 60,
-        particles: {
-          number: { value: 200, density: { enable: true, value_area: 800 } },
-          color: { value: "#d5fd02" },
-          shape: { type: "circle" },
-          opacity: { value: 0.5, random: true },
-          size: { value: 2, random: { enable: true, minimumValue: 0.5 } },
-          links: { enable: false },
-          move: {
-            enable: true,
-            speed: 0.5,
-            direction: "none",
-            random: true,
-            outModes: { default: "out" }
-          }
-        },
-        interactivity: { events: { onHover: { enable: false } }, resize: { enable: true } },
-        retina_detect: true
-      }).then(() => console.log('tsParticles loaded')).catch(err => console.error('tsParticles error:', err));
-    } else {
-      console.error('tsParticles not loaded');
+    function loadParticles(isEventsMode = false) {
+      if (typeof tsParticles !== 'undefined') {
+        tsParticles.load("tsparticles", {
+          fpsLimit: 60,
+          particles: {
+            number: { value: isEventsMode ? 100 : 200, density: { enable: true, value_area: 800 } },
+            color: { value: isEventsMode ? "#8b0000" : "#d5fd02" },
+            shape: { type: "circle" },
+            opacity: { value: 0.5, random: true, anim: { enable: true, speed: 1, opacity_min: 0.2, sync: false } },
+            size: { value: isEventsMode ? 2.5 : 2, random: { enable: true, minimumValue: 0.5 } },
+            links: { enable: false },
+            move: {
+              enable: true,
+              speed: isEventsMode ? 0.8 : 0.5,
+              direction: "none",
+              random: true,
+              outModes: { default: "out" }
+            }
+          },
+          interactivity: { events: { onHover: { enable: false } }, resize: { enable: true } },
+          retina_detect: true
+        });
+      }
     }
+
+    loadParticles(false);
+
+    // --- НОВАЯ ФУНКЦИЯ ДЛЯ ПАРАЛЛАКСА ---
+    const handleParallax = (e) => {
+        const eventsSection = document.getElementById('events');
+        if (!eventsSection || !eventsSection.classList.contains('active')) return;
+        const { clientX, clientY } = e;
+        const { innerWidth, innerHeight } = window;
+        const moveX = (clientX - innerWidth / 2) / (innerWidth / 2);
+        const moveY = (clientY - innerHeight / 2) / (innerHeight / 2);
+        const maxOffset = 15;
+        eventsSection.style.backgroundPosition = `
+            calc(center + ${moveX * maxOffset * 0.5}px) calc(bottom + ${moveY * maxOffset * 0.5}px),
+            calc(center + ${moveX * maxOffset}px) calc(center + ${moveY * maxOffset}px),
+            center center
+        `;
+    };
+
 
     function updateScrollIndicator(list) {
       const indicator = list.parentElement.querySelector('.scroll-indicator');
@@ -1146,7 +1168,6 @@
     }
 
     function sendToSheet(data) {
-      console.log('Sending to sheet:', data);
       fetch(SHEET_ENDPOINT, {
         method: 'POST',
         mode: 'no-cors',
@@ -1169,43 +1190,75 @@
 
     trackEvent('webapp_open');
 
-    function toggleEventLayout(isEventActive) {
-      const menuTop = document.querySelector('.menu-top');
-      const carousel = document.querySelector('.carousel');
-      const menu = document.querySelector('.menu');
-      menuTop.classList.toggle('hidden', isEventActive);
-      carousel.classList.toggle('hidden', isEventActive);
-      menu.classList.toggle('event-active', isEventActive);
-    }
-
+    // --- ПОЛНОСТЬЮ ОБНОВЛЕННЫЙ ОБРАБОТЧИК МЕНЮ ---
     document.querySelectorAll('.menu-item').forEach(item => {
-      item.addEventListener('click', () => {
-        trackEvent('nav_click', { section: item.dataset.section });
-        const isEvent = item.dataset.section === 'event';
-        
-        if (isEvent) {
-          const fogTransition = document.querySelector('.fog-transition');
-          fogTransition.classList.add('active');
-          setTimeout(() => {
-            document.querySelectorAll('.section').forEach(section => {
-              section.classList.toggle('active', section.id === item.dataset.section);
-            });
-            document.querySelectorAll('.menu-item').forEach(i => i.classList.toggle('active', i === item));
-            toggleEventLayout(true);
-            window.scrollTo(0, 0);
-            setTimeout(() => {
-              fogTransition.classList.remove('active');
-            }, 4000); // Увеличил время для полной анимации
-          }, 500); // Задержка для начала анимации
-        } else {
-          document.querySelectorAll('.section').forEach(section => {
-            section.classList.toggle('active', section.id === item.dataset.section);
-          });
-          document.querySelectorAll('.menu-item').forEach(i => i.classList.toggle('active', i === item));
-          toggleEventLayout(false);
-          window.scrollTo(0, 0);
-        }
-      });
+        item.addEventListener('click', () => {
+            const sectionId = item.dataset.section;
+            trackEvent('nav_click', { section: sectionId });
+
+            const fogOverlay = document.getElementById('fog-overlay');
+            const sections = document.querySelectorAll('.section');
+            const menuItems = document.querySelectorAll('.menu-item');
+            const menuTop = document.querySelector('.menu-top');
+            const carousel = document.querySelector('.carousel');
+            const menu = document.querySelector('.menu');
+            const tsparticles = document.getElementById('tsparticles');
+            const eventSound = document.getElementById('event-sound');
+
+            // Удаляем слушатель мыши, если уходим с вкладки ивентов
+            window.removeEventListener('mousemove', handleParallax);
+
+            if (sectionId === 'events') {
+                fogOverlay.classList.add('active', 'condensing');
+                fogOverlay.classList.remove('dissipating');
+
+                setTimeout(() => {
+                    menuTop.classList.add('hidden');
+                    carousel.classList.add('hidden');
+                    sections.forEach(section => section.classList.remove('active'));
+                    menuItems.forEach(i => i.classList.toggle('active', i === item));
+                    document.getElementById(sectionId).classList.add('active');
+                    menu.classList.add('events-mode');
+                    tsparticles.classList.add('events-mode');
+                    tsParticles.dom().forEach(p => p.destroy());
+                    loadParticles(true);
+                    eventSound.play().catch(err => console.log('Audio play failed:', err));
+
+                    // Добавляем слушатель мыши для параллакса
+                    window.addEventListener('mousemove', handleParallax);
+
+                    fogOverlay.classList.remove('condensing');
+                    fogOverlay.classList.add('dissipating');
+
+                    const eventScroll = document.querySelector('.event-scroll');
+                    if(eventScroll) eventScroll.style.opacity = '0';
+
+                    setTimeout(() => {
+                        if(eventScroll) eventScroll.style.animation = 'unroll 1s cubic-bezier(0.19, 1, 0.22, 1) forwards';
+                    }, 500);
+
+                    // Прячем оверлей после завершения анимации рассеивания
+                    setTimeout(() => {
+                        fogOverlay.classList.remove('active', 'dissipating');
+                    }, 3000);
+
+                }, 2000); // Задержка для сгущения тумана
+
+            } else {
+                // Логика для всех остальных вкладок
+                fogOverlay.classList.remove('active', 'condensing', 'dissipating');
+                sections.forEach(s => s.classList.remove('active'));
+                document.getElementById(sectionId).classList.add('active');
+                menuItems.forEach(i => i.classList.toggle('active', i === item));
+                menu.classList.remove('events-mode');
+                tsparticles.classList.remove('events-mode');
+                menuTop.classList.remove('hidden');
+                carousel.classList.remove('hidden');
+                tsParticles.dom().forEach(p => p.destroy());
+                loadParticles(false);
+            }
+             window.scrollTo(0, 0);
+        });
     });
 
     document.querySelectorAll('.card, .team-item a').forEach(card => {
@@ -1220,18 +1273,6 @@
       slide.addEventListener('click', () => {
         const alt = slide.querySelector('img')?.getAttribute('alt') || 'Unknown';
         trackEvent('carousel_click', { slide: alt });
-      });
-    });
-
-    document.querySelectorAll('.carousel-dots .dot').forEach((dot, i) => {
-      dot.addEventListener('click', () => {
-        trackEvent('carousel_dot_click', { slideIndex: i });
-        document.querySelectorAll('.carousel a').forEach((slide, index) => {
-          slide.classList.toggle('active', index === i);
-        });
-        document.querySelectorAll('.carousel-dots .dot').forEach((d, index) => {
-          d.classList.toggle('active', index === i);
-        });
       });
     });
 
@@ -1510,16 +1551,8 @@
             const formData = new FormData(e.target);
             const telegram = formData.get('telegram');
             if (!telegram || !telegram.startsWith('@')) {
-              if (tg && tg.showPopup) {
-                tg.showPopup({
-                  title: 'Ошибка',
-                  message: 'Ошибка в заполнении Telegram',
-                  buttons: [{ type: 'ok' }]
-                });
-              } else {
-                alert('Ошибка в заполнении Telegram');
-              }
-              return;
+                alert('Ошибка в заполнении Telegram. Укажите в формате @username');
+                return;
             }
             const response_id = generateUUID();
             const additional = {
@@ -1582,16 +1615,10 @@
       }
     });
 
-    document.querySelector('.register-button')?.addEventListener('click', () => {
-      trackEvent('event_register_click');
-      // Функционал регистрации будет добавлен позже
-    });
-
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         const menuList = document.querySelector('.menu ul');
-        if (menuList) {
-          console.log('Menu scrollWidth:', menuList.scrollWidth, 'clientWidth:', menuList.clientWidth, 'isScrollable:', menuList.scrollWidth > menuList.clientWidth);
+        if (menuList && menuList.scrollWidth > menuList.clientWidth) {
           menuList.classList.add('scroll-hint');
           setTimeout(() => {
             menuList.classList.remove('scroll-hint');
@@ -1603,7 +1630,9 @@
     function startCarousel() {
       const slides = document.querySelectorAll('.carousel a');
       const dots = document.querySelectorAll('.carousel-dots .dot');
+      if (slides.length === 0) return;
       let currentIndex = 0;
+
       function showSlide(index) {
         slides.forEach((slide, i) => {
           slide.classList.toggle('active', i === index);
@@ -1613,6 +1642,13 @@
         });
         currentIndex = index;
       }
+      
+      dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => {
+          trackEvent('carousel_dot_click', { slideIndex: i });
+          showSlide(i);
+        });
+      });
 
       function nextSlide() {
         currentIndex = (currentIndex + 1) % slides.length;
