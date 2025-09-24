@@ -678,7 +678,7 @@
       box-shadow: 0 8px 20px rgba(213, 253, 2, 0.5);
     }
 
-    /* Анимация тумана */
+    /* Анимация тумана - обновлённая версия */
     .fog-transition {
       position: fixed;
       top: 0;
@@ -693,43 +693,62 @@
     .fog-transition.active {
       opacity: 1;
     }
-    .fog-transition img {
+    .fog-transition .fog-layer {
       position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120%;
-      max-width: 1400px;
-      filter: blur(3px) saturate(1.1) brightness(1.02);
+      width: 150%; /* Шире для покрытия со сторон */
+      height: 150%;
       opacity: 0;
       will-change: transform, opacity;
+      filter: blur(5px) saturate(1.2) brightness(0.9);
     }
-    .fog-transition.active img {
-      animation: fogAnimation 2s ease-in-out forwards;
+    .fog-transition.active .fog-layer {
+      animation: fogAnimation calc(3s * var(--stork)) ease-in-out forwards;
     }
-    .fog-transition img:nth-child(1) { --stork: 1; }
-    .fog-transition img:nth-child(2) { --stork: 1.2; }
-    .fog-transition img:nth-child(3) { --stork: 0.85; }
-    .fog-transition img:nth-child(4) { --stork: 1.6; }
-    .fog-transition img:nth-child(5) { --stork: 0.95; }
-    .fog-transition img:nth-child(6) { --stork: 1.8; opacity: 0.72; filter: blur(4px) saturate(1); }
-    .fog-transition img:nth-child(7) { --stork: 1.6; opacity: 0.7; filter: blur(4.5px); }
-    .fog-transition img:nth-child(8) { --stork: 1.4; opacity: 0.65; filter: blur(5px); }
-    .fog-transition img:nth-child(9) { --stork: 1.2; opacity: 0.6; filter: blur(5.5px); }
-    .fog-transition img:nth-child(10) { --stork: 1.05; opacity: 0.55; filter: blur(6px); }
+
+    /* Позиционирование слоёв со всех сторон */
+    .fog-layer-bottom { bottom: -50%; left: -25%; transform-origin: bottom center; }
+    .fog-layer-top { top: -50%; left: -25%; transform-origin: top center; }
+    .fog-layer-left { left: -50%; top: -25%; transform-origin: left center; }
+    .fog-layer-right { right: -50%; top: -25%; transform-origin: right center; }
+
+    /* Разные скорости и стили для слоёв */
+    .fog-layer:nth-child(1) { --stork: 1; opacity: 0.9; filter: blur(4px); }
+    .fog-layer:nth-child(2) { --stork: 1.3; opacity: 0.85; filter: blur(5px); }
+    .fog-layer:nth-child(3) { --stork: 0.8; opacity: 0.95; filter: blur(6px); }
+    .fog-layer:nth-child(4) { --stork: 1.5; opacity: 0.8; filter: blur(3px); }
+    .fog-layer:nth-child(5) { --stork: 1.1; opacity: 0.9; filter: blur(4.5px); }
+    .fog-layer:nth-child(6) { --stork: 0.9; opacity: 0.75; filter: blur(5px); }
+    .fog-layer:nth-child(7) { --stork: 1.4; opacity: 0.85; filter: blur(6px); }
+    .fog-layer:nth-child(8) { --stork: 1.2; opacity: 0.8; filter: blur(4px); }
+    .fog-layer:nth-child(9) { --stork: 0.7; opacity: 0.9; filter: blur(5.5px); }
+    .fog-layer:nth-child(10) { --stork: 1.6; opacity: 0.7; filter: blur(3px); }
+    .fog-layer:nth-child(11) { --stork: 1.0; opacity: 0.85; filter: blur(4px); }
+    .fog-layer:nth-child(12) { --stork: 1.25; opacity: 0.8; filter: blur(5px); }
+    .fog-layer:nth-child(13) { --stork: 0.95; opacity: 0.9; filter: blur(6px); }
+    .fog-layer:nth-child(14) { --stork: 1.35; opacity: 0.75; filter: blur(3.5px); }
+    .fog-layer:nth-child(15) { --stork: 1.05; opacity: 0.85; filter: blur(4.5px); }
+    .fog-layer:nth-child(16) { --stork: 0.85; opacity: 0.8; filter: blur(5px); }
+    .fog-layer:nth-child(17) { --stork: 1.45; opacity: 0.9; filter: blur(6px); }
+    .fog-layer:nth-child(18) { --stork: 1.15; opacity: 0.75; filter: blur(4px); }
+    .fog-layer:nth-child(19) { --stork: 0.75; opacity: 0.85; filter: blur(5.5px); }
+    .fog-layer:nth-child(20) { --stork: 1.55; opacity: 0.8; filter: blur(3px); }
 
     @keyframes fogAnimation {
       0% {
-        transform: translateX(-50%) translateY(0) scale(1);
-        opacity: 0.86;
+        transform: translate(0, 0) scale(1.5);
+        opacity: 0;
       }
-      50% {
-        transform: translateX(-50%) translateY(-20px) scale(0.8);
-        opacity: 1;
+      40% {
+        transform: translate(0, 0) scale(1.2);
+        opacity: 0.7;
+      }
+      60% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1; /* Максимальная густота, экран затянут */
       }
       100% {
-        transform: translateX(-50%) translateY(-40px) scale(0.5);
-        opacity: 0;
+        transform: translate(0, 0) scale(0.8);
+        opacity: 0; /* Плавное растворение */
       }
     }
 
@@ -807,7 +826,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .fog-transition img {
+      .fog-transition .fog-layer {
         animation: none;
         filter: blur(2px);
         opacity: 0.7;
@@ -818,18 +837,32 @@
 <body>
   <div id="tsparticles"></div>
 
-  <!-- Контейнер для анимации тумана -->
+  <!-- Контейнер для анимации тумана - обновлённый с несколькими слоями со всех сторон -->
   <div class="fog-transition">
-    <img src="https://i.postimg.cc/Z5sGSDGN/fog1.png" alt="fog layer 1">
-    <img src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer 2">
-    <img src="https://i.postimg.cc/zvNM7mgs/fog2.png" alt="fog layer 3">
-    <img src="https://i.postimg.cc/8zxZwQ8Z/fog4.png" alt="fog layer 4">
-    <img src="https://i.postimg.cc/zvNM7mgs/fog2.png" alt="fog layer 5">
-    <img src="https://i.postimg.cc/8zxZwQ8Z/fog4.png" alt="fog layer 6">
-    <img src="https://i.postimg.cc/Z5sGSDGN/fog1.png" alt="fog layer 7">
-    <img src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer 8">
-    <img src="https://i.postimg.cc/8zxZwQ8Z/fog4.png" alt="fog layer 9">
-    <img src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer 10">
+    <!-- Слои снизу -->
+    <img class="fog-layer fog-layer-bottom" src="https://i.postimg.cc/Z5sGSDGN/fog1.png" alt="fog layer bottom 1">
+    <img class="fog-layer fog-layer-bottom" src="https://i.postimg.cc/zvNM7mgs/fog2.png" alt="fog layer bottom 2">
+    <img class="fog-layer fog-layer-bottom" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer bottom 3">
+    <img class="fog-layer fog-layer-bottom" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer bottom 4">
+    <img class="fog-layer fog-layer-bottom" src="https://i.postimg.cc/8zxZwQ8Z/fog4.png" alt="fog layer bottom 5">
+    <!-- Слои сверху -->
+    <img class="fog-layer fog-layer-top" src="https://i.postimg.cc/Z5sGSDGN/fog1.png" alt="fog layer top 1">
+    <img class="fog-layer fog-layer-top" src="https://i.postimg.cc/zvNM7mgs/fog2.png" alt="fog layer top 2">
+    <img class="fog-layer fog-layer-top" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer top 3">
+    <img class="fog-layer fog-layer-top" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer top 4">
+    <img class="fog-layer fog-layer-top" src="https://i.postimg.cc/8zxZwQ8Z/fog4.png" alt="fog layer top 5">
+    <!-- Слои слева -->
+    <img class="fog-layer fog-layer-left" src="https://i.postimg.cc/Z5sGSDGN/fog1.png" alt="fog layer left 1">
+    <img class="fog-layer fog-layer-left" src="https://i.postimg.cc/zvNM7mgs/fog2.png" alt="fog layer left 2">
+    <img class="fog-layer fog-layer-left" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer left 3">
+    <img class="fog-layer fog-layer-left" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer left 4">
+    <img class="fog-layer fog-layer-left" src="https://i.postimg.cc/8zxZwQ8Z/fog4.png" alt="fog layer left 5">
+    <!-- Слои справа -->
+    <img class="fog-layer fog-layer-right" src="https://i.postimg.cc/Z5sGSDGN/fog1.png" alt="fog layer right 1">
+    <img class="fog-layer fog-layer-right" src="https://i.postimg.cc/zvNM7mgs/fog2.png" alt="fog layer right 2">
+    <img class="fog-layer fog-layer-right" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer right 3">
+    <img class="fog-layer fog-layer-right" src="https://i.postimg.cc/nzbwV80X/fog3.png" alt="fog layer right 4">
+    <img class="fog-layer fog-layer-right" src="https://i.postimg.cc/8zxZwQ8Z/fog4.png" alt="fog layer right 5">
   </div>
 
   <div class="menu-top">
@@ -1162,8 +1195,8 @@
             window.scrollTo(0, 0);
             setTimeout(() => {
               fogTransition.classList.remove('active');
-            }, 2000);
-          }, 500);
+            }, 4000); // Увеличил время для полной анимации
+          }, 500); // Задержка для начала анимации
         } else {
           document.querySelectorAll('.section').forEach(section => {
             section.classList.toggle('active', section.id === item.dataset.section);
