@@ -681,6 +681,7 @@
       background: #8b0000;
     }
 
+    /* Fog overlay styles with GIF */
     #fog-overlay {
       position: fixed;
       top: 0;
@@ -698,7 +699,7 @@
       opacity: 1;
     }
     #fog-overlay.condensing {
-      animation: condense 2s ease-in forwards; /* Уменьшено время для UX */
+      animation: condense 6s ease-in forwards;
     }
     #fog-overlay.dissipating {
       animation: dissipate 3s ease-out forwards;
@@ -712,16 +713,16 @@
       background: url('https://i.gifer.com/g0e4.gif') repeat-x;
       background-size: auto 100%;
       opacity: 0;
-      animation: fog-opacity 2s ease-in forwards;
+      animation: fog-opacity 6s ease-in forwards;
     }
     .fog-layer1 {
-      animation: move-fog 20s linear infinite, fog-opacity 2s ease-in forwards;
+      animation: move-fog 20s linear infinite, fog-opacity 6s ease-in forwards;
     }
     .fog-layer2 {
-      animation: move-fog 30s linear infinite reverse, fog-opacity 2s ease-in forwards 0.5s;
+      animation: move-fog 30s linear infinite reverse, fog-opacity 6s ease-in forwards 0.5s;
     }
     .fog-layer3 {
-      animation: move-fog 15s linear infinite, fog-opacity 2s ease-in forwards 1s;
+      animation: move-fog 15s linear infinite, fog-opacity 6s ease-in forwards 1s;
     }
     @keyframes move-fog {
       0% { transform: translateX(0); }
@@ -740,119 +741,81 @@
       100% { opacity: 0; }
     }
 
-    /* --- НОВЫЕ СТИЛИ ДЛЯ СЕКЦИИ EVENTS --- */
-
-    #events.section.active {
-        display: flex;
-    }
-
+    /* Gothic style for events section */
     #events {
-        background-color: #000;
-        background-image:
-            url('https://www.transparenttextures.com/patterns/fog.png'),
-            url('https://i.postimg.cc/9fLpYvy9/gothic-window.png'),
-            url('https://www.transparenttextures.com/patterns/concrete-wall.png');
-        background-size: auto, 60% auto, auto;
-        background-position: center bottom, center center, center center;
-        background-repeat: repeat-x, no-repeat, repeat;
-        font-family: 'Old Standard TT', serif;
-        min-height: 100vh;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-        transition: background-position 0.1s linear;
+      background: #000000;
+      color: #ffffff;
+      font-family: 'Old Standard TT', serif;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
     }
-
-    #events::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        box-shadow: inset 0 0 150px 50px rgba(0, 0, 0, 0.9);
-        z-index: 1;
-        pointer-events: none;
-    }
-
-    .event-scroll {
-        background: url('https://i.postimg.cc/zX7f00Tq/parchment-texture.jpg') center/cover;
-        color: #3b2f2f;
-        padding: 40px 30px;
-        border-radius: 5px;
-        max-width: 500px;
-        width: 90%;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(0, 0, 0, 0.5);
-        border: 2px solid #5a4a4a;
-        transform: scale(0.8) translateY(50px);
-        opacity: 0;
-        animation: unroll 1s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-        position: relative;
-        z-index: 2;
-    }
-
-    #events:not(.active) .event-scroll {
-        animation: none;
-        opacity: 0;
-    }
-
-    @keyframes unroll {
-        to {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-        }
-    }
-
     #events .section-title {
-        font-size: clamp(28px, 6vw, 42px);
-        color: #8b0000;
-        text-shadow: 1px 1px 1px #5a4a4a;
-        margin: 0 0 15px 0;
-        animation: none;
+      font-size: 36px;
+      color: #8b0000;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(139,0,0,0.5);
+      margin-bottom: 20px;
+      animation: glow 2s ease-in-out infinite alternate;
     }
-
     #events .event-description {
-        font-size: clamp(16px, 3vw, 18px);
-        color: #3b2f2f;
-        font-style: normal;
-        text-shadow: none;
-        margin-bottom: 25px;
+      font-size: 18px;
+      font-style: italic;
+      color: #ffffff;
+      margin-bottom: 30px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+      max-width: 600px;
     }
-
     #events .register-button {
-        font-family: 'Old Standard TT', serif;
-        font-size: clamp(18px, 4vw, 22px);
-        font-weight: 700;
-        color: #ffebcd;
-        background-color: #8b0000;
-        background-image: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 40%);
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        border: 5px solid #6b0000;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.6), inset 0 -5px 10px rgba(0,0,0,0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        margin: 0 auto;
-        padding: 0;
+      padding: 15px 30px;
+      background: linear-gradient(135deg, #8b0000, #b22222);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Old Standard TT', serif;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 12px rgba(139, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+      animation: glow 2s ease-in-out infinite alternate;
     }
-
     #events .register-button:hover {
-        background-color: #b22222;
-        transform: scale(1.05) translateY(-5px);
-        box-shadow: 0 10px 25px rgba(139,0,0,0.8), inset 0 -5px 10px rgba(0,0,0,0.4);
+      background: linear-gradient(135deg, #b22222, #8b0000);
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(139, 0, 0, 0.7);
     }
-
-    #events .register-button::before,
-    #events .register-button::after {
-        display: none;
+    #events .register-button::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, rgba(139,0,0,0.5) 0%, rgba(139,0,0,0) 70%);
+      transform: translateX(-50%) translateY(50%);
+      animation: blood-drip 5s ease-in-out infinite;
+      z-index: -1;
+    }
+    @keyframes blood-drip {
+      0% { transform: translateX(-50%) translateY(50%) scale(1); opacity: 0.5; }
+      50% { transform: translateX(-50%) translateY(100%) scale(1.2); opacity: 0.7; }
+      100% { transform: translateX(-50%) translateY(50%) scale(1); opacity: 0.5; }
+    }
+    @keyframes glow {
+      0% { text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(139,0,0,0.5); }
+      100% { text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(139,0,0,0.8); }
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -1060,15 +1023,12 @@
   </section>
 
   <section id="events" class="section">
-    <div class="event-scroll">
-        <h2 class="section-title">Ночное Собрание</h2>
-        <p class="event-description">
-            Когда луна взойдет, а тени удлинятся, мы соберемся, чтобы вершить судьбы. Присоединяйся к нашему тайному ивенту.
-        </p>
-        <button class="register-button tg-link" data-link="https://t.me/TheLimitedClubHR_bot">Вступить</button>
-    </div>
+    <h2 class="section-title">ИВЕНТЫ</h2>
+    <p class="event-description">Добро пожаловать в мир русской готики. Зарегистрируйтесь на наше загадочное мероприятие.</p>
+    <button class="register-button tg-link" data-link="https://t.me/TheLimitedClubHR_bot">Зарегистрироваться</button>
   </section>
 
+  <!-- Fog overlay -->
   <div id="fog-overlay">
     <div class="fog-layer fog-layer1"></div>
     <div class="fog-layer fog-layer2"></div>
@@ -1086,6 +1046,7 @@
     });
     window.addEventListener('load', () => {
       AOS.refresh();
+      console.log('AOS refreshed');
     });
 
     function loadParticles(isEventsMode = false) {
@@ -1093,15 +1054,15 @@
         tsParticles.load("tsparticles", {
           fpsLimit: 60,
           particles: {
-            number: { value: isEventsMode ? 100 : 200, density: { enable: true, value_area: 800 } },
+            number: { value: 200, density: { enable: true, value_area: 800 } },
             color: { value: isEventsMode ? "#8b0000" : "#d5fd02" },
             shape: { type: "circle" },
             opacity: { value: 0.5, random: true, anim: { enable: true, speed: 1, opacity_min: 0.2, sync: false } },
-            size: { value: isEventsMode ? 2.5 : 2, random: { enable: true, minimumValue: 0.5 } },
+            size: { value: 2, random: { enable: true, minimumValue: 0.5 } },
             links: { enable: false },
             move: {
               enable: true,
-              speed: isEventsMode ? 0.8 : 0.5,
+              speed: 0.5,
               direction: "none",
               random: true,
               outModes: { default: "out" }
@@ -1109,28 +1070,13 @@
           },
           interactivity: { events: { onHover: { enable: false } }, resize: { enable: true } },
           retina_detect: true
-        });
+        }).then(() => console.log('tsParticles loaded')).catch(err => console.error('tsParticles error:', err));
+      } else {
+        console.error('tsParticles not loaded');
       }
     }
 
     loadParticles(false);
-
-    // --- НОВАЯ ФУНКЦИЯ ДЛЯ ПАРАЛЛАКСА ---
-    const handleParallax = (e) => {
-        const eventsSection = document.getElementById('events');
-        if (!eventsSection || !eventsSection.classList.contains('active')) return;
-        const { clientX, clientY } = e;
-        const { innerWidth, innerHeight } = window;
-        const moveX = (clientX - innerWidth / 2) / (innerWidth / 2);
-        const moveY = (clientY - innerHeight / 2) / (innerHeight / 2);
-        const maxOffset = 15;
-        eventsSection.style.backgroundPosition = `
-            calc(center + ${moveX * maxOffset * 0.5}px) calc(bottom + ${moveY * maxOffset * 0.5}px),
-            calc(center + ${moveX * maxOffset}px) calc(center + ${moveY * maxOffset}px),
-            center center
-        `;
-    };
-
 
     function updateScrollIndicator(list) {
       const indicator = list.parentElement.querySelector('.scroll-indicator');
@@ -1168,6 +1114,7 @@
     }
 
     function sendToSheet(data) {
+      console.log('Sending to sheet:', data);
       fetch(SHEET_ENDPOINT, {
         method: 'POST',
         mode: 'no-cors',
@@ -1190,75 +1137,74 @@
 
     trackEvent('webapp_open');
 
-    // --- ПОЛНОСТЬЮ ОБНОВЛЕННЫЙ ОБРАБОТЧИК МЕНЮ ---
     document.querySelectorAll('.menu-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const sectionId = item.dataset.section;
-            trackEvent('nav_click', { section: sectionId });
+      item.addEventListener('click', () => {
+        const sectionId = item.dataset.section;
+        trackEvent('nav_click', { section: sectionId });
 
-            const fogOverlay = document.getElementById('fog-overlay');
-            const sections = document.querySelectorAll('.section');
-            const menuItems = document.querySelectorAll('.menu-item');
-            const menuTop = document.querySelector('.menu-top');
-            const carousel = document.querySelector('.carousel');
-            const menu = document.querySelector('.menu');
-            const tsparticles = document.getElementById('tsparticles');
-            const eventSound = document.getElementById('event-sound');
+        const fogOverlay = document.getElementById('fog-overlay');
+        const sections = document.querySelectorAll('.section');
+        const menuItems = document.querySelectorAll('.menu-item');
+        const menuTop = document.querySelector('.menu-top');
+        const carousel = document.querySelector('.carousel');
+        const menu = document.querySelector('.menu');
+        const tsparticles = document.getElementById('tsparticles');
+        const eventSound = document.getElementById('event-sound');
 
-            // Удаляем слушатель мыши, если уходим с вкладки ивентов
-            window.removeEventListener('mousemove', handleParallax);
+        if (sectionId === 'events') {
+          // Start condensing fog
+          fogOverlay.classList.add('active', 'condensing');
 
-            if (sectionId === 'events') {
-                fogOverlay.classList.add('active', 'condensing');
-                fogOverlay.classList.remove('dissipating');
+          // After condensing (6s), hide content, switch section, update visuals
+          setTimeout(() => {
+            // Hide current content
+            menuTop.classList.add('hidden');
+            carousel.classList.add('hidden');
+            sections.forEach(section => section.classList.remove('active'));
 
-                setTimeout(() => {
-                    menuTop.classList.add('hidden');
-                    carousel.classList.add('hidden');
-                    sections.forEach(section => section.classList.remove('active'));
-                    menuItems.forEach(i => i.classList.toggle('active', i === item));
-                    document.getElementById(sectionId).classList.add('active');
-                    menu.classList.add('events-mode');
-                    tsparticles.classList.add('events-mode');
-                    tsParticles.dom().forEach(p => p.destroy());
-                    loadParticles(true);
-                    eventSound.play().catch(err => console.log('Audio play failed:', err));
+            // Update menu items
+            menuItems.forEach(i => i.classList.toggle('active', i === item));
 
-                    // Добавляем слушатель мыши для параллакса
-                    window.addEventListener('mousemove', handleParallax);
+            // Switch to events section
+            document.getElementById(sectionId).classList.add('active');
 
-                    fogOverlay.classList.remove('condensing');
-                    fogOverlay.classList.add('dissipating');
+            // Update visuals
+            menu.classList.add('events-mode');
+            tsparticles.classList.add('events-mode');
+            tsParticles.dom().forEach(p => p.destroy());
+            loadParticles(true);
 
-                    const eventScroll = document.querySelector('.event-scroll');
-                    if(eventScroll) eventScroll.style.opacity = '0';
+            // Play sound
+            eventSound.play().catch(err => console.log('Audio play failed:', err));
 
-                    setTimeout(() => {
-                        if(eventScroll) eventScroll.style.animation = 'unroll 1s cubic-bezier(0.19, 1, 0.22, 1) forwards';
-                    }, 500);
+            // Start dissipating fog
+            fogOverlay.classList.remove('condensing');
+            fogOverlay.classList.add('dissipating');
+          }, 6000);
 
-                    // Прячем оверлей после завершения анимации рассеивания
-                    setTimeout(() => {
-                        fogOverlay.classList.remove('active', 'dissipating');
-                    }, 3000);
+          // After dissipating (3s), hide overlay
+          setTimeout(() => {
+            fogOverlay.classList.remove('active', 'dissipating');
+          }, 9000);
+        } else {
+          // Restore normal visuals
+          menuTop.classList.remove('hidden');
+          carousel.classList.remove('hidden');
+          menu.classList.remove('events-mode');
+          tsparticles.classList.remove('events-mode');
+          tsParticles.dom().forEach(p => p.destroy());
+          loadParticles(false);
 
-                }, 2000); // Задержка для сгущения тумана
+          // Normal section switch
+          sections.forEach(section => {
+            section.classList.toggle('active', section.id === sectionId);
+          });
+          menuItems.forEach(i => i.classList.toggle('active', i === item));
+          fogOverlay.classList.remove('active', 'condensing', 'dissipating');
+        }
 
-            } else {
-                // Логика для всех остальных вкладок
-                fogOverlay.classList.remove('active', 'condensing', 'dissipating');
-                sections.forEach(s => s.classList.remove('active'));
-                document.getElementById(sectionId).classList.add('active');
-                menuItems.forEach(i => i.classList.toggle('active', i === item));
-                menu.classList.remove('events-mode');
-                tsparticles.classList.remove('events-mode');
-                menuTop.classList.remove('hidden');
-                carousel.classList.remove('hidden');
-                tsParticles.dom().forEach(p => p.destroy());
-                loadParticles(false);
-            }
-             window.scrollTo(0, 0);
-        });
+        window.scrollTo(0, 0);
+      });
     });
 
     document.querySelectorAll('.card, .team-item a').forEach(card => {
@@ -1273,6 +1219,18 @@
       slide.addEventListener('click', () => {
         const alt = slide.querySelector('img')?.getAttribute('alt') || 'Unknown';
         trackEvent('carousel_click', { slide: alt });
+      });
+    });
+
+    document.querySelectorAll('.carousel-dots .dot').forEach((dot, i) => {
+      dot.addEventListener('click', () => {
+        trackEvent('carousel_dot_click', { slideIndex: i });
+        document.querySelectorAll('.carousel a').forEach((slide, index) => {
+          slide.classList.toggle('active', index === i);
+        });
+        document.querySelectorAll('.carousel-dots .dot').forEach((d, index) => {
+          d.classList.toggle('active', index === i);
+        });
       });
     });
 
@@ -1551,8 +1509,16 @@
             const formData = new FormData(e.target);
             const telegram = formData.get('telegram');
             if (!telegram || !telegram.startsWith('@')) {
-                alert('Ошибка в заполнении Telegram. Укажите в формате @username');
-                return;
+              if (tg && tg.showPopup) {
+                tg.showPopup({
+                  title: 'Ошибка',
+                  message: 'Ошибка в заполнении Telegram',
+                  buttons: [{ type: 'ok' }]
+                });
+              } else {
+                alert('Ошибка в заполнении Telegram');
+              }
+              return;
             }
             const response_id = generateUUID();
             const additional = {
@@ -1618,7 +1584,8 @@
     document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
         const menuList = document.querySelector('.menu ul');
-        if (menuList && menuList.scrollWidth > menuList.clientWidth) {
+        if (menuList) {
+          console.log('Menu scrollWidth:', menuList.scrollWidth, 'clientWidth:', menuList.clientWidth, 'isScrollable:', menuList.scrollWidth > menuList.clientWidth);
           menuList.classList.add('scroll-hint');
           setTimeout(() => {
             menuList.classList.remove('scroll-hint');
@@ -1630,9 +1597,7 @@
     function startCarousel() {
       const slides = document.querySelectorAll('.carousel a');
       const dots = document.querySelectorAll('.carousel-dots .dot');
-      if (slides.length === 0) return;
       let currentIndex = 0;
-
       function showSlide(index) {
         slides.forEach((slide, i) => {
           slide.classList.toggle('active', i === index);
@@ -1642,13 +1607,6 @@
         });
         currentIndex = index;
       }
-      
-      dots.forEach((dot, i) => {
-        dot.addEventListener('click', () => {
-          trackEvent('carousel_dot_click', { slideIndex: i });
-          showSlide(i);
-        });
-      });
 
       function nextSlide() {
         currentIndex = (currentIndex + 1) % slides.length;
