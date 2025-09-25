@@ -6,7 +6,6 @@
   <title>TMA Главная</title>
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
@@ -25,10 +24,6 @@
       width: 100%;
       height: 100%;
       z-index: -1;
-      transition: opacity 1s ease;
-    }
-    #tsparticles.events-mode {
-      opacity: 0.7;
     }
     a { text-decoration: none; }
     ul { list-style: none; margin: 0; padding: 0; }
@@ -38,11 +33,6 @@
       justify-content: space-between;
       align-items: center;
       padding: 8px 16px;
-      transition: opacity 0.3s ease;
-    }
-    .menu-top.hidden {
-      opacity: 0;
-      pointer-events: none;
     }
     .menu-top .logo {
       width: 100px;
@@ -76,11 +66,6 @@
       overflow: hidden;
       background: #000;
       max-width: 100%;
-      transition: opacity 0.3s ease;
-    }
-    .carousel.hidden {
-      opacity: 0;
-      pointer-events: none;
     }
     .carousel a {
       display: block;
@@ -130,17 +115,12 @@
     .menu {
       display: flex;
       justify-content: center;
-      background: rgba(8, 8, 8, 0.9);
+      background: #080808;
       padding: 6px 0;
       position: sticky;
       top: 0;
       z-index: 10;
       max-width: 100%;
-      transition: background 0.5s ease;
-    }
-    .menu.events-mode {
-      background: rgba(139, 0, 0, 0.2);
-      backdrop-filter: blur(5px);
     }
     .menu ul {
       display: inline-flex;
@@ -166,10 +146,6 @@
       background: #d5fd02;
       color: #080808;
     }
-    .menu.events-mode .menu-item.active, .menu.events-mode .menu-item:hover {
-      background: #8b0000;
-      color: #ffffff;
-    }
 
     @keyframes scroll-hint {
       0% { transform: translateX(0); }
@@ -185,8 +161,6 @@
       padding: 8px 16px;
       box-sizing: border-box;
       min-height: 100px;
-      opacity: 0;
-      transition: opacity 0.5s ease;
     }
     .section.active {
       display: block;
@@ -677,152 +651,10 @@
       transition: width .3s;
       z-index: 2;
     }
-    .events-mode .scroll-indicator {
-      background: #8b0000;
-    }
-
-    /* Fog overlay styles with GIF */
-    #fog-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 999;
-      pointer-events: none;
-      display: none;
-      opacity: 0;
-      transition: opacity 1s ease;
-    }
-    #fog-overlay.active {
-      display: block;
-      opacity: 1;
-    }
-    #fog-overlay.condensing {
-      animation: condense 6s ease-in forwards;
-    }
-    #fog-overlay.dissipating {
-      animation: dissipate 3s ease-out forwards;
-    }
-    .fog-layer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 200%;
-      height: 100%;
-      background: url('https://i.gifer.com/g0e4.gif') repeat-x;
-      background-size: auto 100%;
-      opacity: 0;
-      animation: fog-opacity 6s ease-in forwards;
-    }
-    .fog-layer1 {
-      animation: move-fog 20s linear infinite, fog-opacity 6s ease-in forwards;
-    }
-    .fog-layer2 {
-      animation: move-fog 30s linear infinite reverse, fog-opacity 6s ease-in forwards 0.5s;
-    }
-    .fog-layer3 {
-      animation: move-fog 15s linear infinite, fog-opacity 6s ease-in forwards 1s;
-    }
-    @keyframes move-fog {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-    @keyframes fog-opacity {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }
-    @keyframes condense {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }
-    @keyframes dissipate {
-      0% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-
-    /* Gothic style for events section */
-    #events {
-      background: #000000;
-      color: #ffffff;
-      font-family: 'Old Standard TT', serif;
-      padding: 20px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    #events .section-title {
-      font-size: 36px;
-      color: #8b0000;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(139,0,0,0.5);
-      margin-bottom: 20px;
-      animation: glow 2s ease-in-out infinite alternate;
-    }
-    #events .event-description {
-      font-size: 18px;
-      font-style: italic;
-      color: #ffffff;
-      margin-bottom: 30px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-      max-width: 600px;
-    }
-    #events .register-button {
-      padding: 15px 30px;
-      background: linear-gradient(135deg, #8b0000, #b22222);
-      color: #ffffff;
-      border: none;
-      border-radius: 10px;
-      font-family: 'Old Standard TT', serif;
-      font-size: 20px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 4px 12px rgba(139, 0, 0, 0.5);
-      position: relative;
-      overflow: hidden;
-      animation: glow 2s ease-in-out infinite alternate;
-    }
-    #events .register-button:hover {
-      background: linear-gradient(135deg, #b22222, #8b0000);
-      transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba(139, 0, 0, 0.7);
-    }
-    #events .register-button::before {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      width: 100px;
-      height: 100px;
-      background: radial-gradient(circle, rgba(139,0,0,0.5) 0%, rgba(139,0,0,0) 70%);
-      transform: translateX(-50%) translateY(50%);
-      animation: blood-drip 5s ease-in-out infinite;
-      z-index: -1;
-    }
-    @keyframes blood-drip {
-      0% { transform: translateX(-50%) translateY(50%) scale(1); opacity: 0.5; }
-      50% { transform: translateX(-50%) translateY(100%) scale(1.2); opacity: 0.7; }
-      100% { transform: translateX(-50%) translateY(50%) scale(1); opacity: 0.5; }
-    }
-    @keyframes glow {
-      0% { text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(139,0,0,0.5); }
-      100% { text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(139,0,0,0.8); }
-    }
-    @keyframes fadeIn {
-      0% { opacity: 0; transform: translateY(20px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
   </style>
 </head>
 <body>
   <div id="tsparticles"></div>
-
-  <audio id="event-sound" src="https://cdn.pixabay.com/audio/2023/10/31/14-41-16-915_200x200.mp3" preload="auto"></audio>
 
   <div class="menu-top">
     <img class="logo" src="https://i.postimg.cc/90gRT1n1/Frame-2.png" alt="TMA Logo" />
@@ -858,7 +690,7 @@
       <li class="menu-item" data-section="articles">Статьи</li>
       <li class="menu-item" data-section="cases">Кейсы</li>
       <li class="menu-item" data-section="vacancies">Вакансии</li>
-      <li class="menu-item" data-section="events">Ивенты</li>
+      <li class="menu-item" data-section="event">Ивент</li>
     </ul>
   </nav>
 
@@ -1022,18 +854,15 @@
     </div>
   </section>
 
-  <section id="events" class="section">
-    <h2 class="section-title">ИВЕНТЫ</h2>
-    <p class="event-description">Добро пожаловать в мир русской готики. Зарегистрируйтесь на наше загадочное мероприятие.</p>
-    <button class="register-button tg-link" data-link="https://t.me/TheLimitedClubHR_bot">Зарегистрироваться</button>
+  <section id="event" class="section">
+    <h2 class="section-title">ИВЕНТ</h2>
+    <p>Описание ивента: Здесь вы можете узнать о предстоящем мероприятии. Это эксклюзивное событие для членов клуба, где мы обсудим актуальные темы в CPA и гемблинге. Дата: [укажите дату]. Место: [укажите место или онлайн].</p>
+    <div class="grid">
+      <div class="promo-card" data-event-id="main_event" data-aos="fade-up" data-aos-delay="100">
+        <i class="fas fa-calendar-check"></i> Зарегистрироваться
+      </div>
+    </div>
   </section>
-
-  <!-- Fog overlay -->
-  <div id="fog-overlay">
-    <div class="fog-layer fog-layer1"></div>
-    <div class="fog-layer fog-layer2"></div>
-    <div class="fog-layer fog-layer3"></div>
-  </div>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
@@ -1049,34 +878,30 @@
       console.log('AOS refreshed');
     });
 
-    function loadParticles(isEventsMode = false) {
-      if (typeof tsParticles !== 'undefined') {
-        tsParticles.load("tsparticles", {
-          fpsLimit: 60,
-          particles: {
-            number: { value: 200, density: { enable: true, value_area: 800 } },
-            color: { value: isEventsMode ? "#8b0000" : "#d5fd02" },
-            shape: { type: "circle" },
-            opacity: { value: 0.5, random: true, anim: { enable: true, speed: 1, opacity_min: 0.2, sync: false } },
-            size: { value: 2, random: { enable: true, minimumValue: 0.5 } },
-            links: { enable: false },
-            move: {
-              enable: true,
-              speed: 0.5,
-              direction: "none",
-              random: true,
-              outModes: { default: "out" }
-            }
-          },
-          interactivity: { events: { onHover: { enable: false } }, resize: { enable: true } },
-          retina_detect: true
-        }).then(() => console.log('tsParticles loaded')).catch(err => console.error('tsParticles error:', err));
-      } else {
-        console.error('tsParticles not loaded');
-      }
+    if (typeof tsParticles !== 'undefined') {
+      tsParticles.load("tsparticles", {
+        fpsLimit: 60,
+        particles: {
+          number: { value: 200, density: { enable: true, value_area: 800 } },
+          color: { value: "#d5fd02" },
+          shape: { type: "circle" },
+          opacity: { value: 0.5, random: true },
+          size: { value: 2, random: { enable: true, minimumValue: 0.5 } },
+          links: { enable: false },
+          move: {
+            enable: true,
+            speed: 0.5,
+            direction: "none",
+            random: true,
+            outModes: { default: "out" }
+          }
+        },
+        interactivity: { events: { onHover: { enable: false } }, resize: { enable: true } },
+        retina_detect: true
+      }).then(() => console.log('tsParticles loaded')).catch(err => console.error('tsParticles error:', err));
+    } else {
+      console.error('tsParticles not loaded');
     }
-
-    loadParticles(false);
 
     function updateScrollIndicator(list) {
       const indicator = list.parentElement.querySelector('.scroll-indicator');
@@ -1139,70 +964,12 @@
 
     document.querySelectorAll('.menu-item').forEach(item => {
       item.addEventListener('click', () => {
-        const sectionId = item.dataset.section;
-        trackEvent('nav_click', { section: sectionId });
-
-        const fogOverlay = document.getElementById('fog-overlay');
-        const sections = document.querySelectorAll('.section');
-        const menuItems = document.querySelectorAll('.menu-item');
-        const menuTop = document.querySelector('.menu-top');
-        const carousel = document.querySelector('.carousel');
-        const menu = document.querySelector('.menu');
-        const tsparticles = document.getElementById('tsparticles');
-        const eventSound = document.getElementById('event-sound');
-
-        if (sectionId === 'events') {
-          // Start condensing fog
-          fogOverlay.classList.add('active', 'condensing');
-
-          // After condensing (6s), hide content, switch section, update visuals
-          setTimeout(() => {
-            // Hide current content
-            menuTop.classList.add('hidden');
-            carousel.classList.add('hidden');
-            sections.forEach(section => section.classList.remove('active'));
-
-            // Update menu items
-            menuItems.forEach(i => i.classList.toggle('active', i === item));
-
-            // Switch to events section
-            document.getElementById(sectionId).classList.add('active');
-
-            // Update visuals
-            menu.classList.add('events-mode');
-            tsparticles.classList.add('events-mode');
-            tsParticles.dom().forEach(p => p.destroy());
-            loadParticles(true);
-
-            // Play sound
-            eventSound.play().catch(err => console.log('Audio play failed:', err));
-
-            // Start dissipating fog
-            fogOverlay.classList.remove('condensing');
-            fogOverlay.classList.add('dissipating');
-          }, 6000);
-
-          // After dissipating (3s), hide overlay
-          setTimeout(() => {
-            fogOverlay.classList.remove('active', 'dissipating');
-          }, 9000);
-        } else {
-          // Restore normal visuals
-          menuTop.classList.remove('hidden');
-          carousel.classList.remove('hidden');
-          menu.classList.remove('events-mode');
-          tsparticles.classList.remove('events-mode');
-          tsParticles.dom().forEach(p => p.destroy());
-          loadParticles(false);
-
-          // Normal section switch
-          sections.forEach(section => {
-            section.classList.toggle('active', section.id === sectionId);
-          });
-          menuItems.forEach(i => i.classList.toggle('active', i === item));
-          fogOverlay.classList.remove('active', 'condensing', 'dissipating');
-        }
-
+        trackEvent('nav_click', { section: item.dataset.section });
+        document.querySelectorAll('.section').forEach(section => {
+          section.classList.toggle('active', section.id === item.dataset.section);
+          console.log(`Section ${section.id} active: ${section.classList.contains('active')}`);
+        });
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.toggle('active', i === item));
         window.scrollTo(0, 0);
       });
     });
@@ -1298,6 +1065,13 @@
         schedule: 'Свободный',
         description: 'Изготовление анимационных роликов. Работа с 3D-моделями, сценами, камерой, освещением и композицией.',
         requirements: 'Аналогичный практический опыт работы. Насмотренность, креативность, ответственность. Качественное и своевременное выполнение задач.'
+      }
+    };
+
+    const eventData = {
+      main_event: {
+        title: 'Эксклюзивный Ивент',
+        description: 'Описание ивента: Здесь вы можете узнать о предстоящем мероприятии. Это эксклюзивное событие для членов клуба, где мы обсудим актуальные темы в CPA и гемблинге. Дата: [укажите дату]. Место: [укажите место или онлайн].'
       }
     };
 
@@ -1566,6 +1340,60 @@
               });
             });
           });
+        }
+      });
+    });
+
+    document.querySelectorAll('[data-event-id]').forEach(card => {
+      card.addEventListener('click', () => {
+        const eventId = card.dataset.eventId;
+        const data = eventData[eventId];
+        if (!data) return;
+        trackEvent('event_registration', { event: data.title });
+
+        const telegram = username ? `@${username}` : '';
+        if (!telegram) {
+          if (tg && tg.showPopup) {
+            tg.showPopup({
+              title: 'Ошибка',
+              message: 'Не удалось определить ваш Telegram. Пожалуйста, свяжитесь с HR.',
+              buttons: [{ type: 'ok' }]
+            });
+          } else {
+            alert('Не удалось определить ваш Telegram. Пожалуйста, свяжитесь с HR.');
+          }
+          return;
+        }
+
+        const response_id = generateUUID();
+        const additional = {
+          id: eventId,
+          title: data.title,
+          response_id,
+          telegram,
+          name: first_name || '',
+          reason: 'Быстрая регистрация через кнопку',
+          flag: 0
+        };
+        const eventData = {
+          event: 'event_register',
+          user_id,
+          username,
+          first_name,
+          last_name,
+          timestamp: new Date().toISOString(),
+          additional
+        };
+        sendToSheet(eventData);
+
+        if (tg && tg.showPopup) {
+          tg.showPopup({
+            title: 'Успех',
+            message: 'Вы зарегистрированы на ивент! Ожидайте приглашение в Telegram.',
+            buttons: [{ type: 'ok' }]
+          });
+        } else {
+          alert('Вы зарегистрированы на ивент! Ожидайте приглашение в Telegram.');
         }
       });
     });
