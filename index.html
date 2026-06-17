@@ -3,36 +3,34 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>SMOKE&BUN</title>
+    <title id="page-title">Шаурма House</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* ============================================================
-           SMOKE&BUN — CRAFT BURGER THEME
-           Палитра:
-             --kraft        #2B2017  тёмный обожжённый дуб (фон)
-             --kraft-light  #3A2C1F  фон карточек/панелей
-             --paper        #EFE3CC  крафт-бумага (текст/светлые поверхности)
-             --char         #1A1410  глубокая угольная тень
-             --fire         #C1462C  томатно-перечный красный (основной акцент)
-             --ember        #E08A3C  тлеющий уголь / горчично-оранжевый (второй акцент)
-           ============================================================ */
+        /* =========================================================
+           THEME — настраивается под клиента через CONFIG.theme в JS.
+           Значения тут — дефолт/фолбэк (стиль "Шаурма House": тёплый,
+           светлый, оранжево-янтарные градиенты — взято из Figma).
+           ========================================================= */
         :root {
-            --kraft: #2B2017;
-            --kraft-light: #3A2C1F;
-            --char: #1A1410;
-            --paper: #EFE3CC;
-            --fire: #C1462C;
-            --fire-bright: #DD5A3C;
-            --ember: #E08A3C;
-            --font-display: 'Archivo Black', sans-serif;
-            --font-body: 'Oswald', sans-serif;
+            --bg-from: #fff7ed;      /* orange-50 */
+            --bg-via: #ffffff;
+            --bg-to: #fffbeb;        /* amber-50 */
+            --accent: #ea580c;       /* orange-600 */
+            --accent-dark: #c2410c;  /* orange-700 */
+            --accent-light: #fdba74; /* orange-300 */
+            --amber: #d97706;        /* amber-600 */
+            --text-dark: #1f2937;    /* gray-800 */
+            --text-mid: #4b5563;     /* gray-600 */
+            --card-bg: #ffffff;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --font-body: 'Nunito', sans-serif;
         }
 
         body {
@@ -41,663 +39,712 @@
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
-            background-color: var(--kraft);
-            background-image:
-                radial-gradient(ellipse at top, rgba(193,70,44,0.10), transparent 60%),
-                repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0px, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 3px);
-            color: var(--paper);
+            background: linear-gradient(to bottom right, var(--bg-from), var(--bg-via), var(--bg-to));
+            background-attachment: fixed;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        .animate-zoom-in { animation: zoomIn 0.3s ease forwards; }
+        .animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- View switching (Главная / Корзина / Профиль) --- */
+        .app-view { display: none; }
+        .app-view.active { display: block; animation: fadeIn 0.25s ease; }
+
+        /* --- Order status banner --- */
+        #order-status-banner {
+            position: sticky; top: 0; z-index: 40;
+            padding: 12px 16px;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: none;
+        }
+        #order-status-banner.visible { display: block; }
+        #order-status-banner.status-preparing { background: linear-gradient(to right, #f97316, #f59e0b); }
+        #order-status-banner.status-ready { background: linear-gradient(to right, #22c55e, #10b981); }
+        #order-status-banner.status-accepted { background: linear-gradient(to right, #3b82f6, #06b6d4); }
+
+        /* --- Bottom navigation --- */
+        #bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+            z-index: 50;
+        }
+        #bottom-nav .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            padding: 8px 16px;
+            color: var(--text-mid);
+            transition: color 0.2s;
+            background: none; border: none; cursor: pointer;
             position: relative;
         }
-
-        #tsparticles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-
-        /* --- Animations: warmer, snappier, with slight overshoot (grill "sizzle") --- */
-        .animate-zoom-in { animation: zoomIn 0.35s cubic-bezier(.34,1.56,.64,1) forwards; }
-        .animate-fade-in { animation: fadeIn 0.4s ease forwards; }
-        .animate-pop { animation: popIn 0.45s cubic-bezier(.34,1.56,.64,1) forwards; }
-        @keyframes zoomIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes popIn { from { transform: scale(0.7) rotate(-2deg); opacity: 0; } 60% { transform: scale(1.05) rotate(1deg); opacity: 1; } to { transform: scale(1) rotate(0); opacity: 1; } }
-
-        h1, h2, h3, h4, .header-title {
-            font-family: var(--font-display);
-            color: var(--paper);
-            letter-spacing: 0.02em;
+        #bottom-nav .nav-item.active { color: var(--accent); }
+        #bottom-nav .nav-item span { font-size: 11px; }
+        #bottom-nav .nav-item svg { width: 24px; height: 24px; }
+        #nav-cart-badge {
+            position: absolute; top: -2px; right: 6px;
+            background: var(--accent);
+            color: white; font-size: 10px;
+            border-radius: 9999px;
+            width: 18px; height: 18px;
+            display: flex; align-items: center; justify-content: center;
         }
+        #nav-cart-badge.hidden { display: none; }
 
-        /* Promo Carousel */
-        .carousel { display: flex; overflow-x: auto; white-space: nowrap; scroll-behavior: smooth; touch-action: pan-x; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; position: relative; width: 343px; height: 136px; margin: 8px auto; border-radius: 10px; overflow: hidden; max-width: 100%; border: 2px solid rgba(224,138,60,0.35); }
-        .carousel::-webkit-scrollbar { display: none; }
-        .carousel a { display: block; width: 100%; height: 100%; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity .6s ease, transform 6s linear; transform: scale(1); }
-        .carousel a.active { opacity: 1; z-index: 1; transform: scale(1.06); }
-        .carousel img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(1.05) contrast(1.05); }
-        .carousel .hot { position: absolute; top: 8px; left: 16px; font-size: 20px; font-weight: 500; color: #ffffff; z-index: 2; }
-        .carousel-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 2; }
-        .carousel-dots .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.25); cursor: pointer; transition: background .3s, transform .3s; }
-        .carousel-dots .dot.active { background: var(--ember); transform: scale(1.3); }
+        main { padding-bottom: 88px; }
 
-        /* Product Image Carousel */
-        .product-image-carousel { position: relative; width: 100%; height: 288px; overflow: hidden; border-radius: 14px; background: var(--kraft-light); margin-bottom: 16px; border: 2px solid rgba(224,138,60,0.25); }
-        .product-image-carousel img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity .4s ease, transform .4s cubic-bezier(.22,.9,.32,1); transform: translateX(0); }
-        .product-image-carousel img.active { opacity: 1; z-index: 1; transform: translateX(0); }
-        .product-image-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 2; }
-        .product-image-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: background .3s; }
-        .product-image-dots .dot.active { background: var(--paper); }
+        /* --- Product card --- */
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+            overflow: hidden;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .product-card:hover { box-shadow: 0 12px 24px rgba(0,0,0,0.12); }
+        .product-card .image-wrap { position: relative; height: 160px; overflow: hidden; cursor: pointer; }
+        .product-card .image-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+        .product-card:hover .image-wrap img { transform: scale(1.08); }
+        .badge-hot {
+            position: absolute; top: 10px; left: 10px;
+            background: var(--accent); color: white;
+            padding: 4px 10px; border-radius: 9999px; font-size: 12px;
+            display: flex; align-items: center; gap: 4px; font-weight: 700;
+        }
+        .badge-spicy {
+            position: absolute; top: 10px; right: 10px;
+            background: var(--danger); color: white;
+            padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 700;
+        }
+        .product-card .rating-pill {
+            display: flex; align-items: center; gap: 4px;
+            background: #fffbeb; padding: 2px 8px; border-radius: 8px;
+        }
+        .product-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-dark); margin: 0; }
+        .product-card .price { font-size: 1.4rem; font-weight: 800; color: var(--text-dark); }
+        .add-to-cart-btn {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 14px; border-radius: 12px;
+            background: var(--accent); color: white;
+            border: none; font-weight: 700; font-size: 13px;
+            transition: background 0.2s ease, transform 0.15s ease;
+        }
+        .add-to-cart-btn:hover { background: var(--accent-dark); }
+        .add-to-cart-btn:active { transform: scale(0.96); }
+        .add-to-cart-btn.added { background: var(--success); }
 
-        /* Modals & Backdrop */
-        .cart-modal, .product-detail, .profile-modal { height: 100dvh; max-height: 100dvh; overflow-y: auto; }
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(10,7,5,0.55); backdrop-filter: blur(4px); z-index: 90; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+        /* --- Section headers --- */
+        .section-title { display: flex; align-items: center; gap: 8px; font-size: 1.4rem; font-weight: 800; color: var(--text-dark); }
+
+        /* --- Modals & Backdrop (cart / detail / checkout) --- */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 90; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
         .modal-backdrop.visible { opacity: 1; pointer-events: auto; }
 
-        #cart-modal, #product-detail, #profile-modal, #checkout-modal { z-index: 100; }
-        #checkout-modal { z-index: 102; }
+        #product-detail, #checkout-modal { z-index: 100; }
 
-        /* --- Header --- */
-        .header-elements { position: fixed; top: 0; left: 0; right: 0; z-index: 130; padding: 0; height: 56px; background: transparent; box-shadow: none; transition: opacity .25s ease, transform .25s cubic-bezier(.22,.9,.32,1); display: block; pointer-events: auto; }
-        .header-elements.header-hidden { opacity: 0; transform: translateY(-14px); pointer-events: none; }
-        .header-elements .cart-edge { position: absolute; left: 12px; top: 12px; z-index: 140; }
-        .header-elements .header-title { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); z-index: 135; font-size: 20px; font-weight: 400; color: var(--paper); }
-        .header-elements .social-edge { position: absolute; right: 12px; top: 10px; z-index: 140; display: flex; gap: 10px; align-items: center; }
-        .header-elements .icon-btn, .header-elements .social-edge a { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; transition: background-color .15s, transform .15s; background: transparent; border: none; }
-        .header-elements .icon-btn i, .header-elements .social-edge i, .header-elements .icon-btn svg { font-size: 18px; line-height: 1; color: var(--ember); transition: color 0.2s; }
-        .header-elements .icon-btn:hover, .header-elements .social-edge a:hover { transform: translateY(-2px) rotate(-3deg); }
-        .header-elements .icon-btn:hover i, .header-elements .social-edge a:hover i, .header-elements .icon-btn:hover svg { color: var(--paper); }
-        #cart-badge { background-color: var(--fire) !important; color: var(--paper) !important; }
+        #product-detail {
+            position: fixed; inset: 0; background: #fafafa;
+            transform: translateY(100%); transition: transform .3s ease;
+            height: 100dvh; max-height: 100dvh; overflow-y: auto;
+        }
+        #product-detail .pd-header {
+            position: sticky; top: 0; background: white; z-index: 5;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; border-bottom: 1px solid #eee;
+        }
 
-        /* --- Main Content --- */
-        main h2 { color: var(--paper); }
-        main #products-count { color: rgba(239, 227, 204, 0.55); font-family: var(--font-body); }
+        .product-image-carousel { position: relative; width: 100%; height: 260px; overflow: hidden; border-radius: 16px; background: #f3f4f6; margin-bottom: 16px; }
+        .product-image-carousel img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity .35s ease, transform .35s ease; }
+        .product-image-carousel img.active { opacity: 1; z-index: 1; }
+        .product-image-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 2; }
+        .product-image-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); }
+        .product-image-dots .dot.active { background: white; }
 
-        /* --- Category chips --- */
-        .category-chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; margin-bottom: 4px; }
-        .category-chips::-webkit-scrollbar { display: none; }
-        .category-chip { flex-shrink: 0; padding: 8px 16px; border-radius: 100px; border: 1.5px solid rgba(224,138,60,0.35); background: var(--kraft-light); color: var(--paper); font-size: 13px; font-weight: 500; white-space: nowrap; transition: all 0.2s ease; cursor: pointer; }
-        .category-chip.active { background: var(--fire); border-color: var(--fire); color: var(--paper); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(193,70,44,0.4); }
-
-        /* --- Product Card --- */
-        .product-card {
-            background-color: var(--kraft-light);
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-            border: 1px solid rgba(224, 138, 60, 0.18);
-            transition: transform 0.25s cubic-bezier(.22,.9,.32,1), border-color 0.25s ease, box-shadow 0.25s ease;
+        .size-btn, .filling-btn {
+            background: white;
+            border: 2px solid #fed7aa;
+            color: var(--text-dark);
+            border-radius: 12px;
+            transition: background-color 0.2s, border-color 0.2s;
         }
-        .product-card:hover {
-            transform: translateY(-5px) rotate(-0.4deg);
-            border-color: rgba(224, 138, 60, 0.55);
-            box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+        .size-btn.active, .filling-btn.active {
+            background: #fff7ed;
+            border-color: var(--accent);
         }
-        .product-card .relative.h-36 { border-radius: 10px 10px 0 0; }
-        .product-card h3 { color: var(--paper); font-family: var(--font-display); font-size: 0.95rem; letter-spacing: 0.01em; }
-        .product-card p { color: rgba(239, 227, 204, 0.65); height: auto; min-height: 40px; font-size: 0.8rem; }
-        .product-card .font-bold {
-            color: var(--ember);
-            font-size: 1.05rem;
-            font-family: var(--font-display);
-        }
-        .hot-badge { background: var(--fire); color: var(--paper); padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: bold; font-family: var(--font-body); letter-spacing: 0.05em; transform: rotate(-3deg); box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
-
-        .add-to-cart-btn {
-            position: absolute;
-            bottom: 12px; right: 12px;
-            width: 40px; height: 40px;
-            background-color: rgba(26,20,16,0.35);
-            border-radius: 50%;
-            box-shadow: none;
-            transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
-            border: 1.5px solid rgba(224,138,60,0.4);
-            z-index: 10;
-        }
-        .add-to-cart-btn svg {
-            width: 22px; height: 22px;
-            stroke: var(--ember);
-            transition: stroke 0.2s ease;
-        }
-        .add-to-cart-btn:hover {
-            transform: scale(1.18) rotate(90deg);
-            background-color: var(--fire);
-            border-color: var(--fire);
-        }
-        .add-to-cart-btn:hover svg {
-            stroke: var(--paper);
-        }
-        .add-to-cart-btn:active { transform: scale(0.92) rotate(90deg); }
-
-        /* --- Buttons & Inputs --- */
-        .btn-primary {
-            transition: all 0.2s cubic-bezier(.22,.9,.32,1);
-            box-shadow: 0 3px 0 #7e2c1a, 0 4px 10px rgba(0,0,0,0.3);
-            background-color: var(--fire);
-            color: var(--paper);
-            border-radius: 8px;
-            font-family: var(--font-body);
-            font-weight: 600;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-            font-size: 0.92rem;
-        }
-        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 0 #7e2c1a, 0 8px 16px rgba(0,0,0,0.35); background-color: var(--fire-bright); }
-        .btn-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 1px 0 #7e2c1a, 0 2px 6px rgba(0,0,0,0.3); }
-        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .size-btn .muted, .filling-btn .muted { color: var(--text-mid); }
 
         .quantity-btn {
             display: flex; align-items: center; justify-content: center;
-            width: 32px; height: 32px; border-radius: 50%;
-            background: rgba(239, 227, 204, 0.08);
-            border: 1px solid rgba(224,138,60,0.3);
-            color: var(--paper);
-            transition: background 0.2s, transform 0.15s;
+            width: 34px; height: 34px; border-radius: 10px;
+            background: #f3f4f6; color: var(--text-dark);
+            transition: background 0.2s; border: none;
         }
-        .quantity-btn:hover { background: rgba(224,138,60,0.2); transform: scale(1.08); }
-        .quantity-btn:active { transform: scale(0.9); }
+        .quantity-btn:hover { background: #e5e7eb; }
         .quantity-btn svg { width: 16px; height: 16px; }
 
-        .size-btn, .filling-btn {
-            background-color: transparent;
-            border: 1.5px solid rgba(224, 138, 60, 0.35);
-            color: var(--paper);
-            transition: background-color 0.2s, border-color 0.2s, transform 0.15s;
-            border-radius: 8px;
+        .btn-primary {
+            background: linear-gradient(to right, var(--accent), var(--amber));
+            color: white;
+            border-radius: 14px;
+            border: none;
+            font-weight: 700;
+            box-shadow: 0 6px 14px rgba(234,88,12,0.25);
+            transition: all 0.2s ease;
         }
-        .size-btn:active, .filling-btn:active { transform: scale(0.97); }
-        .size-btn .text-gray-600, .filling-btn .text-gray-600 { color: rgba(239, 227, 204, 0.55); }
-
-        .size-btn.active, .filling-btn.active {
-            background-color: rgba(193, 70, 44, 0.22);
-            border-color: var(--fire);
-            box-shadow: 0 0 0 1px var(--fire) inset;
-        }
+        .btn-primary:hover:not(:disabled) { box-shadow: 0 8px 20px rgba(234,88,12,0.35); transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .input-field {
-            background-color: var(--kraft-light);
-            border: 1.5px solid rgba(224, 138, 60, 0.3);
-            color: var(--paper);
-            border-radius: 8px;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            background: white;
+            border: 2px solid #e5e7eb;
+            color: var(--text-dark);
+            border-radius: 12px;
+            transition: border-color 0.2s ease;
         }
-        .input-field:focus {
-            border-color: var(--ember);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(224,138,60,0.18);
-        }
-        label.font-semibold { color: var(--paper); }
+        .input-field:focus { border-color: var(--accent); outline: none; }
 
-        /* --- Modals Redesign --- */
-        #cart-modal, #product-detail, #profile-modal {
-            background-color: var(--kraft);
-            transform: translateY(100%);
-            transition: transform 0.38s cubic-bezier(.22,.9,.32,1);
-        }
-        .sticky.top-0 {
-            background-color: var(--kraft) !important;
-            border-bottom: 1px solid rgba(224, 138, 60, 0.2) !important;
-            box-shadow: none !important;
-        }
-        .sticky.bottom-0 {
-            background-color: var(--kraft) !important;
-            border-top: 1px solid rgba(224, 138, 60, 0.2) !important;
-        }
-
-        /* Cart Empty State */
-        #cart-content .text-gray-800 { color: var(--paper) !important; }
-        #cart-content .text-gray-600 { color: rgba(239, 227, 204, 0.65) !important; }
-        #cart-content svg { color: var(--ember); }
-
-        /* Cart Item */
-        .cart-item {
-            background-color: var(--kraft-light) !important;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            border: 1px solid rgba(224,138,60,0.12);
-            transition: transform 0.2s ease, opacity 0.2s ease;
-        }
-        .cart-item h4 { color: var(--paper); }
-        .cart-item .text-pink-600 { color: var(--ember) !important; }
-        .cart-item.removing { transform: translateX(40px) scale(0.92); opacity: 0; }
-
-        /* Checkout Modal */
+        /* --- Checkout modal (bottom sheet) --- */
         #checkout-modal {
             position: fixed; left: 0; right: 0; bottom: 0;
-            z-index: 102; transform: translateY(110%); transition: transform .35s cubic-bezier(.22,.9,.32,1);
-            background: var(--kraft);
-            border-top: 2px solid rgba(224, 138, 60, 0.4);
-            border-top-left-radius: 16px; border-top-right-radius: 16px;
-            box-shadow: 0 -8px 28px rgba(0,0,0,0.4);
-            max-height: 85vh; overflow: auto;
+            z-index: 102; transform: translateY(110%); transition: transform .28s ease;
+            background: white;
+            border-top-left-radius: 20px; border-top-right-radius: 20px;
+            box-shadow: 0 -8px 30px rgba(0,0,0,0.15);
+            max-height: 88vh; overflow: auto;
         }
         #checkout-modal.open { transform: translateY(0); }
-        #checkout-modal .border-b { border-color: rgba(224, 138, 60, 0.2); }
-        #checkout-modal .text-gray-600 { color: rgba(239, 227, 204, 0.65); }
-        #checkout-total { color: var(--ember) !important; font-family: var(--font-display); }
-        #checkout-back-btn, .cart-list-actions button {
-            background-color: transparent;
-            border: 1.5px solid var(--ember);
-            color: var(--ember);
-            border-radius: 8px;
-            transition: background-color 0.2s, color 0.2s, transform 0.15s;
-            font-weight: 500;
-        }
-        #checkout-back-btn:hover, .cart-list-actions button:hover {
-            background-color: rgba(224, 138, 60, 0.12);
-        }
-        #checkout-back-btn:active, .cart-list-actions button:active { transform: scale(0.97); }
-
-        #cart-content .cart-list { max-height: calc(100vh - 220px); overflow: auto; padding: 1rem; }
 
         /* fly-to-cart image */
-        .fly-img { position: fixed; pointer-events: none; z-index: 2200; transition: transform 0.75s cubic-bezier(.18,.85,.25,1), opacity 0.55s ease 0.25s; will-change: transform, opacity; border-radius: 10px; box-shadow: 0 10px 24px rgba(0,0,0,0.4); }
+        .fly-img { position: fixed; pointer-events: none; z-index: 2200; transition: transform 0.85s cubic-bezier(.22,.9,.32,1), opacity 0.6s ease; will-change: transform, opacity; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
 
-        main {
-            padding-top: 60px;
-        }
-        #cart-modal, #product-detail, #profile-modal {
-            padding-top: 60px;
-        }
-        .header-elements {
-            top: 60px;
-        }
-        .sticky.top-0 {
-            top: 60px !important;
-        }
+        /* Cart item */
+        .cart-item { background: white; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
 
-        /* Profile Modal Styles */
-        #profile-modal .profile-content {
-            padding: 16px;
-            text-align: center;
+        /* Profile */
+        .profile-header-card {
+            background: linear-gradient(to bottom right, var(--accent), var(--amber));
+            border-radius: 16px; color: white; padding: 24px;
+            box-shadow: 0 10px 24px rgba(234,88,12,0.25);
         }
-        #profile-points {
-            font-size: 2.2rem;
-            color: var(--ember);
-            margin: 16px 0;
-            font-family: var(--font-display);
-        }
-
-        #loyalty-discount {
-            color: var(--ember);
-        }
-        #use-points-checkbox {
-            margin-right: 8px;
-            accent-color: var(--fire);
-        }
-
-        /* Notification toast pop */
-        .toast-pop { animation: toastPop 0.4s cubic-bezier(.34,1.56,.64,1) forwards; }
-        @keyframes toastPop { from { transform: translate(-50%, 16px) scale(0.85); opacity: 0; } to { transform: translate(-50%, 0) scale(1); opacity: 1; } }
+        .profile-stat-box { background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); border-radius: 12px; padding: 14px; }
+        .profile-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+        .order-history-item { border-radius: 12px; padding: 14px; border: 2px solid #e5e7eb; }
+        .order-history-item.completed { border-color: #bbf7d0; background: rgba(240,253,244,0.5); }
+        .loyalty-card { background: linear-gradient(to bottom right, #9333ea, #db2777); border-radius: 16px; color: white; padding: 20px; box-shadow: 0 10px 24px rgba(147,51,234,0.25); }
     </style>
 </head>
 <body class="relative">
-    <div id="tsparticles"></div>
 
     <div id="modal-backdrop" class="modal-backdrop" aria-hidden="true"></div>
 
-    <main class="pt-24 pb-20 px-4 max-w-7xl mx-auto relative">
-        <div class="header-elements" id="top-bar">
-             <div class="cart-edge">
-                 <button id="cart-btn" class="icon-btn p-0 hover:bg-transparent rounded-md" aria-label="Корзина">
-                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                     </svg>
-                     <span id="cart-badge" class="absolute -top-1 -right-1 bg-pink-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
-                 </button>
-             </div>
-
-             <div class="header-title">SMOKE&BUN</div>
-
-             <div class="social-edge">
-                 <div class="social-links flex items-center gap-3">
-                     <button id="profile-btn" class="icon-btn" title="Профиль">
-                         <i class="fas fa-user"></i>
-                     </button>
-                     <!-- TODO: вставить ссылку на Telegram-канал/бот бургерной -->
-                     <a href="#" target="_blank" class="icon-btn" data-social="telegram" title="Telegram">
-                         <i class="fab fa-telegram-plane"></i>
-                     </a>
-                     <!-- TODO: вставить ссылку на Instagram бургерной -->
-                     <a href="#" target="_blank" class="icon-btn" data-social="instagram" title="Instagram">
-                         <i class="fab fa-instagram"></i>
-                     </a>
-                 </div>
-             </div>
+    <!-- Order status banner -->
+    <div id="order-status-banner" aria-hidden="true">
+        <div class="max-w-screen-xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span id="order-status-icon"></span>
+                <div>
+                    <p class="text-sm opacity-90">Заказ <span id="order-status-id"></span></p>
+                    <p class="font-bold" id="order-status-text"></p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-sm opacity-90">Готовность</p>
+                <p class="font-bold" id="order-status-eta"></p>
+            </div>
         </div>
+    </div>
 
-        <!-- TODO: заменить промо-баннеры на свои (акции бургерной) -->
-        <div class="carousel">
-            <a href="#" class="active"><img src="https://placehold.co/686x272/2B2017/E08A3C?text=%D0%9D%D0%BE%D0%B2%D0%BE%D0%B5+%D0%BE%D0%B3%D0%BD%D0%B5%D0%BD%D0%BD%D0%BE%D0%B5+%D0%9A%D0%9E%D0%9C%D0%91%D0%9E" alt="promo"></a>
-            <a href="#"><img src="https://placehold.co/686x272/2B2017/C1462C?text=%D0%92%D1%82%D0%BE%D1%80%D0%BE%D0%B9+%D0%B1%D1%83%D1%80%D0%B3%D0%B5%D1%80+%D0%B2+%D0%BF%D0%BE%D0%B4%D0%B0%D1%80%D0%BE%D0%BA" alt="promo2"></a>
-            <div class="hot"></div>
-            <div class="carousel-dots"><div class="dot active"></div><div class="dot"></div></div>
-        </div>
+    <main>
+        <!-- ===================== ГЛАВНАЯ ===================== -->
+        <section id="view-home" class="app-view active max-w-screen-xl mx-auto px-4 py-6">
+            <div class="mb-6">
+                <h1 class="text-3xl font-extrabold mb-1" id="home-shop-title"></h1>
+                <p class="text-sm" style="color: var(--text-mid);" id="home-shop-subtitle"></p>
+            </div>
 
-        <div class="category-chips" id="category-chips"></div>
+            <div class="mb-6" id="popular-section">
+                <div class="section-title mb-3">
+                    <i class="fas fa-fire" style="color: var(--accent);"></i>
+                    <span>Популярное</span>
+                </div>
+                <div id="popular-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+            </div>
 
-        <div class="flex items-center justify-between my-5">
-            <h2 class="text-xl font-bold">Меню</h2>
-            <span id="products-count" class="text-sm">0 товаров</span>
-        </div>
-        <div id="products-grid" class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 mb-10"></div>
+            <div>
+                <div class="section-title mb-3"><span>Всё меню</span></div>
+                <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
+        </section>
+
+        <!-- ===================== КОРЗИНА ===================== -->
+        <section id="view-cart" class="app-view max-w-screen-xl mx-auto px-4 py-6">
+            <h1 class="text-2xl font-extrabold mb-5">Корзина</h1>
+            <div id="cart-content"></div>
+        </section>
+
+        <!-- ===================== ПРОФИЛЬ ===================== -->
+        <section id="view-profile" class="app-view max-w-screen-xl mx-auto px-4 py-6">
+            <div class="profile-header-card mb-5">
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold mb-1" id="profile-name">Гость</h2>
+                        <p class="text-sm opacity-90" id="profile-phone"></p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="profile-stat-box">
+                        <p class="text-xs opacity-90 mb-1">Заказов</p>
+                        <p class="text-xl font-bold" id="profile-orders-count">0</p>
+                    </div>
+                    <div class="profile-stat-box">
+                        <p class="text-xs opacity-90 mb-1">Потрачено</p>
+                        <p class="text-xl font-bold" id="profile-total-spent">0 ₽</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-card mb-5">
+                <h2 class="text-lg font-bold mb-3">История заказов</h2>
+                <div id="profile-order-history" class="space-y-3"></div>
+            </div>
+
+            <div class="loyalty-card">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-lg font-bold">Карта лояльности</h2>
+                    <i class="fas fa-star" style="color: #fde047;"></i>
+                </div>
+                <p class="text-sm opacity-90 mb-3">Получайте баллы за каждый заказ и обменивайте их на скидки!</p>
+                <div class="bg-white/15 rounded-xl p-4">
+                    <p class="text-xs opacity-90 mb-1">Ваши баллы</p>
+                    <p class="text-2xl font-bold" id="profile-points">Загрузка...</p>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <div id="cart-modal" class="fixed inset-0 transform transition-transform duration-300" aria-hidden="true">
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between p-4 border-b sticky top-0">
-                <button id="cart-back-btn" aria-label="Назад">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    <!-- Bottom navigation -->
+    <nav id="bottom-nav">
+        <div class="max-w-screen-xl mx-auto px-4">
+            <div class="flex justify-around items-center h-16">
+                <button class="nav-item active" data-view="home" aria-label="Главная">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10m-9 0l2-2"/></svg>
+                    <span>Главная</span>
                 </button>
-                <h2 class="text-xl font-bold">Корзина</h2>
-                <button id="cart-close-btn" aria-label="Закрыть">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                <button class="nav-item" data-view="cart" aria-label="Корзина">
+                    <div class="relative">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <span id="nav-cart-badge" class="hidden">0</span>
+                    </div>
+                    <span>Корзина</span>
                 </button>
-            </div>
-            <div id="cart-content" class="flex-grow flex flex-col"></div>
-        </div>
-    </div>
-
-    <div id="product-detail" class="fixed inset-0 transform transition-transform duration-300" aria-hidden="true">
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between p-4 border-b sticky top-0">
-                <button id="detail-back-btn" aria-label="Назад">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                <button class="nav-item" data-view="profile" aria-label="Профиль">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    <span>Профиль</span>
                 </button>
-                <h2 id="detail-title" class="text-xl font-bold"></h2>
-                <button id="detail-close-btn" aria-label="Закрыть">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-            <div id="detail-content" class="flex-1 overflow-auto p-4"></div>
-        </div>
-    </div>
-
-    <div id="profile-modal" class="fixed inset-0 transform transition-transform duration-300" aria-hidden="true">
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between p-4 border-b sticky top-0">
-                <button id="profile-back-btn" aria-label="Назад">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                </button>
-                <h2 class="text-xl font-bold">Профиль</h2>
-                <button id="profile-close-btn" aria-label="Закрыть">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-            <div id="profile-content" class="flex-1 overflow-auto p-4 profile-content">
-                <h3>Ваши бонусные баллы</h3>
-                <div id="profile-points">Загрузка...</div>
             </div>
         </div>
+    </nav>
+
+    <!-- Product detail modal -->
+    <div id="product-detail" aria-hidden="true">
+        <div class="pd-header">
+            <button id="detail-back-btn" aria-label="Назад">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <h2 id="detail-title" class="text-lg font-bold"></h2>
+            <button id="detail-close-btn" aria-label="Закрыть">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div id="detail-content" class="p-4"></div>
     </div>
 
+    <!-- Checkout modal -->
     <div id="checkout-modal" aria-hidden="true">
-        <div class="p-4 border-b flex items-start gap-3">
+        <div class="p-4 border-b flex items-start gap-3" style="border-color:#eee;">
             <div class="flex-1">
                 <h3 class="text-lg font-bold">Оформление заказа</h3>
-                <!-- TODO: указать реальный адрес самовывоза -->
-                <p class="text-sm">Самовывоз: <strong>укажите адрес</strong></p>
+                <p class="text-sm" style="color: var(--text-mid);" id="checkout-pickup-line"></p>
             </div>
-            <button id="checkout-close" class="text-gray-500" aria-label="Закрыть">
+            <button id="checkout-close" style="color: var(--text-mid);" aria-label="Закрыть">
                 <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
         <div class="p-4 space-y-4">
             <div class="grid grid-cols-1 gap-3">
-                <label class="text-sm font-semibold">Дата самовывоза</label>
+                <label class="text-sm font-bold">Дата самовывоза</label>
                 <input id="checkout-date" type="date" class="input-field p-3 text-sm w-full" min="" required>
-                <label class="text-sm font-semibold">Время</label>
-                <input id="checkout-time" type="time" class="input-field p-3 text-sm w-full" min="09:00" max="21:00" required>
-                <label class="text-sm font-semibold">Телефон для связи</label>
+                <label class="text-sm font-bold">Время</label>
+                <input id="checkout-time" type="time" class="input-field p-3 text-sm w-full" required>
+                <label class="text-sm font-bold">Телефон для связи</label>
                 <input id="checkout-phone" type="tel" placeholder="+7 (999) 123-45-67" class="input-field p-3 text-sm w-full" required>
             </div>
 
-            <div class="flex items-center justify-between font-bold text-base pt-3 border-t" style="border-color: rgba(224, 138, 60, 0.2);">
-                <span>Итого</span><span id="checkout-total">0 ₽</span>
+            <div class="flex items-center justify-between font-bold text-base pt-3 border-t" style="border-color: #eee;">
+                <span>Итого</span><span id="checkout-total" style="color: var(--accent);">0 ₽</span>
             </div>
 
             <div class="flex items-center">
-                <input type="checkbox" id="use-points-checkbox">
-                <label for="use-points-checkbox">Использовать баллы (скидка: <span id="loyalty-discount">0 ₽</span>)</label>
+                <input type="checkbox" id="use-points-checkbox" class="mr-2">
+                <label for="use-points-checkbox" class="text-sm">Использовать баллы (скидка: <span id="loyalty-discount" style="color: var(--accent); font-weight: 700;">0 ₽</span>)</label>
             </div>
 
-            <!-- TODO: здесь точка интеграции оплаты ЮKassa.
-                 Сейчас кнопка ниже просто отправляет заказ менеджеру (наличные/на месте).
-                 Если нужна оплата картой через ЮKassa — перед вызовом placeOrder()
-                 нужно создать платёж на своём backend (Apps Script/Cloud Function),
-                 получить confirmation_url и открыть его (или Telegram Invoice),
-                 а оформление заказа подтверждать только после успешной оплаты. -->
             <div class="space-y-2">
-                <button id="place-order-btn" class="btn-primary w-full h-12 text-base font-semibold flex items-center justify-center gap-2">Оформить заказ</button>
-                <button id="checkout-back-btn" class="w-full h-12 text-base">Вернуться к корзине</button>
+                <button id="place-order-btn" class="btn-primary w-full h-12 text-base flex items-center justify-center gap-2">Оформить заказ</button>
+                <button id="checkout-back-btn" class="w-full h-12 text-base font-semibold" style="color: var(--text-mid);">Вернуться к корзине</button>
             </div>
         </div>
     </div>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        /* ============================================================
-           ТОЧКИ ИНТЕГРАЦИИ (вставь свои значения)
-           ============================================================ */
+        /* =====================================================================
+         *  CONFIG — ЕДИНСТВЕННОЕ МЕСТО, КОТОРОЕ МЕНЯЕТСЯ ПОД КАЖДОГО КЛИЕНТА.
+         *  Всё, что ниже этого блока в файле — общий движок.
+         * ===================================================================== */
         const CONFIG = {
-            // URL вашего Google Apps Script Web App (deployment URL), который принимает
-            // POST с заказом (event: 'order_submit') и GET с event=get_points&user_id=...
-            GOOGLE_APPS_SCRIPT_URL: 'PASTE_YOUR_GOOGLE_APPS_SCRIPT_URL_HERE',
+            shopName: 'Шаурма House',
+            shopEmoji: '🌯',
+            pageTitle: 'Шаурма House',
+            shopSubtitle: 'Свежая шаурма и вкусные добавки',
 
-            // Если будете принимать оплату через ЮKassa — endpoint своего backend,
-            // который создаёт платёж и возвращает confirmation_url.
-            // ЮKassa напрямую с фронта дёргать нельзя (нужен secret key на сервере).
-            YOOKASSA_CREATE_PAYMENT_URL: 'PASTE_YOUR_PAYMENT_BACKEND_URL_HERE',
+            // Свой Google Apps Script + своя Google Sheets под этот проект.
+            backendUrl: 'ВСТАВЬ_СЮДА_URL_ТВОЕГО_APPS_SCRIPT',
 
-            // Username вашего Telegram-бота (для ссылок типа "написать в поддержку")
-            TELEGRAM_BOT_USERNAME: 'your_bot_username',
+            pickup: {
+                address: 'ул. Примерная, 1',
+                timeMin: '10:00',
+                timeMax: '22:00'
+            },
 
-            // Адрес самовывоза, который показывается в чек-ауте
-            PICKUP_ADDRESS: 'укажите адрес'
-        };
+            socialLinks: [
+                // { type: 'telegram', url: 'https://t.me/your_channel', icon: 'fab fa-telegram-plane' }
+            ],
 
-        AOS.init({ duration: 800, once: true, offset: 100 });
-        window.addEventListener('load', () => { AOS.refresh(); });
+            theme: {
+                bgFrom: '#fff7ed',
+                bgVia: '#ffffff',
+                bgTo: '#fffbeb',
+                accent: '#ea580c',
+                accentDark: '#c2410c',
+                amber: '#d97706',
+                fontBody: "'Nunito', sans-serif"
+            },
 
-        // --- Particle animation: тёплые тлеющие искры вместо холодного золота ---
-        if (typeof tsParticles !== 'undefined') {
-            tsParticles.load("tsparticles", {
-                fpsLimit: 60,
-                particles: {
-                    number: { value: 45, density: { enable: true, value_area: 850 } },
-                    color: { value: ["#E08A3C", "#C1462C"] },
-                    shape: { type: "circle" },
-                    opacity: { value: 0.35, random: true, anim: { enable: true, speed: 0.4, opacity_min: 0.08, sync: false } },
-                    size: { value: 1.8, random: { enable: true, minimumValue: 0.6 } },
-                    move: {
-                        enable: true,
-                        speed: 0.4,
-                        direction: "top",
-                        straight: false,
-                        random: true,
-                        outModes: { default: "out" }
-                    }
+            // Бесплатная доставка / самовывоз — плашка в корзине. null чтобы скрыть.
+            freebiePromo: null,
+
+            // products: каждый товар может быть либо простым (price),
+            // либо с вариантами (sizes и/или fillings) — как в исходной техничке.
+            products: [
+                {
+                    id: '1',
+                    name: 'Классическая шаурма',
+                    description: 'Куриное мясо, свежие овощи, фирменный соус',
+                    price: 350,
+                    sizes: [
+                        { size: 'S', label: 'Малая', weight: '250 г', price: 350 },
+                        { size: 'M', label: 'Средняя', weight: '350 г', price: 420 },
+                        { size: 'L', label: 'Большая', weight: '450 г', price: 490 }
+                    ],
+                    fillings: [
+                        { name: 'Классический соус', image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600' },
+                        { name: 'Острый соус', image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600' },
+                        { name: 'Чесночный соус', image: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600' }
+                    ],
+                    images: ['https://images.unsplash.com/photo-1529006557810-274b9b2fc783?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
+                    cartImage: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
+                    category: 'shawarma',
+                    isHot: true,
+                    rating: 4.8,
+                    ingredients: ['Куриное филе', 'Лаваш', 'Свежие овощи', 'Фирменный соус']
                 },
-                interactivity: { events: { onHover: { enable: false } } },
-                detect_retina: true,
-            });
-        }
+                {
+                    id: '2',
+                    name: 'Шаурма Mega',
+                    description: 'Двойная порция мяса, сыр, острый соус',
+                    price: 480,
+                    sizes: [
+                        { size: 'M', label: 'Средняя', weight: '400 г', price: 480 },
+                        { size: 'L', label: 'Большая', weight: '550 г', price: 590 }
+                    ],
+                    fillings: [
+                        { name: 'Острый соус', image: 'https://images.unsplash.com/photo-1676300187013-7540d4e9440d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600' },
+                        { name: 'Сырный соус', image: 'https://images.unsplash.com/photo-1676300187013-7540d4e9440d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600' }
+                    ],
+                    images: ['https://images.unsplash.com/photo-1676300187013-7540d4e9440d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
+                    cartImage: 'https://images.unsplash.com/photo-1676300187013-7540d4e9440d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
+                    category: 'shawarma',
+                    isHot: true,
+                    isSpicy: true,
+                    rating: 4.9,
+                    ingredients: ['Двойная порция курицы', 'Сыр', 'Лаваш', 'Острый соус']
+                },
+                {
+                    id: '3',
+                    name: 'Фалафель шаурма',
+                    description: 'Вегетарианская с фалафелем и хумусом',
+                    price: 320,
+                    images: ['https://images.unsplash.com/photo-1680405531955-8b4981bb1b0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
+                    cartImage: 'https://images.unsplash.com/photo-1680405531955-8b4981bb1b0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
+                    category: 'shawarma',
+                    rating: 4.7,
+                    ingredients: ['Фалафель', 'Хумус', 'Лаваш', 'Свежие овощи']
+                },
+                {
+                    id: '4',
+                    name: 'Картофель фри',
+                    description: 'Хрустящий картофель с фирменным соусом',
+                    price: 150,
+                    images: ['https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
+                    cartImage: 'https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
+                    category: 'sides',
+                    rating: 4.6,
+                    ingredients: ['Картофель', 'Растительное масло', 'Соль', 'Фирменный соус']
+                },
+                {
+                    id: '5',
+                    name: 'Кока-Кола',
+                    description: 'Освежающий напиток 0.5л',
+                    price: 100,
+                    images: ['https://images.unsplash.com/photo-1592892111425-15e04305f961?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
+                    cartImage: 'https://images.unsplash.com/photo-1592892111425-15e04305f961?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
+                    category: 'drinks',
+                    rating: 4.5,
+                    ingredients: ['Газированный напиток 0.5л']
+                },
+                {
+                    id: '6',
+                    name: 'Хумус',
+                    description: 'Классический хумус с питой',
+                    price: 180,
+                    images: ['https://images.unsplash.com/photo-1637949385162-e416fb15b2ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
+                    cartImage: 'https://images.unsplash.com/photo-1637949385162-e416fb15b2ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
+                    category: 'sides',
+                    rating: 4.7,
+                    ingredients: ['Нут', 'Тахини', 'Оливковое масло', 'Пита']
+                }
+            ]
+        };
+        /* =====================================================================
+         *  КОНЕЦ CONFIG. Дальше — общий движок, одинаковый для всех клиентов.
+         * ===================================================================== */
+
+        (function applyTheme() {
+            const t = CONFIG.theme;
+            const root = document.documentElement;
+            root.style.setProperty('--bg-from', t.bgFrom);
+            root.style.setProperty('--bg-via', t.bgVia);
+            root.style.setProperty('--bg-to', t.bgTo);
+            root.style.setProperty('--accent', t.accent);
+            root.style.setProperty('--accent-dark', t.accentDark);
+            root.style.setProperty('--amber', t.amber);
+            root.style.setProperty('--font-body', t.fontBody);
+        })();
+
+        document.getElementById('page-title').textContent = CONFIG.pageTitle;
+        document.getElementById('home-shop-title').textContent = `${CONFIG.shopEmoji ? CONFIG.shopEmoji + ' ' : ''}${CONFIG.shopName}`;
+        document.getElementById('home-shop-subtitle').textContent = CONFIG.shopSubtitle;
+        document.getElementById('checkout-pickup-line').innerHTML = `Самовывоз: <strong>${CONFIG.pickup.address}</strong>`;
 
         if (window.Telegram?.WebApp) {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
         }
 
+        const products = CONFIG.products;
+
         const appState = {
-            cart: [], selectedProduct: null, selectedSize: 'single', selectedFilling: null, productImageIndex: 0, detailQuantity: 1, userPoints: 0, usePoints: false, activeCategory: 'all'
+            currentView: 'home',
+            cart: [], selectedProduct: null, selectedSize: null, selectedFilling: null,
+            productImageIndex: 0, detailQuantity: 1, userPoints: 0, usePoints: false,
+            addedAnimating: new Set()
         };
-
-        // Категории меню бургерной
-        const categories = [
-            { id: 'all', name: 'Все' },
-            { id: 'burgers', name: 'Бургеры' },
-            { id: 'snacks', name: 'Закуски' },
-            { id: 'drinks', name: 'Напитки' },
-            { id: 'sauces', name: 'Соусы' }
-        ];
-
-        // TODO: замени картинки-placeholder на реальные фото блюд (cartImage и images)
-        const products = [
-             {
-                id: '1', name: 'Дабл Смоук', description: 'Двойная котлета на гриле, чеддер, копчёный бекон, фирменный соус', price: 420,
-                sizes: [
-                    { size: 'single', label: 'Обычный', weight: '320 г', price: 420 },
-                    { size: 'combo', label: 'Комбо + картофель + напиток', weight: '~650 г', price: 590 }
-                ],
-                fillings: [
-                    { name: 'Без добавок', image: 'https://placehold.co/300x300/3A2C1F/EFE3CC?text=%D0%94%D0%B0%D0%B1%D0%BB+%D0%A1%D0%BC%D0%BE%D1%83%D0%BA' },
-                    { name: '+ Сырная бомба', image: 'https://placehold.co/300x300/3A2C1F/E08A3C?text=%2B+%D0%A1%D1%8B%D1%80%D0%BD%D0%B0%D1%8F+%D0%B1%D0%BE%D0%BC%D0%B1%D0%B0' },
-                    { name: '+ Халапеньо', image: 'https://placehold.co/300x300/3A2C1F/C1462C?text=%2B+%D0%A5%D0%B0%D0%BB%D0%B0%D0%BF%D0%B5%D0%BD%D1%8C%D0%BE' }
-                ],
-                images: [
-                    'https://placehold.co/600x600/2B2017/E08A3C?text=Double+Smoke+1',
-                    'https://placehold.co/600x600/2B2017/C1462C?text=Double+Smoke+2',
-                    'https://placehold.co/600x600/2B2017/EFE3CC?text=Double+Smoke+3'
-                ],
-                cartImage: 'https://placehold.co/300x300/2B2017/E08A3C?text=Double+Smoke',
-                category: 'burgers', isHot: true, volume: '320 г',
-                ingredients: ['Говяжья котлета x2', 'Булка бриошь', 'Чеддер', 'Копчёный бекон', 'Соус смоук-барбекю', 'Маринованный лук'],
-                included: 'В цену входит классическая сборка и фирменный соус.',
-                extra: 'Дополнительные начинки и комбо оплачиваются отдельно.'
-             },
-             {
-                id: '2', name: 'Чикен Кранч', description: 'Хрустящая курица в панировке, свежий салат, острый майо', price: 360,
-                fillings: [
-                    { name: 'Острый майонез', image: 'https://placehold.co/300x300/3A2C1F/C1462C?text=Spicy+Mayo' },
-                    { name: 'Медово-горчичный', image: 'https://placehold.co/300x300/3A2C1F/E08A3C?text=Honey+Mustard' },
-                    { name: 'Ранч', image: 'https://placehold.co/300x300/3A2C1F/EFE3CC?text=Ranch' }
-                ],
-                images: ['https://placehold.co/600x600/2B2017/E08A3C?text=Chicken+Crunch+1', 'https://placehold.co/600x600/2B2017/C1462C?text=Chicken+Crunch+2'],
-                cartImage: 'https://placehold.co/300x300/2B2017/E08A3C?text=Chicken+Crunch',
-                category: 'burgers', isHot: true, volume: '280 г',
-                ingredients: ['Куриное филе в хрустящей панировке', 'Булка бриошь', 'Айсберг', 'Томаты', 'Соус на выбор']
-             },
-             {
-                id: '3', name: 'Картофель фри', description: 'Хрустящий картофель фри с морской солью', price: 150,
-                images: ['https://placehold.co/600x600/2B2017/E08A3C?text=Fries+1', 'https://placehold.co/600x600/2B2017/C1462C?text=Fries+2'],
-                cartImage: 'https://placehold.co/300x300/2B2017/E08A3C?text=Fries',
-                category: 'snacks', isHot: false, volume: '150 г',
-                ingredients: ['Картофель', 'Растительное масло', 'Морская соль']
-             },
-             {
-                id: '4', name: 'Луковые кольца', description: 'Хрустящие луковые кольца в темпурной панировке', price: 180,
-                images: ['https://placehold.co/600x600/2B2017/E08A3C?text=Onion+Rings'],
-                cartImage: 'https://placehold.co/300x300/2B2017/E08A3C?text=Onion+Rings',
-                category: 'snacks', isHot: false, volume: '180 г',
-                ingredients: ['Лук', 'Темпурное тесто', 'Панировочные сухари']
-             },
-             {
-                id: '5', name: 'Крафтовый лимонад', description: 'Освежающий лимонад собственного приготовления', price: 190,
-                fillings: [
-                    { name: 'Классический', image: 'https://placehold.co/300x300/3A2C1F/EFE3CC?text=Classic' },
-                    { name: 'Имбирь-лайм', image: 'https://placehold.co/300x300/3A2C1F/E08A3C?text=Ginger+Lime' },
-                    { name: 'Ягодный', image: 'https://placehold.co/300x300/3A2C1F/C1462C?text=Berry' }
-                ],
-                images: ['https://placehold.co/600x600/2B2017/E08A3C?text=Lemonade'],
-                cartImage: 'https://placehold.co/300x300/2B2017/E08A3C?text=Lemonade',
-                category: 'drinks', isHot: false, volume: '400 мл',
-                ingredients: ['Вода', 'Сахар', 'Лимон', 'Натуральные добавки']
-             },
-             {
-                id: '6', name: 'Фирменный BBQ соус', description: 'Густой соус барбекю на дымной основе', price: 90,
-                images: ['https://placehold.co/600x600/2B2017/E08A3C?text=BBQ+Sauce'],
-                cartImage: 'https://placehold.co/300x300/2B2017/E08A3C?text=BBQ+Sauce',
-                category: 'sauces', isHot: false, volume: '50 г',
-                ingredients: ['Томатная паста', 'Специи', 'Копчёная паприка', 'Тростниковый сахар']
-             }
-        ];
 
         const elements = {
-            header: document.querySelector('.header-elements'), cartBtn: document.getElementById('cart-btn'), cartBadge: document.getElementById('cart-badge'), promoCarousel: document.querySelector('.carousel'), productsGrid: document.getElementById('products-grid'), productsCount: document.getElementById('products-count'), categoryChips: document.getElementById('category-chips'), cartModal: document.getElementById('cart-modal'), cartBackBtn: document.getElementById('cart-back-btn'), cartCloseBtn: document.getElementById('cart-close-btn'), cartContent: document.getElementById('cart-content'), productDetail: document.getElementById('product-detail'), detailBackBtn: document.getElementById('detail-back-btn'), detailCloseBtn: document.getElementById('detail-close-btn'), detailTitle: document.getElementById('detail-title'), detailContent: document.getElementById('detail-content'), checkoutModal: document.getElementById('checkout-modal'), checkoutClose: document.getElementById('checkout-close'), checkoutBackBtn: document.getElementById('checkout-back-btn'), placeOrderBtn: document.getElementById('place-order-btn'), checkoutTotal: document.getElementById('checkout-total'), checkoutDate: document.getElementById('checkout-date'), checkoutTime: document.getElementById('checkout-time'), checkoutPhone: document.getElementById('checkout-phone'), placeOrderBtnElement: document.getElementById('place-order-btn'), modalBackdrop: document.getElementById('modal-backdrop'), profileBtn: document.getElementById('profile-btn'), profileModal: document.getElementById('profile-modal'), profileBackBtn: document.getElementById('profile-back-btn'), profileCloseBtn: document.getElementById('profile-close-btn'), profileContent: document.getElementById('profile-content'), profilePoints: document.getElementById('profile-points'), usePointsCheckbox: document.getElementById('use-points-checkbox'), loyaltyDiscount: document.getElementById('loyalty-discount')
+            views: { home: document.getElementById('view-home'), cart: document.getElementById('view-cart'), profile: document.getElementById('view-profile') },
+            navItems: document.querySelectorAll('#bottom-nav .nav-item'),
+            navCartBadge: document.getElementById('nav-cart-badge'),
+            popularGrid: document.getElementById('popular-grid'),
+            popularSection: document.getElementById('popular-section'),
+            productsGrid: document.getElementById('products-grid'),
+            cartContent: document.getElementById('cart-content'),
+            productDetail: document.getElementById('product-detail'),
+            detailBackBtn: document.getElementById('detail-back-btn'),
+            detailCloseBtn: document.getElementById('detail-close-btn'),
+            detailTitle: document.getElementById('detail-title'),
+            detailContent: document.getElementById('detail-content'),
+            checkoutModal: document.getElementById('checkout-modal'),
+            checkoutClose: document.getElementById('checkout-close'),
+            checkoutBackBtn: document.getElementById('checkout-back-btn'),
+            placeOrderBtn: document.getElementById('place-order-btn'),
+            checkoutTotal: document.getElementById('checkout-total'),
+            checkoutDate: document.getElementById('checkout-date'),
+            checkoutTime: document.getElementById('checkout-time'),
+            checkoutPhone: document.getElementById('checkout-phone'),
+            modalBackdrop: document.getElementById('modal-backdrop'),
+            usePointsCheckbox: document.getElementById('use-points-checkbox'),
+            loyaltyDiscount: document.getElementById('loyalty-discount'),
+            orderBanner: document.getElementById('order-status-banner'),
+            profilePoints: document.getElementById('profile-points'),
+            profileOrdersCount: document.getElementById('profile-orders-count'),
+            profileTotalSpent: document.getElementById('profile-total-spent'),
+            profileOrderHistory: document.getElementById('profile-order-history'),
+            profileName: document.getElementById('profile-name'),
+            profilePhone: document.getElementById('profile-phone')
         };
-        const modalState = { cart: false, detail: false, checkout: false, profile: false };
-        function updateHeaderVisibility() {
-            const anyOpen = modalState.cart || modalState.detail || modalState.checkout || modalState.profile;
-            if (elements.header) {
-                elements.header.classList.toggle('header-hidden', anyOpen);
-                elements.modalBackdrop.classList.toggle('visible', anyOpen);
-                elements.modalBackdrop.setAttribute('aria-hidden', !anyOpen);
-            }
+        const modalState = { detail: false, checkout: false };
+
+        /* ---------- View switching (Главная / Корзина / Профиль) ---------- */
+        function switchView(viewName) {
+            appState.currentView = viewName;
+            Object.entries(elements.views).forEach(([name, el]) => el.classList.toggle('active', name === viewName));
+            elements.navItems.forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewName));
+            if (viewName === 'cart') renderCart();
+            if (viewName === 'profile') renderProfile();
+            window.scrollTo({ top: 0, behavior: 'instant' });
         }
+
+        function initNav() {
+            elements.navItems.forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
+        }
+
+        function updateModalBackdrop() {
+            const anyOpen = modalState.detail || modalState.checkout;
+            elements.modalBackdrop.classList.toggle('visible', anyOpen);
+            elements.modalBackdrop.setAttribute('aria-hidden', !anyOpen);
+        }
+
         function initEventListeners() {
-            elements.cartBtn.addEventListener('click', openCart); elements.cartBackBtn.addEventListener('click', closeCart); elements.cartCloseBtn.addEventListener('click', closeCart); elements.detailBackBtn.addEventListener('click', closeProductDetail); elements.detailCloseBtn.addEventListener('click', closeProductDetail); elements.checkoutClose.addEventListener('click', closeCheckout); elements.checkoutBackBtn.addEventListener('click', closeCheckout); elements.placeOrderBtn.addEventListener('click', placeOrderFromCheckout); elements.profileBtn.addEventListener('click', openProfile); elements.profileBackBtn.addEventListener('click', closeProfile); elements.profileCloseBtn.addEventListener('click', closeProfile);
+            elements.detailBackBtn.addEventListener('click', closeProductDetail);
+            elements.detailCloseBtn.addEventListener('click', closeProductDetail);
+            elements.checkoutClose.addEventListener('click', closeCheckout);
+            elements.checkoutBackBtn.addEventListener('click', closeCheckout);
+            elements.placeOrderBtn.addEventListener('click', placeOrder);
             elements.modalBackdrop.addEventListener('click', () => {
-                if (modalState.checkout) closeCheckout(); else if (modalState.cart) closeCart(); else if (modalState.detail) closeProductDetail(); else if (modalState.profile) closeProfile();
+                if (modalState.checkout) closeCheckout();
+                else if (modalState.detail) closeProductDetail();
             });
             elements.usePointsCheckbox.addEventListener('change', (e) => { appState.usePoints = e.target.checked; updateCheckoutTotal(); });
-            startCarousel(); initScrollHide(); renderCategoryChips();
+            initNav();
         }
-        function renderCategoryChips() {
-            elements.categoryChips.innerHTML = categories.map(cat => `<button class="category-chip ${appState.activeCategory === cat.id ? 'active' : ''}" onclick="selectCategory('${cat.id}')">${cat.name}</button>`).join('');
+
+        function normalizeKey(val) { return val == null ? '' : String(val); }
+
+        function getProductBasePrice(product) {
+            if (product.sizes && product.sizes.length) return Math.min(...product.sizes.map(s => s.price));
+            return product.price;
         }
-        function selectCategory(catId) {
-            appState.activeCategory = catId; renderCategoryChips(); renderProducts();
+
+        function getItemPrice(item) {
+            const product = products.find(p => p.id === item.id);
+            if (!product) return item.price || 0;
+            const size = product.sizes ? product.sizes.find(s => s.size === item.selectedSize) : null;
+            return size ? size.price : product.price;
         }
-        function startCarousel() {
-            const slides = elements.promoCarousel.querySelectorAll('a'); const dots = elements.promoCarousel.querySelectorAll('.dot'); let currentIndex = 0;
-            function showSlide(index) {
-                slides.forEach((s, i) => s.classList.toggle('active', i === index)); dots.forEach((d, i) => d.classList.toggle('active', i === index)); currentIndex = index;
-            }
-            setInterval(() => showSlide((currentIndex + 1) % slides.length), 3500); showSlide(currentIndex);
+
+        /* ---------- Product cards (главная) ---------- */
+        function renderProducts() {
+            const popular = products.filter(p => p.isHot);
+            elements.popularSection.style.display = popular.length ? 'block' : 'none';
+            elements.popularGrid.innerHTML = popular.map(renderProductCard).join('');
+            elements.productsGrid.innerHTML = products.map(renderProductCard).join('');
         }
-        function startProductImageCarousel() {
-            const carousel = elements.detailContent.querySelector('.product-image-carousel'); if (!carousel) return;
-            const images = Array.from(carousel.querySelectorAll('img')); const dotsContainer = elements.detailContent.querySelector('.product-image-dots'); if (!dotsContainer) return;
-            const dots = Array.from(dotsContainer.querySelectorAll('.dot')); let currentIndex = (typeof appState.productImageIndex === 'number') ? appState.productImageIndex : 0; let startX = 0; let isPointerDown = false;
-            function showImage(index) {
-                index = Math.max(0, Math.min(images.length - 1, index));
-                images.forEach((img, i) => { img.classList.toggle('active', i === index); img.style.transform = (i === index) ? 'translateX(0)' : (i < index ? 'translateX(-6%)' : 'translateX(6%)'); });
-                dots.forEach((dot, i) => dot.classList.toggle('active', i === index)); currentIndex = index; appState.productImageIndex = index;
-            }
-            dots.forEach((dot, i) => dot.addEventListener('click', () => showImage(i)));
-            carousel.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; isPointerDown = true; });
-            carousel.addEventListener('touchend', (e) => {
-                if (!isPointerDown) return;
-                const endX = e.changedTouches[0].clientX; const deltaX = startX - endX;
-                if (Math.abs(deltaX) > 40) { if (deltaX > 0 && currentIndex < images.length - 1) showImage(currentIndex + 1); else if (deltaX < 0 && currentIndex > 0) showImage(currentIndex - 1); }
-                isPointerDown = false;
-            });
-            carousel.addEventListener('mousedown', (e) => { startX = e.clientX; isPointerDown = true; e.preventDefault(); });
-            window.addEventListener('mouseup', (e) => {
-                if (!isPointerDown) return;
-                const endX = e.clientX; const deltaX = startX - endX;
-                if (Math.abs(deltaX) > 40) { if (deltaX > 0 && currentIndex < images.length - 1) showImage(currentIndex + 1); else if (deltaX < 0 && currentIndex > 0) showImage(currentIndex - 1); }
-                isPointerDown = false;
-            });
-            showImage(currentIndex);
+
+        function renderProductCard(product) {
+            const price = getProductBasePrice(product);
+            const hasVariants = !!(product.sizes || product.fillings);
+            const priceLabel = hasVariants ? `от ${price} ₽` : `${price} ₽`;
+            const isAdded = appState.addedAnimating.has(product.id);
+            return `
+            <div class="product-card">
+                <div class="image-wrap" onclick="openProductDetailById('${product.id}')">
+                    <img data-product-id="${product.id}" src="${product.cartImage || product.images[0]}" alt="${product.name}">
+                    ${product.isHot ? `<div class="badge-hot"><i class="fas fa-fire"></i> Хит</div>` : ''}
+                    ${product.isSpicy ? `<div class="badge-spicy">🌶️ Острое</div>` : ''}
+                </div>
+                <div class="p-4">
+                    <div class="flex items-start justify-between mb-1 gap-2">
+                        <h3 onclick="openProductDetailById('${product.id}')" class="cursor-pointer">${product.name}</h3>
+                        ${product.rating ? `<div class="rating-pill flex-shrink-0"><i class="fas fa-star text-xs" style="color:#fbbf24;"></i><span class="text-xs font-bold">${product.rating}</span></div>` : ''}
+                    </div>
+                    <p class="text-sm mb-3" style="color: var(--text-mid); min-height: 36px;">${product.description}</p>
+                    <div class="flex items-center justify-between">
+                        <span class="price">${priceLabel}</span>
+                        <button onclick="${hasVariants ? `openProductDetailById('${product.id}')` : `addToCartById('${product.id}',1,this)`}; event.stopPropagation();" class="add-to-cart-btn ${isAdded ? 'added' : ''}">
+                            ${isAdded ? '<i class="fas fa-check"></i><span>Добавлено</span>' : `<i class="fas fa-plus"></i><span>${hasVariants ? 'Выбрать' : 'В корзину'}</span>`}
+                        </button>
+                    </div>
+                </div>
+            </div>`;
         }
+
+        function flashAdded(productId) {
+            appState.addedAnimating.add(productId);
+            renderProducts();
+            setTimeout(() => { appState.addedAnimating.delete(productId); renderProducts(); }, 1000);
+        }
+
+        /* ---------- fly-to-cart animation (анимирует в сторону навигации "Корзина") ---------- */
         function animateImageToCart(imgEl) {
             try {
                 if (!imgEl) return;
-                const rect = imgEl.getBoundingClientRect(); const cartRect = elements.cartBtn.getBoundingClientRect();
-                const clone = imgEl.cloneNode(true); clone.className += ' fly-img'; clone.style.width = rect.width + 'px'; clone.style.height = rect.height + 'px'; clone.style.left = rect.left + 'px'; clone.style.top = rect.top + 'px'; clone.style.opacity = '1'; clone.style.transform = 'translate3d(0,0,0) scale(1) rotate(0deg)'; document.body.appendChild(clone);
+                const cartNavBtn = document.querySelector('#bottom-nav .nav-item[data-view="cart"]');
+                if (!cartNavBtn) return;
+                const rect = imgEl.getBoundingClientRect();
+                const cartRect = cartNavBtn.getBoundingClientRect();
+                const clone = imgEl.cloneNode(true);
+                clone.className += ' fly-img';
+                clone.style.width = rect.width + 'px';
+                clone.style.height = rect.height + 'px';
+                clone.style.left = rect.left + 'px';
+                clone.style.top = rect.top + 'px';
+                clone.style.opacity = '1';
+                clone.style.transform = 'translate3d(0,0,0) scale(1)';
+                document.body.appendChild(clone);
                 clone.getBoundingClientRect();
-                const startCenterX = rect.left + rect.width / 2; const startCenterY = rect.top + rect.height / 2; const endCenterX = cartRect.left + cartRect.width / 2; const endCenterY = cartRect.top + cartRect.height / 2;
-                const translateX = endCenterX - startCenterX; const translateY = endCenterY - startCenterY;
-                requestAnimationFrame(() => { clone.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(0.15) rotate(25deg)`; clone.style.opacity = '0.85'; });
-                setTimeout(() => { clone.style.opacity = '0'; }, 560);
+                const startCenterX = rect.left + rect.width / 2;
+                const startCenterY = rect.top + rect.height / 2;
+                const endCenterX = cartRect.left + cartRect.width / 2;
+                const endCenterY = cartRect.top + cartRect.height / 2;
+                const translateX = endCenterX - startCenterX;
+                const translateY = endCenterY - startCenterY;
+                requestAnimationFrame(() => {
+                    clone.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(0.15) rotate(10deg)`;
+                    clone.style.opacity = '0.9';
+                });
+                setTimeout(() => { clone.style.opacity = '0'; }, 650);
                 setTimeout(() => {
                     clone.remove();
-                    elements.cartBadge.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.45) rotate(-8deg)' }, { transform: 'scale(0.95) rotate(4deg)' }, { transform: 'scale(1) rotate(0deg)' }], { duration: 420, easing: 'cubic-bezier(.22,1.4,.36,1)' });
-                }, 760);
+                    elements.navCartBadge.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.4)' }, { transform: 'scale(1)' }], { duration: 350, easing: 'cubic-bezier(.2,.9,.3,1)' });
+                }, 900);
             } catch (e) { console.error('animateImageToCart error', e); }
         }
+
         function findProductCardImageByButton(buttonEl) {
-            if (!buttonEl) return null; const card = buttonEl.closest('.product-card'); if (!card) return null; return card.querySelector('img');
+            if (!buttonEl) return null;
+            const card = buttonEl.closest('.product-card');
+            if (!card) return null;
+            return card.querySelector('img');
         }
-        function openCart() {
-            modalState.cart = true; updateHeaderVisibility(); elements.cartModal.style.transform = 'translateY(0)'; elements.cartModal.setAttribute('aria-hidden', 'false'); renderCart();
-        }
-        function closeCart() {
-            modalState.cart = false; elements.cartModal.style.transform = 'translateY(100%)'; elements.cartModal.setAttribute('aria-hidden', 'true'); setTimeout(updateHeaderVisibility, 50);
-        }
-        function normalizeKey(val) { return val == null ? '' : String(val); }
+
+        /* ---------- Cart ---------- */
         function addToCartById(productId, quantity = 1, source = null) {
-            const product = products.find(p => p.id === productId); if (!product) return;
-            appState.selectedSize = product.sizes ? appState.selectedSize || 'single' : null; appState.selectedFilling = product.fillings ? appState.selectedFilling || product.fillings[0].name : null;
-            const existingItem = appState.cart.find(item => String(item.id) === String(product.id) && normalizeKey(item.selectedSize) === normalizeKey(appState.selectedSize) && normalizeKey(item.selectedFilling) === normalizeKey(appState.selectedFilling));
-            if (existingItem) { existingItem.quantity += quantity; } else { appState.cart.push({ ...product, quantity, selectedSize: appState.selectedSize, selectedFilling: appState.selectedFilling }); }
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            const size = product.sizes ? (appState.selectedProduct?.id === productId ? appState.selectedSize : product.sizes[0].size) : null;
+            const filling = product.fillings ? (appState.selectedProduct?.id === productId ? appState.selectedFilling : product.fillings[0].name) : null;
+            const existingItem = appState.cart.find(item => String(item.id) === String(product.id) && normalizeKey(item.selectedSize) === normalizeKey(size) && normalizeKey(item.selectedFilling) === normalizeKey(filling));
+            if (existingItem) { existingItem.quantity += quantity; }
+            else { appState.cart.push({ ...product, quantity, selectedSize: size, selectedFilling: filling }); }
             try { localStorage.setItem('cart', JSON.stringify(appState.cart)); } catch (e) { console.error('LocalStorage set error', e); }
             updateCartBadge();
             let imgEl = null;
@@ -705,172 +752,455 @@
             else if (source instanceof HTMLElement) imgEl = findProductCardImageByButton(source);
             else {
                 const active = document.querySelector('#detail-content .product-image-carousel img.active');
-                if (active) imgEl = active; else { const cardImg = document.querySelector(`.product-card img[data-product-id="${productId}"]`); if (cardImg) imgEl = cardImg; }
+                if (active) imgEl = active;
             }
             animateImageToCart(imgEl);
+            flashAdded(productId);
             showNotification(`${product.name} добавлен в корзину`, 'success');
-            if (modalState.cart) renderCart();
+            if (appState.currentView === 'cart') renderCart();
         }
+
         function updateCartQuantity(productId, newQuantity, size, filling) {
-            const item = appState.cart.find(i => String(i.id) === String(productId) && normalizeKey(i.selectedSize) === normalizeKey(size) && normalizeKey(i.selectedFilling) === normalizeKey(filling)); if (!item) return;
+            const item = appState.cart.find(i => String(i.id) === String(productId) && normalizeKey(i.selectedSize) === normalizeKey(size) && normalizeKey(i.selectedFilling) === normalizeKey(filling));
+            if (!item) return;
             if (newQuantity <= 0) { removeFromCart(productId, size, filling); return; }
-            item.quantity = newQuantity; try { localStorage.setItem('cart', JSON.stringify(appState.cart)); } catch (e) { console.error(e); }
-            updateCartBadge(); renderCart();
+            item.quantity = newQuantity;
+            try { localStorage.setItem('cart', JSON.stringify(appState.cart)); } catch (e) { console.error(e); }
+            updateCartBadge();
+            renderCart();
         }
+
         function removeFromCart(productId, size, filling) {
-            const cartItemEl = document.querySelector(`[data-cart-key="${productId}|${size}|${filling}"]`);
-            const doRemove = () => {
-                appState.cart = appState.cart.filter(item => !(String(item.id) === String(productId) && normalizeKey(item.selectedSize) === normalizeKey(size) && normalizeKey(item.selectedFilling) === normalizeKey(filling)));
-                try { localStorage.setItem('cart', JSON.stringify(appState.cart)); } catch (e) { console.error(e); }
-                updateCartBadge(); renderCart();
-            };
-            if (cartItemEl) { cartItemEl.classList.add('removing'); setTimeout(doRemove, 220); } else { doRemove(); }
+            appState.cart = appState.cart.filter(item => !(String(item.id) === String(productId) && normalizeKey(item.selectedSize) === normalizeKey(size) && normalizeKey(item.selectedFilling) === normalizeKey(filling)));
+            try { localStorage.setItem('cart', JSON.stringify(appState.cart)); } catch (e) { console.error(e); }
+            updateCartBadge();
+            renderCart();
         }
-        function clearCart() { appState.cart = []; try { localStorage.setItem('cart', JSON.stringify(appState.cart)); } catch (e) {} updateCartBadge(); renderCart(); }
-        function updateCartBadge() { const totalItems = appState.cart.reduce((sum, item) => sum + (item.quantity || 0), 0); elements.cartBadge.textContent = totalItems; elements.cartBadge.classList.toggle('hidden', totalItems === 0); }
-        function getMinOrderDate() { const today = new Date(); return today.toISOString().split('T')[0]; }
+
+        function clearCart() {
+            appState.cart = [];
+            try { localStorage.setItem('cart', JSON.stringify(appState.cart)); } catch (e) {}
+            updateCartBadge();
+            renderCart();
+        }
+
+        function updateCartBadge() {
+            const totalItems = appState.cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+            elements.navCartBadge.textContent = totalItems;
+            elements.navCartBadge.classList.toggle('hidden', totalItems === 0);
+        }
+
+        function getMinOrderDate() {
+            const today = new Date();
+            today.setDate(today.getDate());
+            return today.toISOString().split('T')[0];
+        }
+
         function renderCart() {
             const cartContent = elements.cartContent;
-            const totalAmount = appState.cart.reduce((sum, item) => { const product = products.find(p => p.id === item.id); const size = product && product.sizes ? product.sizes.find(s => s.size === item.selectedSize) : null; return sum + (size ? size.price : item.price) * item.quantity; }, 0);
+            const totalAmount = appState.cart.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0);
             if (appState.cart.length === 0) {
-                cartContent.innerHTML = `<div class="flex-1 flex flex-col items-center justify-center text-center p-6"> <svg class="w-20 h-20 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 12H6L5 9z"/></svg> <p class="text-xl font-semibold text-gray-800">Корзина пуста</p><p class="text-sm text-gray-600">Самое время заказать что-нибудь горячее</p> <button onclick="closeCart()" class="btn-primary mt-4 p-3 text-base font-semibold">Открыть меню</button> </div>`;
+                cartContent.innerHTML = `
+                <div class="text-center py-16">
+                    <i class="fas fa-shopping-bag" style="font-size: 64px; color: #d1d5db;"></i>
+                    <h2 class="text-xl font-bold mt-4 mb-2">Корзина пуста</h2>
+                    <p class="text-sm mb-6" style="color: var(--text-mid);">Добавьте что-нибудь вкусное из меню</p>
+                    <button onclick="switchView('home')" class="btn-primary px-6 py-3 inline-flex items-center gap-2">
+                        Перейти в меню <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>`;
                 return;
             }
-            cartContent.innerHTML = ` <div class="cart-list"> ${appState.cart.map(item => { const product = products.find(p => p.id === item.id) || {}; const size = product.sizes ? product.sizes.find(s => s.size === item.selectedSize) : null; const price = size ? size.price : item.price; const sizeLabel = size ? size.label : null; const fillingText = item.selectedFilling ? `, ${item.selectedFilling}` : ''; return `<div class="cart-item animate-fade-in flex gap-4 p-4 mb-3" data-cart-key="${item.id}|${item.selectedSize ?? ''}|${item.selectedFilling ?? ''}"> <img src="${item.cartImage || 'https://placehold.co/150x150/3A2C1F/EFE3CC?text=%3F'}" alt="${item.name}" class="w-20 h-20 object-cover rounded-lg flex-shrink-0"> <div class="flex-1 min-w-0"> <h4 class="line-clamp-1 mb-1 font-semibold text-base">${item.name}${sizeLabel ? ` (${sizeLabel}${fillingText})` : (fillingText ? ` (${item.selectedFilling})` : '')}</h4> <p class="text-sm text-pink-600 font-semibold mb-2">${price} ₽ × ${item.quantity} = ${price * item.quantity} ₽</p> <div class="flex items-center justify-between"> <div class="flex items-center gap-3"> <button class="quantity-btn" onclick="updateCartQuantity('${item.id}', ${item.quantity - 1}, '${item.selectedSize ?? ''}', '${item.selectedFilling ?? ''}')">-</button> <span class="w-8 text-center font-semibold text-base">${item.quantity}</span> <button class="quantity-btn" onclick="updateCartQuantity('${item.id}', ${item.quantity + 1}, '${item.selectedSize ?? ''}', '${item.selectedFilling ?? ''}')">+</button> </div> <button onclick="removeFromCart('${item.id}', '${item.selectedSize ?? ''}', '${item.selectedFilling ?? ''}')" class="p-2 text-red-500 hover:bg-red-50 rounded-lg"> <svg class="icon w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg> </button> </div> </div> </div>`; }).join('')} </div> <div class="border-t p-4 sticky bottom-0 cart-list-actions"> <div class="flex justify-between items-center mb-3"> <div> <div class="text-sm">Товаров: <strong>${appState.cart.length}</strong></div> </div> <div class="text-right"> <div class="text-sm">Итого</div> <div class="text-lg font-bold" style="color: var(--ember);">${totalAmount} ₽</div> </div> </div> <div class="grid grid-cols-2 gap-3"> <button id="checkout-open-btn" class="btn-primary col-span-2 w-full h-12 text-base font-semibold">Перейти к оформлению</button> <button onclick="clearCart()" class="col-span-1 w-full h-12">Очистить</button> <button onclick="closeCart()" class="col-span-1 w-full h-12">Продолжить покупки</button> </div> </div>`;
+            const freebieHtml = CONFIG.freebiePromo ? `<div class="mt-4 p-3 rounded-xl text-sm" style="background:#f0fdf4; color:#15803d;">${CONFIG.freebiePromo}</div>` : '';
+            cartContent.innerHTML = `
+            <div class="space-y-3 mb-5">
+                ${appState.cart.map(item => {
+                    const price = getItemPrice(item);
+                    const variantText = [item.selectedSize, item.selectedFilling].filter(Boolean).join(', ');
+                    return `<div class="cart-item animate-fade-in flex gap-4 p-4">
+                        <img src="${item.cartImage || 'https://via.placeholder.com/150'}" alt="${item.name}" class="w-20 h-20 object-cover rounded-xl flex-shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-bold mb-1">${item.name}${variantText ? ` <span class="text-sm font-normal" style="color: var(--text-mid);">(${variantText})</span>` : ''}</h4>
+                            <p class="text-sm mb-2" style="color: var(--accent); font-weight: 700;">${price} ₽ × ${item.quantity} = ${price * item.quantity} ₽</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
+                                    <button class="quantity-btn" onclick="updateCartQuantity('${item.id}', ${item.quantity - 1}, '${item.selectedSize ?? ''}', '${item.selectedFilling ?? ''}')">-</button>
+                                    <span class="w-8 text-center font-bold">${item.quantity}</span>
+                                    <button class="quantity-btn" onclick="updateCartQuantity('${item.id}', ${item.quantity + 1}, '${item.selectedSize ?? ''}', '${item.selectedFilling ?? ''}')">+</button>
+                                </div>
+                                <button onclick="removeFromCart('${item.id}', '${item.selectedSize ?? ''}', '${item.selectedFilling ?? ''}')" class="p-2 rounded-lg" style="color: var(--danger);">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
+            <div class="profile-card">
+                <h2 class="text-lg font-bold mb-3">Итого</h2>
+                <div class="flex justify-between text-base font-bold pt-2">
+                    <span>Всего</span><span style="color: var(--accent);">${totalAmount} ₽</span>
+                </div>
+                ${freebieHtml}
+                <button id="checkout-open-btn" class="btn-primary w-full h-12 mt-4">Перейти к оформлению</button>
+                <button onclick="clearCart()" class="w-full h-10 mt-2 text-sm font-semibold" style="color: var(--text-mid);">Очистить корзину</button>
+            </div>`;
             const checkoutBtn = document.getElementById('checkout-open-btn');
-            if (checkoutBtn) { checkoutBtn.addEventListener('click', () => { openCheckout(); }); }
+            if (checkoutBtn) checkoutBtn.addEventListener('click', openCheckout);
         }
+
+        /* ---------- Product detail modal ---------- */
         function openProductDetailById(productId) {
-            const product = products.find(p => p.id === productId); if (!product) return;
-            appState.selectedProduct = product; appState.selectedSize = product.sizes ? 'single' : null; appState.selectedFilling = product.fillings ? product.fillings[0].name : null; appState.productImageIndex = 0; appState.detailQuantity = 1;
-            elements.detailTitle.textContent = product.name; modalState.detail = true; updateHeaderVisibility();
-            elements.productDetail.style.transform = 'translateY(0)'; elements.productDetail.setAttribute('aria-hidden', 'false'); renderProductDetail();
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            appState.selectedProduct = product;
+            appState.selectedSize = product.sizes ? product.sizes[0].size : null;
+            appState.selectedFilling = product.fillings ? product.fillings[0].name : null;
+            appState.productImageIndex = 0;
+            appState.detailQuantity = 1;
+            elements.detailTitle.textContent = product.name;
+            modalState.detail = true;
+            updateModalBackdrop();
+            elements.productDetail.style.transform = 'translateY(0)';
+            elements.productDetail.setAttribute('aria-hidden', 'false');
+            renderProductDetail();
         }
-        function closeProductDetail() { modalState.detail = false; elements.productDetail.style.transform = 'translateY(100%)'; elements.productDetail.setAttribute('aria-hidden', 'true'); appState.detailQuantity = 1; setTimeout(updateHeaderVisibility, 50); }
+
+        function closeProductDetail() {
+            modalState.detail = false;
+            elements.productDetail.style.transform = 'translateY(100%)';
+            elements.productDetail.setAttribute('aria-hidden', 'true');
+            appState.detailQuantity = 1;
+            updateModalBackdrop();
+        }
+
         function selectSize(size) { appState.selectedSize = size; renderProductDetail(); }
         function selectFilling(filling) { appState.selectedFilling = filling; renderProductDetail(); }
+
         function renderProductDetail() {
             if (!appState.selectedProduct) return;
-            const product = appState.selectedProduct; const size = product.sizes ? product.sizes.find(s => s.size === appState.selectedSize) : null; const price = size ? size.price : product.price;
-            elements.detailContent.innerHTML = `<div class="product-image-carousel">${product.images.map((img, i) => `<img src="${img}" alt="${product.name}" class="${i === 0 ? 'active' : ''}">`).join('')}<div class="product-image-dots">${product.images.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('')}</div></div> <div class="space-y-4"><h1 class="text-xl font-bold">${product.name}</h1> ${product.sizes ? `<div class="space-y-2"><h3 class="font-semibold text-base">Размер порции</h3><div class="grid grid-cols-2 gap-3">${product.sizes.map(s => `<button class="size-btn p-3 border ${appState.selectedSize === s.size ? 'active' : ''} text-left" onclick="selectSize('${s.size}')"><div class="font-semibold text-sm">${s.label}</div><div class="text-xs text-gray-600">${s.weight} / ${s.price} ₽</div></button>`).join('')}</div><p class="text-sm">${product.included || ''}</p><p class="text-sm">${product.extra || ''}</p></div>` : ''} ${product.fillings ? `<div class="space-y-2"><h3 class="font-semibold text-base">Добавки и соусы</h3><div class="grid grid-cols-2 gap-3">${product.fillings.map(f => `<button class="filling-btn p-3 border text-center ${appState.selectedFilling === f.name ? 'active' : ''}" onclick="selectFilling('${f.name}')"><div class="font-semibold text-sm">${f.name}</div></button>`).join('')}</div><div class="mt-2 filling-image-container"><img id="filling-image" src="${product.fillings.find(f => f.name === appState.selectedFilling).image}" alt="${appState.selectedFilling}" class="filling-image rounded-lg w-full"></div></div>` : ''} <div><p class="text-sm">${product.description}</p></div> <div class="space-y-2"><button class="flex items-center justify-between w-full py-2 text-left" onclick="toggleIngredients()"><span class="font-semibold text-base">Состав</span><svg id="ingredients-chevron" class="icon w-5 h-5 transition-transform" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg></button><div id="ingredients-list" class="space-y-1 hidden animate-fade-in">${product.ingredients ? product.ingredients.map(ing => `<div class="text-sm">• ${ing}</div>`).join('') : '<div class="text-sm">Состав отсутствует</div>'}</div></div> <div class="space-y-3 pt-3"><div class="flex items-center justify-center gap-4"><button class="quantity-btn" onclick="changeDetailQuantity(-1)">-</button><span id="detail-quantity" class="font-semibold text-lg">${appState.detailQuantity || 1}</span><button class="quantity-btn" onclick="changeDetailQuantity(1)">+</button></div><button id="detail-add-btn" onclick="addToCartFromDetail()" class="btn-primary w-full h-12 text-base font-semibold">Добавить <span id="detail-total-price">${price}</span> ₽</button></div> </div>`;
+            const product = appState.selectedProduct;
+            const size = product.sizes ? product.sizes.find(s => s.size === appState.selectedSize) : null;
+            const price = size ? size.price : product.price;
+            elements.detailContent.innerHTML = `
+            <div class="product-image-carousel">
+                ${product.images.map((img, i) => `<img src="${img}" alt="${product.name}" class="${i === 0 ? 'active' : ''}">`).join('')}
+                <div class="product-image-dots">${product.images.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('')}</div>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-xl font-bold">${product.name}</h1>
+                    ${product.rating ? `<div class="rating-pill"><i class="fas fa-star text-xs" style="color:#fbbf24;"></i><span class="text-xs font-bold">${product.rating}</span></div>` : ''}
+                </div>
+                ${product.sizes ? `<div class="space-y-2">
+                    <h3 class="font-bold text-base">Размер</h3>
+                    <div class="grid grid-cols-3 gap-3">
+                        ${product.sizes.map(s => `<button class="size-btn p-3 ${appState.selectedSize === s.size ? 'active' : ''} text-left" onclick="selectSize('${s.size}')">
+                            <div class="font-bold text-sm">${s.label || s.size}</div>
+                            <div class="text-xs muted">${s.weight || ''} · ${s.price} ₽</div>
+                        </button>`).join('')}
+                    </div>
+                </div>` : ''}
+                ${product.fillings ? `<div class="space-y-2">
+                    <h3 class="font-bold text-base">Соус / начинка</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        ${product.fillings.map(f => `<button class="filling-btn p-3 text-center ${appState.selectedFilling === f.name ? 'active' : ''}" onclick="selectFilling('${f.name}')">
+                            <div class="font-bold text-sm">${f.name}</div>
+                        </button>`).join('')}
+                    </div>
+                </div>` : ''}
+                <p class="text-sm" style="color: var(--text-mid);">${product.description}</p>
+                <div class="space-y-2">
+                    <button class="flex items-center justify-between w-full py-2 text-left" onclick="toggleIngredients()">
+                        <span class="font-bold text-base">Состав</span>
+                        <svg id="ingredients-chevron" class="w-5 h-5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div id="ingredients-list" class="space-y-1 hidden animate-fade-in">
+                        ${product.ingredients ? product.ingredients.map(ing => `<div class="text-sm" style="color: var(--text-mid);">• ${ing}</div>`).join('') : '<div class="text-sm">Состав отсутствует</div>'}
+                    </div>
+                </div>
+                <div class="space-y-3 pt-3">
+                    <div class="flex items-center justify-center gap-4">
+                        <button class="quantity-btn" onclick="changeDetailQuantity(-1)">-</button>
+                        <span id="detail-quantity" class="font-bold text-lg">${appState.detailQuantity || 1}</span>
+                        <button class="quantity-btn" onclick="changeDetailQuantity(1)">+</button>
+                    </div>
+                    <button onclick="addToCartFromDetail()" class="btn-primary w-full h-12">Добавить за <span id="detail-total-price">${price}</span> ₽</button>
+                </div>
+            </div>`;
             startProductImageCarousel();
         }
-        function getFilteredProducts() {
-            if (appState.activeCategory === 'all') return products;
-            return products.filter(p => p.category === appState.activeCategory);
-        }
-        function renderProducts() {
-            const filtered = getFilteredProducts();
-            elements.productsCount.textContent = `${filtered.length} товаров`;
-            elements.productsGrid.innerHTML = filtered.map(renderProductCard).join('');
-        }
-        function renderProductCard(product) {
-            const price = product.sizes ? product.sizes.find(s => s.size === 'single').price : product.price;
-            return ` <div class="product-card flex flex-col relative animate-fade-in" onclick="openProductDetailById('${product.id}')"> <div class="relative h-36 rounded-t-lg overflow-hidden cursor-pointer"> <img data-product-id="${product.id}" src="${product.cartImage || product.images[0]}" alt="${product.name}" class="w-full h-full object-cover"> ${product.isHot ? `<div class="hot-badge">ОГОНЬ</div>` : ''} </div> <div class="p-4 flex flex-col flex-grow"> <h3 class="font-semibold text-base line-clamp-1 mb-1">${product.name}</h3> <p class="text-sm line-clamp-2 mb-2">${product.description}</p> <div class="flex items-center justify-between mt-auto pt-2"> <div class="flex flex-col"> <span class="font-bold text-base">${price} ₽</span> </div> </div> </div> <button onclick="addToCartById('${product.id}',1,this); event.stopPropagation();" class="add-to-cart-btn" aria-label="Добавить в корзину"> <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg> </button> </div>`;
-        }
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg text-white font-semibold toast-pop shadow-lg ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
-            notification.textContent = message; document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 4000);
-        }
-        function debounce(func, wait) {
-            let timeout; return function executedFunction(...args) { const later = () => { clearTimeout(timeout); func(...args); }; clearTimeout(timeout); timeout = setTimeout(later, wait); };
-        }
-        function openCheckout() {
-            modalState.checkout = true; updateHeaderVisibility(); elements.checkoutDate.min = getMinOrderDate(); elements.checkoutDate.value = getMinOrderDate(); updateCheckoutTotal(); elements.checkoutModal.classList.add('open'); elements.checkoutModal.setAttribute('aria-hidden', 'false');
-            const telegram = window.Telegram?.WebApp; const user = telegram?.initDataUnsafe?.user || {}; if (user.phone_number && !elements.checkoutPhone.value) elements.checkoutPhone.value = user.phone_number;
-        }
-        function closeCheckout() {
-            modalState.checkout = false; elements.checkoutModal.classList.remove('open'); elements.checkoutModal.setAttribute('aria-hidden', 'true'); setTimeout(updateHeaderVisibility, 50);
-        }
-        function calculateTotalWithDiscount(totalAmount) {
-            if (!appState.usePoints) return { total: totalAmount, discount: 0 };
-            const maxDiscount = Math.min(appState.userPoints, Math.floor(totalAmount * 0.3));
-            return { total: totalAmount - maxDiscount, discount: maxDiscount };
-        }
-        function updateCheckoutTotal() {
-            const totalAmount = appState.cart.reduce((sum, item) => { const product = products.find(p => p.id === item.id); const size = product && product.sizes ? product.sizes.find(s => s.size === item.selectedSize) : null; return sum + (size ? size.price : item.price) * item.quantity; }, 0);
-            const { total, discount } = calculateTotalWithDiscount(totalAmount);
-            elements.checkoutTotal.textContent = `${total} ₽`;
-            elements.loyaltyDiscount.textContent = `${discount} ₽`;
-        }
-        function placeOrderFromCheckout() { placeOrder(); }
 
-        /* ============================================================
-           ОТПРАВКА ЗАКАЗА
-           Сейчас: POST на CONFIG.GOOGLE_APPS_SCRIPT_URL с mode:'no-cors'
-           (как и было в исходной версии — рабочая, но "слепая" отправка
-           без проверки ответа сервера, раз используется no-cors).
-           Если подключаешь ЮKassa: перед фактическим оформлением заказа
-           нужно сначала создать платёж на backend (CONFIG.YOOKASSA_CREATE_PAYMENT_URL),
-           получить confirmation_url, открыть его пользователю и оформлять
-           заказ (или отмечать его оплаченным) только после успешного платежа.
-           ============================================================ */
-        function placeOrder() {
-            const checkoutButton = elements.placeOrderBtnElement; const dateInput = elements.checkoutDate; const timeInput = elements.checkoutTime; const phoneInput = elements.checkoutPhone;
-            if (!dateInput.value || !timeInput.value || !phoneInput.value) { showNotification('Заполните все поля', 'error'); return; }
-            if (appState.cart.length === 0) { showNotification('Корзина пуста', 'error'); return; }
-            checkoutButton.disabled = true;
-            checkoutButton.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Заказ формируется...`;
-            const totalAmount = appState.cart.reduce((sum, item) => { const product = products.find(p => p.id === item.id); const size = product && product.sizes ? product.sizes.find(s => s.size === item.selectedSize) : null; return sum + (size ? size.price : item.price) * item.quantity; }, 0);
-            const { total: finalAmount, discount } = calculateTotalWithDiscount(totalAmount);
-            const telegram = window.Telegram?.WebApp; const user = telegram?.initDataUnsafe?.user || {};
-            const orderData = {
-                event: 'order_submit', user_id: user.id || 'unknown', username: user.username || '', first_name: user.first_name || '', last_name: user.last_name || '', timestamp: new Date().toISOString(), url: window.location.href, userAgent: navigator.userAgent,
-                additional: {
-                    order_id: `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, order_details: appState.cart.map(item => ({ id: item.id, name: item.name, price: products.find(p => p.id === item.id).sizes ? products.find(p => p.id === item.id).sizes.find(s => s.size === item.selectedSize).price : item.price, quantity: item.quantity, size: item.selectedSize, addons: item.selectedFilling || null })), total_amount: totalAmount, delivery_type: 'pickup', delivery_fee: 0, final_amount: finalAmount, date: dateInput.value, time: timeInput.value, address: CONFIG.PICKUP_ADDRESS, phone: phoneInput.value, points_used: discount
+        function startProductImageCarousel() {
+            const carousel = elements.detailContent.querySelector('.product-image-carousel');
+            if (!carousel) return;
+            const images = Array.from(carousel.querySelectorAll('img'));
+            const dotsContainer = elements.detailContent.querySelector('.product-image-dots');
+            if (!dotsContainer) return;
+            const dots = Array.from(dotsContainer.querySelectorAll('.dot'));
+            let currentIndex = (typeof appState.productImageIndex === 'number') ? appState.productImageIndex : 0;
+            let startX = 0;
+            let isPointerDown = false;
+            function showImage(index) {
+                index = Math.max(0, Math.min(images.length - 1, index));
+                images.forEach((img, i) => img.classList.toggle('active', i === index));
+                dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+                currentIndex = index;
+                appState.productImageIndex = index;
+            }
+            dots.forEach((dot, i) => dot.addEventListener('click', () => showImage(i)));
+            carousel.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; isPointerDown = true; });
+            carousel.addEventListener('touchend', (e) => {
+                if (!isPointerDown) return;
+                const deltaX = startX - e.changedTouches[0].clientX;
+                if (Math.abs(deltaX) > 40) {
+                    if (deltaX > 0 && currentIndex < images.length - 1) showImage(currentIndex + 1);
+                    else if (deltaX < 0 && currentIndex > 0) showImage(currentIndex - 1);
                 }
-            };
-            fetch(CONFIG.GOOGLE_APPS_SCRIPT_URL, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData), mode: 'no-cors'
-            })
-            .then(() => {
-                showNotification('Заказ успешно оформлен! Ожидайте подтверждения.', 'success');
-                appState.userPoints -= discount;
-                clearCart(); closeCheckout(); closeCart(); checkoutButton.disabled = false; checkoutButton.textContent = 'Оформить заказ';
-            })
-            .catch(error => {
-                console.error('Error sending order:', error); showNotification('Ошибка при отправке заказа', 'error'); checkoutButton.disabled = false; checkoutButton.textContent = 'Оформить заказ';
+                isPointerDown = false;
             });
+            showImage(currentIndex);
         }
+
         function changeDetailQuantity(change) {
-            appState.detailQuantity = Math.max(1, (appState.detailQuantity || 1) + change); const el = document.getElementById('detail-quantity');
+            appState.detailQuantity = Math.max(1, (appState.detailQuantity || 1) + change);
+            const el = document.getElementById('detail-quantity');
             if (el) el.textContent = appState.detailQuantity;
             if (appState.selectedProduct) {
                 const size = appState.selectedProduct.sizes ? appState.selectedProduct.sizes.find(s => s.size === appState.selectedSize) : null;
-                const price = size ? size.price : appState.selectedProduct.price; const totalPriceEl = document.getElementById('detail-total-price');
+                const price = size ? size.price : appState.selectedProduct.price;
+                const totalPriceEl = document.getElementById('detail-total-price');
                 if (totalPriceEl) totalPriceEl.textContent = price * appState.detailQuantity;
             }
         }
+
         function addToCartFromDetail() {
             if (!appState.selectedProduct) return;
             const activeImg = document.querySelector('#detail-content .product-image-carousel img.active');
             addToCartById(appState.selectedProduct.id, appState.detailQuantity || 1, activeImg || null);
             closeProductDetail();
         }
-        function toggleIngredients() { const list = document.getElementById('ingredients-list'); const chevron = document.getElementById('ingredients-chevron'); list.classList.toggle('hidden'); chevron.classList.toggle('rotate-180'); }
-        function initScrollHide() {
-            let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop || 0; let ticking = false; const header = elements.header; const SHOW_NEAR_TOP = 120;
-            function onScrollTick() {
-                const st = window.pageYOffset || document.documentElement.scrollTop || 0;
-                if (modalState.cart || modalState.detail || modalState.checkout || modalState.profile) { header.classList.add('header-hidden'); lastScrollTop = st; ticking = false; return; }
-                if (st <= SHOW_NEAR_TOP) { header.classList.remove('header-hidden'); } else { if (st > lastScrollTop && st > 40) { header.classList.add('header-hidden'); } else { header.classList.remove('header-hidden'); } }
-                lastScrollTop = st <= 0 ? 0 : st; ticking = false;
+
+        function toggleIngredients() {
+            document.getElementById('ingredients-list').classList.toggle('hidden');
+            document.getElementById('ingredients-chevron').classList.toggle('rotate-180');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl text-white font-bold animate-zoom-in shadow-lg ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 4000);
+        }
+
+        /* ---------- Checkout ---------- */
+        function openCheckout() {
+            modalState.checkout = true;
+            updateModalBackdrop();
+            elements.checkoutDate.min = getMinOrderDate();
+            elements.checkoutDate.value = getMinOrderDate();
+            elements.checkoutTime.min = CONFIG.pickup.timeMin;
+            elements.checkoutTime.max = CONFIG.pickup.timeMax;
+            updateCheckoutTotal();
+            elements.checkoutModal.classList.add('open');
+            elements.checkoutModal.setAttribute('aria-hidden', 'false');
+            const telegram = window.Telegram?.WebApp;
+            const user = telegram?.initDataUnsafe?.user || {};
+            if (user.phone_number && !elements.checkoutPhone.value) elements.checkoutPhone.value = user.phone_number;
+        }
+
+        function closeCheckout() {
+            modalState.checkout = false;
+            elements.checkoutModal.classList.remove('open');
+            elements.checkoutModal.setAttribute('aria-hidden', 'true');
+            updateModalBackdrop();
+        }
+
+        function calculateTotalWithDiscount(totalAmount) {
+            if (!appState.usePoints) return { total: totalAmount, discount: 0 };
+            const maxDiscount = Math.min(appState.userPoints, Math.floor(totalAmount * 0.3));
+            return { total: totalAmount - maxDiscount, discount: maxDiscount };
+        }
+
+        function updateCheckoutTotal() {
+            const totalAmount = appState.cart.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0);
+            const { total, discount } = calculateTotalWithDiscount(totalAmount);
+            elements.checkoutTotal.textContent = `${total} ₽`;
+            elements.loyaltyDiscount.textContent = `${discount} ₽`;
+        }
+
+        function placeOrder() {
+            const checkoutButton = elements.placeOrderBtn;
+            const dateInput = elements.checkoutDate;
+            const timeInput = elements.checkoutTime;
+            const phoneInput = elements.checkoutPhone;
+            if (!dateInput.value || !timeInput.value || !phoneInput.value) { showNotification('Заполните все поля', 'error'); return; }
+            if (appState.cart.length === 0) { showNotification('Корзина пуста', 'error'); return; }
+            checkoutButton.disabled = true;
+            checkoutButton.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Заказ формируется...`;
+            const totalAmount = appState.cart.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0);
+            const { total: finalAmount, discount } = calculateTotalWithDiscount(totalAmount);
+            const telegram = window.Telegram?.WebApp;
+            const user = telegram?.initDataUnsafe?.user || {};
+            const orderId = `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const orderItemsSnapshot = appState.cart.map(item => ({ id: item.id, name: item.name, price: getItemPrice(item), quantity: item.quantity, size: item.selectedSize, filling: item.selectedFilling || null }));
+            const orderData = {
+                event: 'order_submit',
+                user_id: user.id || 'unknown',
+                username: user.username || '',
+                first_name: user.first_name || '',
+                last_name: user.last_name || '',
+                timestamp: new Date().toISOString(),
+                url: window.location.href,
+                userAgent: navigator.userAgent,
+                additional: {
+                    order_id: orderId,
+                    order_details: orderItemsSnapshot,
+                    total_amount: totalAmount,
+                    delivery_type: 'pickup',
+                    delivery_fee: 0,
+                    final_amount: finalAmount,
+                    date: dateInput.value,
+                    time: timeInput.value,
+                    address: CONFIG.pickup.address,
+                    phone: phoneInput.value,
+                    points_used: discount
+                }
+            };
+            fetch(CONFIG.backendUrl, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData), mode: 'no-cors'
+            })
+            .then(() => {
+                showNotification('Заказ успешно оформлен! Ожидайте подтверждения. Оплата наличными.', 'success');
+                appState.userPoints -= discount;
+                saveOrderToLocalHistory(orderId, orderItemsSnapshot, finalAmount, dateInput.value, timeInput.value);
+                startOrderStatusTracking(orderId);
+                clearCart();
+                closeCheckout();
+                checkoutButton.disabled = false;
+                checkoutButton.textContent = 'Оформить заказ';
+                switchView('home');
+            })
+            .catch(error => {
+                console.error('Error sending order:', error);
+                showNotification('Ошибка при отправке заказа', 'error');
+                checkoutButton.disabled = false;
+                checkoutButton.textContent = 'Оформить заказ';
+            });
+        }
+
+        /* ---------- Order status banner ----------
+         * Нет backend-эндпоинта со статусом заказа в реальном времени, поэтому
+         * статус меняется по таймеру локально (имитация "готовится" -> "готов"),
+         * пока на стороне Apps Script не появится реальный статус. Когда появится —
+         * заменить setTimeout на периодический опрос CONFIG.backendUrl?event=order_status.
+         */
+        function startOrderStatusTracking(orderId) {
+            const activeOrder = { id: orderId, status: 'accepted', startedAt: Date.now() };
+            try { localStorage.setItem('activeOrder', JSON.stringify(activeOrder)); } catch (e) {}
+            renderOrderBanner();
+            setTimeout(() => { updateActiveOrderStatus('preparing'); }, 4000);
+            setTimeout(() => { updateActiveOrderStatus('ready'); }, 15000);
+            setTimeout(() => { clearActiveOrder(); }, 45000);
+        }
+
+        function updateActiveOrderStatus(status) {
+            try {
+                const raw = localStorage.getItem('activeOrder');
+                if (!raw) return;
+                const order = JSON.parse(raw);
+                order.status = status;
+                localStorage.setItem('activeOrder', JSON.stringify(order));
+                renderOrderBanner();
+            } catch (e) {}
+        }
+
+        function clearActiveOrder() {
+            try { localStorage.removeItem('activeOrder'); } catch (e) {}
+            renderOrderBanner();
+        }
+
+        function renderOrderBanner() {
+            let order = null;
+            try { const raw = localStorage.getItem('activeOrder'); if (raw) order = JSON.parse(raw); } catch (e) {}
+            if (!order) { elements.orderBanner.classList.remove('visible'); elements.orderBanner.setAttribute('aria-hidden', 'true'); return; }
+            const statusMap = {
+                accepted: { icon: '<i class="fas fa-clock"></i>', text: 'Заказ принят', cls: 'status-accepted', eta: '20-25 мин' },
+                preparing: { icon: '<i class="fas fa-utensils"></i>', text: 'Ваш заказ готовится', cls: 'status-preparing', eta: '10-15 мин' },
+                ready: { icon: '<i class="fas fa-check-circle"></i>', text: 'Заказ готов к выдаче', cls: 'status-ready', eta: 'Можно забирать' }
+            };
+            const info = statusMap[order.status] || statusMap.accepted;
+            elements.orderBanner.className = `visible ${info.cls}`;
+            elements.orderBanner.setAttribute('aria-hidden', 'false');
+            document.getElementById('order-status-icon').innerHTML = info.icon;
+            document.getElementById('order-status-id').textContent = '#' + order.id.slice(-6);
+            document.getElementById('order-status-text').textContent = info.text;
+            document.getElementById('order-status-eta').textContent = info.eta;
+        }
+
+        /* ---------- Order history (локально, в этом браузере/Telegram-клиенте) ---------- */
+        function saveOrderToLocalHistory(orderId, items, total, date, time) {
+            let history = [];
+            try { history = JSON.parse(localStorage.getItem('orderHistory') || '[]'); } catch (e) {}
+            history.unshift({
+                id: '#' + orderId.slice(-6),
+                date: `${date}, ${time}`,
+                items: items.map(it => `${it.name}${it.quantity > 1 ? ' x' + it.quantity : ''}`),
+                total,
+                status: 'completed'
+            });
+            try { localStorage.setItem('orderHistory', JSON.stringify(history.slice(0, 20))); } catch (e) {}
+        }
+
+        function getOrderHistory() {
+            try { return JSON.parse(localStorage.getItem('orderHistory') || '[]'); } catch (e) { return []; }
+        }
+
+        /* ---------- Profile ---------- */
+        function renderProfile() {
+            const telegram = window.Telegram?.WebApp;
+            const user = telegram?.initDataUnsafe?.user || {};
+            elements.profileName.textContent = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Гость';
+            elements.profilePhone.textContent = user.phone_number || '';
+
+            const history = getOrderHistory();
+            const completedOrders = history.filter(o => o.status === 'completed');
+            elements.profileOrdersCount.textContent = completedOrders.length;
+            elements.profileTotalSpent.textContent = `${completedOrders.reduce((sum, o) => sum + o.total, 0)} ₽`;
+
+            if (history.length === 0) {
+                elements.profileOrderHistory.innerHTML = `<p class="text-sm" style="color: var(--text-mid);">Здесь появится история ваших заказов</p>`;
+            } else {
+                elements.profileOrderHistory.innerHTML = history.map(order => `
+                <div class="order-history-item ${order.status}">
+                    <div class="flex items-start justify-between mb-2">
+                        <div>
+                            <h3 class="font-bold">Заказ ${order.id}</h3>
+                            <p class="text-xs flex items-center gap-1 mt-1" style="color: var(--text-mid);"><i class="fas fa-clock"></i> ${order.date}</p>
+                        </div>
+                        <p class="text-lg font-bold">${order.total} ₽</p>
+                    </div>
+                    <ul class="text-sm space-y-1" style="color: var(--text-mid);">
+                        ${order.items.map(it => `<li class="flex items-center gap-2"><i class="fas fa-box text-xs" style="color: var(--accent);"></i>${it}</li>`).join('')}
+                    </ul>
+                </div>`).join('');
             }
-            window.addEventListener('scroll', function() { if (!ticking) { window.requestAnimationFrame(onScrollTick); ticking = true; } }, { passive: true });
-            if ((window.pageYOffset || document.documentElement.scrollTop || 0) <= SHOW_NEAR_TOP) { header.classList.remove('header-hidden'); }
+            fetchUserPoints();
         }
-        function openProfile() {
-            modalState.profile = true; updateHeaderVisibility(); elements.profileModal.style.transform = 'translateY(0)'; elements.profileModal.setAttribute('aria-hidden', 'false'); fetchUserPoints();
-        }
-        function closeProfile() {
-            modalState.profile = false; elements.profileModal.style.transform = 'translateY(100%)'; elements.profileModal.setAttribute('aria-hidden', 'true'); setTimeout(updateHeaderVisibility, 50);
-        }
+
         function fetchUserPoints() {
-            const telegram = window.Telegram?.WebApp; const user = telegram?.initDataUnsafe?.user || {}; const user_id = user.id || 'unknown';
-            // Запрос баллов лояльности с твоего Google Apps Script backend
-            fetch(CONFIG.GOOGLE_APPS_SCRIPT_URL + '?event=get_points&user_id=' + user_id, { method: 'GET', mode: 'no-cors' })
+            const telegram = window.Telegram?.WebApp;
+            const user = telegram?.initDataUnsafe?.user || {};
+            const user_id = user.id || 'unknown';
+            // ВНИМАНИЕ (известный баг, перенесён из исходника как есть):
+            // mode: 'no-cors' на GET-запросе делает ответ "opaque" — браузер
+            // не отдаёт его содержимое в JS, и response.json() здесь упадёт
+            // либо вернёт пустоту. Баллы лояльности из-за этого не подгружаются.
+            // Чинить тогда, когда дойдут руки: на стороне Apps Script нужно
+            // явно вернуть Access-Control-Allow-Origin и убрать mode:'no-cors' тут,
+            // либо использовать JSONP-обходной путь.
+            fetch(CONFIG.backendUrl + '?event=get_points&user_id=' + user_id, { method: 'GET', mode: 'no-cors' })
             .then(response => response.json())
             .then(data => {
                 appState.userPoints = data.points || 0;
@@ -880,11 +1210,19 @@
                 elements.profilePoints.textContent = 'Ошибка загрузки';
             });
         }
+
         function init() {
             const savedCart = localStorage.getItem('cart');
-            if (savedCart) { try { const parsedCart = JSON.parse(savedCart); if (Array.isArray(parsedCart)) appState.cart = parsedCart; } catch (e) { console.error('Could not parse cart from localStorage'); } }
-            initEventListeners(); renderProducts(); updateCartBadge(); fetchUserPoints();
+            if (savedCart) {
+                try { const parsedCart = JSON.parse(savedCart); if (Array.isArray(parsedCart)) appState.cart = parsedCart; }
+                catch (e) { console.error('Could not parse cart from localStorage'); }
+            }
+            initEventListeners();
+            renderProducts();
+            updateCartBadge();
+            renderOrderBanner();
         }
+
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
