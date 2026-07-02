@@ -277,6 +277,24 @@ input,select,textarea{font-family:inherit}
 }
 .phone-prompt p{font-size:13px;color:var(--text);line-height:1.5;margin-bottom:12px}
 
+/* ── PLANS ── */
+.plan-card{
+  background:var(--card);border-radius:14px;padding:18px;
+  border:1px solid var(--border);margin-bottom:12px;
+  transition:border-color .2s;
+}
+.plan-card:hover{border-color:rgba(200,255,0,.3)}
+.plan-name{font-size:16px;font-family:var(--clash);font-weight:700;color:var(--text)}
+.plan-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.plan-price{font-size:22px;font-family:var(--clash);font-weight:700;color:var(--lime);letter-spacing:-1px;white-space:nowrap}
+.plan-buy-btn{
+  width:100%;padding:11px;background:var(--lime);border:none;border-radius:10px;
+  font-size:13px;font-family:var(--clash);font-weight:700;color:#0A0A0F;
+  cursor:pointer;transition:opacity .2s;
+}
+.plan-buy-btn:disabled{opacity:.5;cursor:not-allowed}
+.plan-buy-btn:hover:not(:disabled){opacity:.9}
+
 /* ── ARC SVG ── */
 .arc-corner svg{display:block}
 </style>
@@ -403,11 +421,11 @@ input,select,textarea{font-family:inherit}
   <div id="screen-payment" class="screen">
     <div class="content">
       <h1 class="anim-title" style="font-size:clamp(36px,10vw,44px);font-family:var(--clash);font-weight:700;letter-spacing:-2px;color:var(--text);margin-bottom:6px">Оплата</h1>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:24px" class="anim-1">Информация о вашем абонементе</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:24px" class="anim-1">Абонементы и статус</p>
 
-      <!-- Subscription card -->
+      <!-- Текущий абонемент -->
       <div class="payment-card anim-1" id="sub-card">
-        <p style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Абонемент</p>
+        <p style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Ваш абонемент</p>
         <div class="price-big" id="sub-lessons-left">—</div>
         <p style="font-size:12px;color:var(--muted)" id="sub-expires"></p>
         <div style="margin-top:14px;height:4px;border-radius:2px;background:rgba(255,255,255,.06)">
@@ -415,22 +433,28 @@ input,select,textarea{font-family:inherit}
         </div>
       </div>
 
-      <!-- Payment methods info -->
-      <div class="payment-card anim-2">
+      <!-- Тарифы -->
+      <div class="anim-2" style="margin-bottom:6px">
+        <p style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Выберите тариф</p>
+        <div id="plans-wrap"></div>
+      </div>
+
+      <!-- Способы оплаты -->
+      <div class="payment-card anim-3">
         <h3>Способы оплаты</h3>
         <p id="payment-methods-text" style="margin-top:8px"></p>
       </div>
 
-      <!-- Payment history placeholder -->
-      <div class="payment-card anim-3">
+      <!-- Статистика -->
+      <div class="payment-card anim-4">
         <h3>История занятий</h3>
         <p style="margin-top:8px" id="visit-count-text"></p>
       </div>
 
-      <!-- Contact for payment -->
-      <div class="payment-card anim-4" style="background:rgba(200,255,0,.05);border-color:rgba(200,255,0,.2)">
-        <p style="font-size:13px;color:var(--text)">Для покупки или продления абонемента свяжитесь с администратором:</p>
-        <p style="font-size:15px;font-weight:600;color:var(--lime);margin-top:8px" id="contact-for-payment"></p>
+      <!-- Контакт -->
+      <div class="payment-card" style="background:rgba(200,255,0,.05);border-color:rgba(200,255,0,.2)">
+        <p style="font-size:13px;color:var(--text)">По вопросам оплаты:</p>
+        <p style="font-size:15px;font-weight:600;color:var(--lime);margin-top:6px" id="contact-for-payment"></p>
       </div>
     </div>
   </div>
@@ -503,7 +527,7 @@ input,select,textarea{font-family:inherit}
 const CONFIG = {
   pageTitle:   'Детские занятия',
   parentName:  'Анна',
-  backendUrl:  'https://script.google.com/macros/s/AKfycbwcaldQ8HsUaJCOTQHmYZwAj0VR6aNYyV8BtcWkNMNtP0Z6tf1-31-aTFSa9to_K0rA/exec',
+  backendUrl:  'https://script.google.com/macros/s/AKfycbytYYtV59lpBcm5G6nglwddh-9CSwMAWTNR05m3-fEDB2NNwujsOsesvXV53hpcTCzS/exec',
 
   // Рабочие дни (0=вс,1=пн,...,6=сб). Только эти дни кликабельны в расписании
   workDays: [1, 2, 3, 4, 5],  // пн–пт
@@ -567,6 +591,14 @@ const CONFIG = {
   ],
 
   adminContact: '@admin_username',
+
+  // Фолбэк-тарифы (показываются если backend недоступен)
+  // Основные тарифы хранятся и редактируются в листе Plans таблицы
+  fallbackPlans: [
+    { id:'plan_8',   name:'Старт',    price:3200, lessons:8,  days:30, description:'8 занятий на 30 дней' },
+    { id:'plan_12',  name:'Стандарт', price:4200, lessons:12, days:30, description:'12 занятий на 30 дней' },
+    { id:'plan_inf', name:'Безлимит', price:6000, lessons:-1, days:30, description:'Безлимит занятий на 30 дней' },
+  ],
 
   theme: { bg:'#0A0A0F', card:'#111116', lime:'#C8FF00', muted:'#52525B', text:'#F0EEE8' }
 };
@@ -746,53 +778,113 @@ setTimeout(()=>{
 },200);
 
 /* ── SCHEDULE ── */
-const DAY_LETTERS=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-const DAY_SHORT  =['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-const MONTHS_RU  =['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
-const MONTHS_FULL=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const MONTHS_SHORT=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+const MONTHS_FULL =['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const DOW_MON_BASED=['Пн','Вт','Ср','Чт','Пт','Сб','Вс']; // Mon=0..Sun=6
 
-function isWorkDay(dow){ return CONFIG.workDays.includes(dow); }
+function isWorkDay(dow){ return CONFIG.workDays.includes(dow); } // dow: 0=вс,1=пн,...
+
+// Возвращает дату понедельника текущей недели
+function getThisMonday(){
+  const t=new Date(); t.setHours(0,0,0,0);
+  const d=t.getDay(); // 0=вс
+  const diff=d===0?-6:1-d;
+  const m=new Date(t); m.setDate(t.getDate()+diff);
+  return m;
+}
+
+// activeDate: Date объект выбранного дня (глобальный)
+// S.schedActiveDate хранит выбранную дату
+// S.schedWeekOffset: смещение недели от текущей (0=эта, 1=след, …)
 
 function renderSchedule(){
-  const today=new Date();
-  const todayDow=today.getDay();
-  // Monday-based week
-  const mondayOff=todayDow===0?-6:1-todayDow;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const thisMonday=getThisMonday();
 
-  if(S.activeDayIdx<0){
-    // default: today (convert 0-based Mon week)
-    S.activeDayIdx=todayDow===0?6:todayDow-1;
-  }
+  // Инициализация
+  if(!S.schedActiveDate) S.schedActiveDate=new Date(today);
+  if(S.schedWeekOffset===undefined) S.schedWeekOffset=0;
 
-  // Build day strip (Mon=0…Sun=6)
+  // Неделя для отображения
+  const weekMonday=new Date(thisMonday);
+  weekMonday.setDate(thisMonday.getDate()+S.schedWeekOffset*7);
+
+  // Заголовок недели
+  const weekEnd=new Date(weekMonday); weekEnd.setDate(weekMonday.getDate()+6);
+  const wLabel=S.schedView==='month'
+    ? `${MONTHS_SHORT[weekMonday.getMonth()]} ${weekMonday.getFullYear()}`
+    : `${weekMonday.getDate()} ${MONTHS_SHORT[weekMonday.getMonth()]} – ${weekEnd.getDate()} ${MONTHS_SHORT[weekEnd.getMonth()]}`;
+
+  // Строим полосу дней
   const strip=document.getElementById('day-strip');
   strip.innerHTML='';
+
+  // Кнопки навигации недель
+  const maxWeeks=Math.ceil(CONFIG.bookingHorizonDays/7)+1;
+  const canPrev=S.schedWeekOffset>0;
+  const canNext=S.schedWeekOffset<maxWeeks-1;
+
+  // Prev week
+  const prevBtn=document.createElement('button');
+  prevBtn.className='day-btn'+(canPrev?'':' disabled');
+  prevBtn.innerHTML=`<span class="dl">‹</span><span class="dd" style="font-size:18px">‹</span><div class="dot"></div>`;
+  prevBtn.style.opacity=canPrev?'1':'0.3';
+  if(canPrev) prevBtn.onclick=()=>{ S.schedWeekOffset--; renderSchedule(); };
+  strip.appendChild(prevBtn);
+
   for(let i=0;i<7;i++){
-    const d=new Date(today);
-    d.setDate(today.getDate()+mondayOff+i);
-    const dow=d.getDay();
-    const work=isWorkDay(dow);
+    const d=new Date(weekMonday); d.setDate(weekMonday.getDate()+i);
+    const dow=d.getDay(); // 0=вс
+    const isWork=isWorkDay(dow);
+    const isToday=d.getTime()===today.getTime();
+    const isPast=d<today;
+    const isFuture=(d-today)/86400000>CONFIG.bookingHorizonDays;
+    const isActive=S.schedActiveDate&&d.getTime()===S.schedActiveDate.getTime();
+    const clickable=isWork&&!isPast&&!isFuture;
+
     const btn=document.createElement('button');
-    btn.className='day-btn'+(i===S.activeDayIdx?' active':'')+(!work?' disabled':'');
-    btn.title=!work?'Нерабочий день':'';
-    btn.innerHTML=`<span class="dl">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][i]}</span><span class="dd">${d.getDate()}</span><div class="dot"></div>`;
-    if(work) btn.onclick=()=>{ S.activeDayIdx=i; renderSchedule(); };
+    btn.className='day-btn'+(isActive?' active':'')+(!clickable?' disabled':'');
+    if(isFuture) btn.style.opacity='0.3';
+    btn.innerHTML=`
+      <span class="dl">${DOW_MON_BASED[i]}</span>
+      <span class="dd" style="${isToday?'font-weight:700;color:'+(isActive?'var(--lime)':'var(--text)'):''}">
+        ${d.getDate()}${isToday&&!isActive?'<span style="color:var(--lime);font-size:14px">•</span>':''}
+      </span>
+      <div class="dot"></div>`;
+    if(clickable){
+      btn.onclick=()=>{ S.schedActiveDate=new Date(d); renderSchedule(); };
+    }
     strip.appendChild(btn);
   }
 
-  // Lessons for chosen day (Mon=0→dow=1, …, Sun=6→dow=0)
-  const dowMapping=[1,2,3,4,5,6,0]; // index i → day-of-week
-  const activeDow=dowMapping[S.activeDayIdx];
-  const dayLessons=CONFIG.schedule.filter(l=>l.day===activeDow);
+  // Next week
+  const nextBtn=document.createElement('button');
+  nextBtn.className='day-btn'+(canNext?'':' disabled');
+  nextBtn.innerHTML=`<span class="dl">›</span><span class="dd" style="font-size:18px">›</span><div class="dot"></div>`;
+  nextBtn.style.opacity=canNext?'1':'0.3';
+  if(canNext) nextBtn.onclick=()=>{ S.schedWeekOffset++; renderSchedule(); };
+  strip.appendChild(nextBtn);
+
+  // Метка недели
   const list=document.getElementById('lessons-list');
+  const weekLabelEl=document.createElement('p');
+  weekLabelEl.style.cssText='font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;text-align:center';
+  weekLabelEl.textContent=wLabel;
+
   list.innerHTML='';
+  list.appendChild(weekLabelEl);
+
+  // Занятия для выбранного дня
+  if(!S.schedActiveDate){ return; }
+  const activeDow=S.schedActiveDate.getDay();
 
   if(!isWorkDay(activeDow)){
-    list.innerHTML=`<p style="color:var(--muted);font-size:14px;padding:16px 0">Нерабочий день — занятий нет.</p>`;
+    list.innerHTML+=`<p style="color:var(--muted);font-size:14px;padding:12px 0">Нерабочий день — занятий нет.</p>`;
     return;
   }
+  const dayLessons=CONFIG.schedule.filter(l=>l.day===activeDow);
   if(!dayLessons.length){
-    list.innerHTML=`<p style="color:var(--muted);font-size:14px;padding:16px 0">Занятий нет</p>`;
+    list.innerHTML+=`<p style="color:var(--muted);font-size:14px;padding:12px 0">В этот день занятий нет</p>`;
     return;
   }
 
@@ -801,8 +893,9 @@ function renderSchedule(){
     if(l.primary){
       list.innerHTML+=`<div class="lesson-card" style="animation:fadeUp 450ms cubic-bezier(.16,1,.3,1) ${delay}ms both">
         <p style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">${l.time}</p>
-        <h3 style="font-size:30px;font-family:var(--clash);font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1">${l.section}</h3>
+        <h3 style="font-size:28px;font-family:var(--clash);font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1">${l.section}</h3>
         <p style="font-size:12px;color:var(--muted);margin-top:6px">${l.trainer}</p>
+        <button onclick="navigate('booking')" style="margin-top:12px;font-size:11px;color:var(--lime);letter-spacing:.08em;text-transform:uppercase;font-weight:600;border:1px solid rgba(200,255,0,.3);padding:5px 12px;border-radius:20px">Записаться →</button>
       </div>`;
     } else {
       list.innerHTML+=`<div class="lesson-row" style="animation:fadeUp 450ms cubic-bezier(.16,1,.3,1) ${delay}ms both">
@@ -846,23 +939,27 @@ function renderTrainer(){
 async function onOpenBooking(){
   const hasPhone=!!S.phone;
   document.getElementById('phone-prompt').style.display=hasPhone?'none':'block';
-  if(hasPhone) await loadSlotsForToday();
+  if(hasPhone) await loadSlots();
 }
 
-async function loadSlotsForToday(){
+async function loadSlots(){
   const today=new Date();
-  const dateStr=formatDateISO(today);
+  // Используем выбранную дату расписания если она есть и не в прошлом, иначе сегодня
+  let bookDate=S.schedActiveDate&&S.schedActiveDate>=today?S.schedActiveDate:today;
+  S.bookingDate=bookDate;
+
+  const dateStr=formatDateISO(bookDate);
   document.getElementById('slot-loading').style.display='block';
   document.getElementById('time-slots').innerHTML='';
+  document.getElementById('booking-form').style.display='none';
+  S.selectedSlot=null;
 
   try{
     const res=await apiFetch('GET',`?event=get_slots&date=${dateStr}&section=${encodeURIComponent(CONFIG.bookingSection)}`);
-    // Build map from backend data
     S.slotData={};
     (res.slots||[]).forEach(s=>{ S.slotData[s.time]={count:s.count,limit:s.limit,full:s.full}; });
     S.slotsLoaded=true;
   } catch(e){
-    // On error keep empty slotData (all slots at 0)
     S.slotsLoaded=true;
   }
 
@@ -871,21 +968,23 @@ async function loadSlotsForToday(){
 }
 
 function renderSlots(){
-  const today=new Date();
-  const todayDow=today.getDay();
+  const today=new Date(); today.setHours(0,0,0,0);
   const now=new Date();
+  const bookDate=S.bookingDate||today;
+  const isToday=bookDate.getTime()===today.getTime();
 
-  // Header
-  const dateStr=`${today.getDate()} ${MONTHS_FULL[today.getMonth()]}`;
+  const dayNames=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const dateLabel=isToday?'Сегодня':`${dayNames[bookDate.getDay()]}, ${bookDate.getDate()} ${MONTHS_FULL[bookDate.getMonth()]}`;
   document.getElementById('booking-title').textContent=CONFIG.bookingSection;
-  document.getElementById('booking-subtitle').textContent=`${dateStr} · ${CONFIG.bookingTrainer}`;
+  document.getElementById('booking-subtitle').textContent=`${dateLabel} · ${CONFIG.bookingTrainer}`;
 
   const container=document.getElementById('time-slots');
   container.innerHTML='';
 
-  // Check if today is a work day
-  if(!isWorkDay(todayDow)){
-    container.innerHTML=`<p style="color:var(--muted);font-size:14px;padding:12px 0">Сегодня нерабочий день — запись недоступна.<br>Приходите в рабочие дни.</p>`;
+  // Check if bookDate is a work day
+  const bookDow=bookDate.getDay();
+  if(!isWorkDay(bookDow)){
+    container.innerHTML=`<p style="color:var(--muted);font-size:14px;padding:12px 0">Нерабочий день — запись недоступна.</p>`;
     return;
   }
 
@@ -895,11 +994,10 @@ function renderSlots(){
     const limit=backend.limit||slot.limit;
     const isFull=backend.full||(count>=limit);
 
-    // Past time check
+    // Прошедшие слоты только для сегодня
     const [h,m]=slot.time.split(':').map(Number);
-    const slotDate=new Date(today);
-    slotDate.setHours(h,m,0,0);
-    const isPast=slotDate<=now;
+    const slotDate=new Date(bookDate); slotDate.setHours(h,m,0,0);
+    const isPast=isToday&&slotDate<=now;
 
     const isDisabled=isFull||isPast;
     const isSel=S.selectedSlot===slot.time&&!isDisabled;
@@ -1034,20 +1132,104 @@ function selectPayment(method){
 }
 
 /* ── PAYMENT SCREEN ── */
-function renderPayment(){
-  // Subscription
-  const hasAbo=S.subscription!=='none'&&S.lessonsLeft>0;
-  const ll=S.lessonsLeft;
-  document.getElementById('sub-lessons-left').textContent=hasAbo?`${ll} занят${ll===1?'ие':ll<5?'ия':'ий'} осталось`:'Нет активного абонемента';
+async function renderPayment(){
+  // Абонемент
+  const ll=S.lessonsLeft||0;
+  const hasAbo=S.subscription!=='none'&&ll>0;
+  document.getElementById('sub-lessons-left').textContent=
+    hasAbo
+      ? `${ll} занят${ll===1?'ие':ll<5?'ия':'ий'} осталось`
+      : ll===9999?'Безлимит активен':'Нет активного абонемента';
   document.getElementById('sub-expires').textContent=S.subExpires?`Действует до: ${S.subExpires}`:'';
 
-  const total=ll+(S.visits||0);
-  const pct=total>0?Math.round((ll/total)*100):0;
+  const totalEver=(ll===9999?0:ll)+(S.visits||0);
+  const pct=totalEver>0&&ll!==9999?Math.min(100,Math.round((ll/totalEver)*100)):ll===9999?100:0;
   document.getElementById('sub-progress-bar').style.width=pct+'%';
-
   document.getElementById('payment-methods-text').textContent=CONFIG.paymentMethods;
-  document.getElementById('visit-count-text').textContent=`Всего посещено занятий: ${S.visits}`;
+  document.getElementById('visit-count-text').textContent=`Всего посещено занятий: ${S.visits||0}`;
   document.getElementById('contact-for-payment').textContent=CONFIG.adminContact;
+
+  // Тарифы
+  const plansWrap=document.getElementById('plans-wrap');
+  plansWrap.innerHTML=`<p style="color:var(--muted);font-size:13px;text-align:center;padding:12px">Загружаем тарифы…</p>`;
+
+  try{
+    const res=await apiFetch('GET','?event=get_plans');
+    S.plans=res.plans||[];
+    renderPlans();
+  } catch(e){
+    // Fallback на CONFIG-тарифы если backend недоступен
+    S.plans=CONFIG.fallbackPlans||[];
+    renderPlans();
+  }
+}
+
+function renderPlans(){
+  const wrap=document.getElementById('plans-wrap');
+  if(!S.plans||!S.plans.length){
+    wrap.innerHTML=`<p style="color:var(--muted);font-size:13px">Тарифы недоступны. Свяжитесь с администратором.</p>`;
+    return;
+  }
+  wrap.innerHTML='';
+  S.plans.forEach((plan,i)=>{
+    const card=document.createElement('div');
+    card.className='plan-card';
+    card.style.animation=`fadeUp 400ms cubic-bezier(.16,1,.3,1) ${i*80+60}ms both`;
+    const lessonsLabel=plan.lessons===-1?'Безлимит':`${plan.lessons} занятий`;
+    const daysLabel=plan.days?`• ${plan.days} дней`:'';
+    card.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div class="plan-name">${plan.name}</div>
+          <div class="plan-meta">${lessonsLabel} ${daysLabel}</div>
+        </div>
+        <div class="plan-price">${plan.price.toLocaleString('ru')} ₽</div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.4">${plan.description||''}</p>
+      <button class="plan-buy-btn" onclick="buyPlan('${plan.id}','${plan.name}',${plan.price})">
+        Оплатить онлайн
+      </button>`;
+    wrap.appendChild(card);
+  });
+}
+
+async function buyPlan(planId, planName, price){
+  if(S.buyingPlan) return;
+  S.buyingPlan=true;
+
+  // Показываем loader на кнопке
+  const btn=event.target;
+  const origText=btn.textContent;
+  btn.textContent='Создаём платёж…';
+  btn.disabled=true;
+
+  try{
+    const res=await apiFetch('POST',null,{
+      event:'buy_plan',
+      user_id:userId,
+      username:tgUser.username||'',
+      first_name:tgUser.first_name||'',
+      plan_id:planId
+    });
+
+    if(res.status==='error'){
+      showToast(res.message||'Ошибка при создании платежа','error');
+      btn.textContent=origText; btn.disabled=false;
+    } else {
+      // Открываем ЮKassa в браузере Telegram
+      showToast(`Переходим к оплате "${planName}"…`,'success');
+      setTimeout(()=>{
+        window.open(res.payment_url,'_blank');
+      }, 600);
+      btn.textContent='Открываем оплату…';
+      setTimeout(()=>{ btn.textContent=origText; btn.disabled=false; }, 3000);
+    }
+  } catch(e){
+    showToast('Ошибка соединения с сервером','error');
+    btn.textContent=origText; btn.disabled=false;
+  }
+
+  S.buyingPlan=false;
 }
 
 /* ── CONTACTS ── */
@@ -1113,13 +1295,39 @@ function fillChildSelect(){
   sel.innerHTML=list.map(c=>`<option value="${c.name}">${c.name}, ${c.age} лет · ${c.section}</option>`).join('');
 }
 
-/* ── API ── */
-async function apiFetch(method,path,body){
-  const url=CONFIG.backendUrl+(path||'');
-  const opts={method,headers:{'Content-Type':'application/json'}};
-  if(body) opts.body=JSON.stringify(body);
-  const resp=await fetch(url,opts);
+/* ── API ──
+ * Особенности Google Apps Script Web App:
+ * - GET: обычный fetch, CORS разрешён, возвращает JSON
+ * - POST: используем text/plain чтобы избежать preflight,
+ *   GAS принимает это нормально и парсит через e.postData.contents
+ * - Для операций где не нужен ответ (save_phone c no-cors fallback) — тоже работает
+ */
+async function apiFetch(method, path, body) {
+  const url = CONFIG.backendUrl + (path || '');
+
+  if (method === 'GET') {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    return resp.json();
+  }
+
+  // POST — text/plain обходит preflight CORS в GAS
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body)
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
   return resp.json();
+}
+
+// Для событий где ответ не критичен (fire-and-forget)
+function apiFetchNoAwait(body) {
+  fetch(CONFIG.backendUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body)
+  }).catch(()=>{});
 }
 
 /* ── TOAST ── */
