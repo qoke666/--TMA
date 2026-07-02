@@ -3,1293 +3,1084 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title id="page-title">Шаурма House</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title id="page-title">Детские занятия</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Clash Display via CDN -->
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@700,600,500&display=swap">
 
     <style>
-        /* =========================================================
-           THEME — настраивается под клиента через CONFIG.theme в JS.
-           Значения тут — дефолт/фолбэк (стиль "Шаурма House": тёплый,
-           светлый, оранжево-янтарные градиенты — взято из Figma).
-           ========================================================= */
+        /* ======================================================
+           RESET & BASE
+           ====================================================== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; background: #0A0A0F; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; color: #F0EEE8; }
+        button { font-family: inherit; cursor: pointer; border: none; background: none; }
+        ::-webkit-scrollbar { display: none; }
+
+        /* ======================================================
+           CSS VARIABLES — тема (применяются из CONFIG.theme в JS)
+           ====================================================== */
         :root {
-            --bg-from: #fff7ed;      /* orange-50 */
-            --bg-via: #ffffff;
-            --bg-to: #fffbeb;        /* amber-50 */
-            --accent: #ea580c;       /* orange-600 */
-            --accent-dark: #c2410c;  /* orange-700 */
-            --accent-light: #fdba74; /* orange-300 */
-            --amber: #d97706;        /* amber-600 */
-            --text-dark: #1f2937;    /* gray-800 */
-            --text-mid: #4b5563;     /* gray-600 */
-            --card-bg: #ffffff;
-            --danger: #dc2626;
-            --success: #16a34a;
-            --font-body: 'Nunito', sans-serif;
+            --bg:         #0A0A0F;
+            --card:       #111116;
+            --lime:       #C8FF00;
+            --muted:      #52525B;
+            --text:       #F0EEE8;
+            --border:     rgba(255,255,255,0.06);
+            --font-clash: 'Clash Display', sans-serif;
+            --font-inter: 'Inter', sans-serif;
         }
 
-        body {
-            font-family: var(--font-body);
-            overscroll-behavior: none;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-            background: linear-gradient(to bottom right, var(--bg-from), var(--bg-via), var(--bg-to));
-            background-attachment: fixed;
-            color: var(--text-dark);
-            min-height: 100vh;
+        /* ======================================================
+           APP SHELL
+           ====================================================== */
+        #app {
+            position: relative;
+            width: min(390px, 100vw);
+            height: min(844px, 100dvh);
+            margin: 0 auto;
+            background: var(--bg);
+            border-radius: clamp(0px, 4vw, 40px);
+            overflow: hidden;
+            box-shadow: 0 64px 128px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.07);
         }
 
-        .animate-zoom-in { animation: zoomIn 0.3s ease forwards; }
-        .animate-fade-in { animation: fadeIn 0.3s ease forwards; }
-        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* --- View switching (Главная / Корзина / Профиль) --- */
-        .app-view { display: none; }
-        .app-view.active { display: block; animation: fadeIn 0.25s ease; }
-
-        /* --- Order status banner --- */
-        #order-status-banner {
-            position: sticky; top: 0; z-index: 40;
-            padding: 12px 16px;
-            color: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        /* ======================================================
+           SCREENS
+           ====================================================== */
+        .screen {
+            position: absolute; inset: 0;
+            overflow-y: auto; overflow-x: hidden;
+            scroll-behavior: smooth;
             display: none;
         }
-        #order-status-banner.visible { display: block; }
-        #order-status-banner.status-preparing { background: linear-gradient(to right, #f97316, #f59e0b); }
-        #order-status-banner.status-ready { background: linear-gradient(to right, #22c55e, #10b981); }
-        #order-status-banner.status-accepted { background: linear-gradient(to right, #3b82f6, #06b6d4); }
+        .screen.active { display: block; }
 
-        /* --- Bottom navigation --- */
-        #bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: #ffffff;
-            border-top: 1px solid #e5e7eb;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
-            z-index: 50;
+        @keyframes screenEnter {
+            from { opacity: 0; transform: scale(1.04); }
+            to   { opacity: 1; transform: scale(1); }
         }
-        #bottom-nav .nav-item {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-            padding: 8px 10px;
-            color: var(--text-mid);
-            transition: color 0.2s;
-            background: none; border: none; cursor: pointer;
-            position: relative;
+        @keyframes screenExit {
+            from { opacity: 1; transform: scale(1); }
+            to   { opacity: 0; transform: scale(0.92); }
         }
-        #bottom-nav .nav-item.active { color: var(--accent); }
-        #bottom-nav .nav-item span { font-size: 11px; }
-        #bottom-nav .nav-item svg { width: 24px; height: 24px; }
-        #nav-cart-badge {
-            position: absolute; top: -2px; right: 6px;
-            background: var(--accent);
-            color: white; font-size: 10px;
-            border-radius: 9999px;
-            width: 18px; height: 18px;
-            display: flex; align-items: center; justify-content: center;
+        @keyframes titleReveal {
+            from { clip-path: inset(0 100% 0 0); }
+            to   { clip-path: inset(0 0% 0 0); }
         }
-        #nav-cart-badge.hidden { display: none; }
-
-        main { padding-bottom: 88px; }
-
-        /* --- Product card --- */
-        .product-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-            overflow: hidden;
-            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        @keyframes cardSlide {
+            from { opacity: 0; transform: translateY(48px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-        .product-card:hover { box-shadow: 0 12px 24px rgba(0,0,0,0.12); }
-        .product-card .image-wrap { position: relative; height: 160px; overflow: hidden; cursor: pointer; }
-        .product-card .image-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
-        .product-card:hover .image-wrap img { transform: scale(1.08); }
-        .badge-hot {
-            position: absolute; top: 10px; left: 10px;
-            background: var(--accent); color: white;
-            padding: 4px 10px; border-radius: 9999px; font-size: 12px;
-            display: flex; align-items: center; gap: 4px; font-weight: 700;
-        }
-        .badge-spicy {
-            position: absolute; top: 10px; right: 10px;
-            background: var(--danger); color: white;
-            padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 700;
-        }
-        .product-card .rating-pill {
-            display: flex; align-items: center; gap: 4px;
-            background: #fffbeb; padding: 2px 8px; border-radius: 8px;
-        }
-        .product-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-dark); margin: 0; }
-        .product-card .price { font-size: 1.4rem; font-weight: 800; color: var(--text-dark); }
-        .add-to-cart-btn {
-            display: flex; align-items: center; gap: 6px;
-            padding: 8px 14px; border-radius: 12px;
-            background: var(--accent); color: white;
-            border: none; font-weight: 700; font-size: 13px;
-            transition: background 0.2s ease, transform 0.15s ease;
-        }
-        .add-to-cart-btn:hover { background: var(--accent-dark); }
-        .add-to-cart-btn:active { transform: scale(0.96); }
-        .add-to-cart-btn.added { background: var(--success); }
-
-        /* --- Section headers --- */
-        .section-title { display: flex; align-items: center; gap: 8px; font-size: 1.4rem; font-weight: 800; color: var(--text-dark); }
-
-        /* --- Modals & Backdrop (cart / detail / checkout) --- */
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 90; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
-        .modal-backdrop.visible { opacity: 1; pointer-events: auto; }
-
-        #product-detail, #checkout-modal { z-index: 100; }
-
-        #product-detail {
-            position: fixed; inset: 0; background: #fafafa;
-            transform: translateY(100%); transition: transform .3s ease;
-            height: 100dvh; max-height: 100dvh; overflow-y: auto;
-        }
-        #product-detail .pd-header {
-            position: sticky; top: 0; background: white; z-index: 5;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px 16px; border-bottom: 1px solid #eee;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
         }
 
-        .product-image-carousel { position: relative; width: 100%; height: 260px; overflow: hidden; border-radius: 16px; background: #f3f4f6; margin-bottom: 16px; }
-        .product-image-carousel img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity .35s ease, transform .35s ease; }
-        .product-image-carousel img.active { opacity: 1; z-index: 1; }
-        .product-image-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 2; }
-        .product-image-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); }
-        .product-image-dots .dot.active { background: white; }
+        .anim-title    { animation: titleReveal 700ms cubic-bezier(0.16,1,0.3,1) both; }
+        .anim-card-1   { animation: cardSlide 600ms cubic-bezier(0.16,1,0.3,1) 100ms both; }
+        .anim-card-2   { animation: cardSlide 600ms cubic-bezier(0.16,1,0.3,1) 220ms both; }
+        .anim-card-3   { animation: cardSlide 600ms cubic-bezier(0.16,1,0.3,1) 340ms both; }
+        .anim-card-4   { animation: cardSlide 600ms cubic-bezier(0.16,1,0.3,1) 460ms both; }
 
-        .size-btn, .filling-btn {
-            background: white;
-            border: 2px solid #fed7aa;
-            color: var(--text-dark);
-            border-radius: 12px;
-            transition: background-color 0.2s, border-color 0.2s;
-        }
-        .size-btn.active, .filling-btn.active {
-            background: #fff7ed;
-            border-color: var(--accent);
-        }
-        .size-btn .muted, .filling-btn .muted { color: var(--text-mid); }
+        /* ======================================================
+           TYPOGRAPHY HELPERS
+           ====================================================== */
+        .clash { font-family: var(--font-clash); }
+        .muted { color: var(--muted); }
+        .label-xs { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-family: var(--font-inter); }
 
-        .quantity-btn {
-            display: flex; align-items: center; justify-content: center;
-            width: 34px; height: 34px; border-radius: 10px;
-            background: #f3f4f6; color: var(--text-dark);
-            transition: background 0.2s; border: none;
-        }
-        .quantity-btn:hover { background: #e5e7eb; }
-        .quantity-btn svg { width: 16px; height: 16px; }
-
-        .btn-primary {
-            background: linear-gradient(to right, var(--accent), var(--amber));
-            color: white;
+        /* ======================================================
+           CARDS
+           ====================================================== */
+        .card {
+            background: var(--card);
             border-radius: 14px;
-            border: none;
-            font-weight: 700;
-            box-shadow: 0 6px 14px rgba(234,88,12,0.25);
-            transition: all 0.2s ease;
+            border: 1px solid var(--border);
         }
-        .btn-primary:hover:not(:disabled) { box-shadow: 0 8px 20px rgba(234,88,12,0.35); transform: translateY(-1px); }
-        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        .card-lg { border-radius: 18px; }
 
-        .input-field {
-            background: white;
-            border: 2px solid #e5e7eb;
-            color: var(--text-dark);
-            border-radius: 12px;
-            transition: border-color 0.2s ease;
+        /* ======================================================
+           NAV DOTS (вертикальные, справа)
+           ====================================================== */
+        #nav-dots {
+            position: absolute;
+            right: 18px; top: 50%;
+            transform: translateY(-50%);
+            display: flex; flex-direction: column;
+            align-items: center; gap: 12px;
+            z-index: 100;
         }
-        .input-field:focus { border-color: var(--accent); outline: none; }
-
-        /* --- Checkout modal (bottom sheet) --- */
-        #checkout-modal {
-            position: fixed; left: 0; right: 0; bottom: 0;
-            z-index: 102; transform: translateY(110%); transition: transform .28s ease;
-            background: white;
-            border-top-left-radius: 20px; border-top-right-radius: 20px;
-            box-shadow: 0 -8px 30px rgba(0,0,0,0.15);
-            max-height: 88vh; overflow: auto;
+        #nav-dots button {
+            padding: 5px;
+            display: flex; align-items: center; justify-content: center;
         }
-        #checkout-modal.open { transform: translateY(0); }
-
-        /* fly-to-cart image */
-        .fly-img { position: fixed; pointer-events: none; z-index: 2200; transition: transform 0.85s cubic-bezier(.22,.9,.32,1), opacity 0.6s ease; will-change: transform, opacity; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-
-        /* Cart item */
-        .cart-item { background: white; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
-
-        /* Profile */
-        .profile-header-card {
-            background: linear-gradient(to bottom right, var(--accent), var(--amber));
-            border-radius: 16px; color: white; padding: 24px;
-            box-shadow: 0 10px 24px rgba(234,88,12,0.25);
+        #nav-dots .dot {
+            height: 4px; border-radius: 2px;
+            background: rgba(82,82,91,0.7);
+            transition: all 300ms cubic-bezier(0.34,1.56,0.64,1);
+            width: 4px;
         }
-        .profile-stat-box { background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); border-radius: 12px; padding: 14px; }
-        .profile-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
-        .order-history-item { border-radius: 12px; padding: 14px; border: 2px solid #e5e7eb; }
-        .order-history-item.completed { border-color: #bbf7d0; background: rgba(240,253,244,0.5); }
+        #nav-dots button.active .dot {
+            width: 18px;
+            background: var(--lime);
+        }
 
-        /* --- Настроить состав: соусы (чекбоксы) + исключаемые ингредиенты --- */
-        .customize-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 14px;
-            background: white;
-            border: 2px solid #f3f4f6;
-            border-radius: 12px;
-            transition: border-color 0.2s, background-color 0.2s;
+        /* ======================================================
+           ADD / BOOK BUTTON (нижний левый)
+           ====================================================== */
+        #add-btn {
+            position: absolute;
+            bottom: 28px; left: 20px;
+            width: 56px; height: 36px;
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100;
+            transition: background 200ms;
+        }
+        #add-btn:hover { background: rgba(200,255,0,0.12); }
+        #add-btn span { color: var(--lime); font-size: 22px; font-weight: 300; line-height: 1; }
+
+        /* ======================================================
+           HOME SCREEN
+           ====================================================== */
+        #screen-home .content { padding: 48px 24px 100px; position: relative; z-index: 1; }
+        #screen-home .glow-blob {
+            position: absolute;
+            top: 8%; right: -25%;
+            width: 320px; height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(200,255,0,0.055) 0%, transparent 68%);
+            filter: blur(48px);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* active child card */
+        #screen-home .child-card-main {
+            position: relative;
+            background: var(--card);
+            border-radius: 18px;
+            height: 180px;
+            padding: 22px 24px;
+            overflow: visible;
+            cursor: pointer;
+            z-index: 1;
+        }
+        /* second child mini-card */
+        #screen-home .child-card-mini {
+            position: absolute;
+            bottom: -72px; right: 28px;
+            width: 42%;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            z-index: 10;
             cursor: pointer;
         }
-        .customize-row.checked-sauce { border-color: var(--accent); background: #fff7ed; }
-        .customize-row.checked-exclude { border-color: var(--danger); background: #fef2f2; }
-        .customize-row .checkbox-visual {
-            width: 22px; height: 22px; border-radius: 7px;
-            border: 2px solid #d1d5db;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; transition: all 0.15s;
+        /* arc progress svg wrapper */
+        #screen-home .arc-wrap {
+            position: absolute;
+            right: -8px; top: -16px;
+            pointer-events: none;
         }
-        .customize-row input:checked + .checkbox-visual {
-            background: var(--accent); border-color: var(--accent); color: white;
+        /* avatar overflow */
+        #screen-home .child-avatar {
+            position: absolute;
+            right: -12px; bottom: -20px;
+            width: 76px; height: 76px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--bg);
+            z-index: 5;
         }
-        .customize-row.exclude-row input:checked + .checkbox-visual {
-            background: var(--danger); border-color: var(--danger); color: white;
+        /* today lesson card */
+        #screen-home .today-card {
+            position: relative;
+            background: var(--card);
+            border-radius: 18px;
+            height: 148px;
+            overflow: hidden;
+            cursor: pointer;
         }
-        .customize-row input { position: absolute; opacity: 0; width: 0; height: 0; }
-        .customize-row .row-label { font-size: 14px; font-weight: 600; flex: 1; margin-left: 10px; }
-        .customize-row.exclude-row .row-label.is-excluded { text-decoration: line-through; color: var(--text-mid); }
+        #screen-home .today-ghost {
+            position: absolute; inset: 0;
+            display: flex; align-items: center;
+            padding-left: 20px;
+            pointer-events: none;
+        }
+        #screen-home .today-ghost span {
+            font-size: 88px;
+            font-family: var(--font-clash);
+            font-weight: 700;
+            color: rgba(240,238,232,0.05);
+            letter-spacing: -3px;
+            white-space: nowrap;
+            line-height: 1;
+            user-select: none;
+        }
 
-        /* --- Раздел "Акции и события" --- */
-        .promo-card {
-            background: white; border-radius: 16px; overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        /* ======================================================
+           SCHEDULE SCREEN
+           ====================================================== */
+        #screen-schedule .content { padding: 48px 24px 100px; }
+
+        .view-toggle { display: flex; gap: 28px; margin-bottom: 28px; }
+        .view-toggle button {
+            font-family: var(--font-inter);
+            font-size: 15px;
+            color: var(--muted);
+            background: none; border: none;
+            border-bottom: 1.5px solid transparent;
+            padding-bottom: 5px;
+            transition: all 220ms;
         }
-        .promo-card .promo-image { width: 100%; height: 160px; object-fit: cover; display: block; }
-        .promo-card .promo-date {
-            display: inline-flex; align-items: center; gap: 6px;
-            font-size: 12px; font-weight: 700; color: var(--accent);
-            background: #fff7ed; padding: 3px 10px; border-radius: 9999px;
+        .view-toggle button.active {
+            color: var(--text);
+            font-weight: 500;
+            border-bottom-color: var(--lime);
         }
+
+        .day-strip { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 28px; }
+        .day-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; background: none; border: none; cursor: pointer; padding: 0; }
+        .day-btn .day-l { font-size: 11px; color: var(--muted); font-family: var(--font-inter); letter-spacing: 0.04em; transition: color 200ms; }
+        .day-btn .day-d { font-size: 15px; font-family: var(--font-clash); font-weight: 600; color: var(--muted); transition: color 200ms; }
+        .day-btn .day-dot { width: 4px; height: 4px; border-radius: 50%; background: transparent; transition: background 200ms; }
+        .day-btn.active .day-l,
+        .day-btn.active .day-d { color: var(--lime); }
+        .day-btn.active .day-dot { background: var(--lime); }
+
+        .lesson-card-primary {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 20px 22px;
+            margin-bottom: 16px;
+        }
+        .lesson-row {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .lesson-row:last-child { border-bottom: none; }
+        .lesson-divider { width: 1px; height: 14px; background: rgba(255,255,255,0.12); flex-shrink: 0; }
+
+        /* ======================================================
+           TRAINER SCREEN
+           ====================================================== */
+        #screen-trainer .photo-zone {
+            position: relative;
+            height: 34vh; min-height: 240px;
+            background: var(--card);
+            overflow: hidden;
+        }
+        #screen-trainer .photo-zone img {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%);
+        }
+        #screen-trainer .photo-lime-overlay {
+            position: absolute; inset: 0;
+            background: rgba(200,255,0,0.08);
+            mix-blend-mode: screen;
+        }
+        #screen-trainer .photo-fade {
+            position: absolute; inset: 0;
+            background: linear-gradient(to bottom, rgba(10,10,15,0) 40%, #0A0A0F 100%);
+        }
+        #screen-trainer .trainer-name {
+            position: absolute; bottom: 0; left: 24px; right: 40px;
+        }
+        #screen-trainer .trainer-spec {
+            position: absolute;
+            right: 16px; bottom: 32px;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+        }
+        #screen-trainer .trainer-content { padding: 28px 24px 96px; }
+        #screen-trainer .stats-row { display: flex; gap: 32px; margin-bottom: 28px; }
+        #screen-trainer .stat-num {
+            font-size: 40px;
+            font-family: var(--font-clash);
+            font-weight: 700;
+            color: var(--lime);
+            letter-spacing: -1.5px;
+            line-height: 1;
+        }
+        #screen-trainer .rating-card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 20px 22px;
+        }
+        #screen-trainer .rating-bars { display: flex; gap: 6px; margin-top: 12px; }
+        #screen-trainer .rating-bar { flex: 1; height: 3px; border-radius: 2px; }
+
+        /* ======================================================
+           BOOKING SCREEN
+           ====================================================== */
+        #screen-booking .content { padding: 48px 24px 96px; }
+
+        .time-slot {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%;
+            padding: 15px 0;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border);
+            border-radius: 0;
+            transition: all 220ms cubic-bezier(0.16,1,0.3,1);
+        }
+        .time-slot.selected {
+            padding: 15px 16px;
+            background: var(--lime);
+            border-bottom: none;
+            border-radius: 10px;
+        }
+        .time-slot .slot-time {
+            font-size: 24px;
+            font-family: var(--font-clash);
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: var(--text);
+            transition: color 220ms;
+        }
+        .time-slot.selected .slot-time { color: #0A0A0F; }
+        .time-slot.disabled .slot-time { color: var(--muted); }
+        .time-slot .slot-label {
+            font-size: 11px;
+            font-family: var(--font-inter);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            transition: color 220ms;
+        }
+        .time-slot.selected .slot-label { color: #0A0A0F; }
+
+        #confirm-btn {
+            margin-top: 28px;
+            width: 100%;
+            padding: 18px;
+            background: var(--lime);
+            border: none;
+            border-radius: 12px;
+            transition: all 300ms;
+            display: none;
+        }
+        #confirm-btn.visible { display: block; animation: fadeIn 300ms ease both; }
+        #confirm-btn.confirmed {
+            background: rgba(200,255,0,0.15);
+            border: 1px solid var(--lime);
+        }
+        #confirm-btn span {
+            font-size: 15px;
+            font-family: var(--font-clash);
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            color: #0A0A0F;
+        }
+        #confirm-btn.confirmed span { color: var(--lime); }
+
+        /* booking form fields */
+        #booking-form { margin-top: 28px; animation: cardSlide 350ms cubic-bezier(0.16,1,0.3,1) both; }
+        #booking-form label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.08em; text-transform: uppercase; }
+        #booking-form input, #booking-form select, #booking-form textarea {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 13px 14px;
+            color: var(--text);
+            font-family: var(--font-inter);
+            font-size: 15px;
+            margin-bottom: 18px;
+            transition: border-color 200ms;
+            -webkit-appearance: none;
+        }
+        #booking-form input:focus, #booking-form select:focus, #booking-form textarea:focus {
+            outline: none;
+            border-color: var(--lime);
+        }
+        #booking-form select option { background: #1a1a22; }
+        #booking-form textarea { resize: none; height: 80px; }
+
+        /* ======================================================
+           NOTIFICATION (toast)
+           ====================================================== */
+        #toast {
+            position: absolute;
+            bottom: 80px; left: 20px; right: 20px;
+            background: var(--card);
+            border: 1px solid var(--lime);
+            border-radius: 12px;
+            padding: 14px 18px;
+            display: flex; align-items: center; gap: 12px;
+            z-index: 200;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 300ms cubic-bezier(0.16,1,0.3,1);
+            pointer-events: none;
+        }
+        #toast.visible { transform: translateY(0); opacity: 1; }
+        #toast .toast-icon { color: var(--lime); font-size: 18px; flex-shrink: 0; }
+        #toast .toast-text { font-size: 13px; color: var(--text); line-height: 1.45; }
+        #toast .toast-text strong { color: var(--lime); }
+
+        /* ======================================================
+           ARC PROGRESS SVG (inline-draw, controlled by JS)
+           ====================================================== */
+        #arc-svg { display: block; }
     </style>
 </head>
-<body class="relative">
+<body>
 
-    <div id="modal-backdrop" class="modal-backdrop" aria-hidden="true"></div>
+<div id="app">
 
-    <!-- Order status banner -->
-    <div id="order-status-banner" aria-hidden="true">
-        <div class="max-w-screen-xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <span id="order-status-icon"></span>
-                <div>
-                    <p class="text-sm opacity-90">Заказ <span id="order-status-id"></span></p>
-                    <p class="font-bold" id="order-status-text"></p>
+    <!-- ─────────── AMBIENT GLOW ─────────── -->
+    <div style="position:absolute;inset:-40px;background:radial-gradient(ellipse at 70% 20%,rgba(200,255,0,0.04) 0%,transparent 60%);pointer-events:none;z-index:0;"></div>
+
+    <!-- ─────────── HOME ─────────── -->
+    <div id="screen-home" class="screen active">
+        <div class="glow-blob"></div>
+        <div class="content">
+            <!-- date -->
+            <p class="label-xs anim-title" id="home-date" style="margin-bottom:6px;"></p>
+
+            <!-- greeting -->
+            <div style="overflow:visible;margin-bottom:36px;">
+                <h1 id="home-greeting" class="clash anim-title" style="font-size:clamp(40px,12vw,52px);font-weight:700;color:var(--text);letter-spacing:-2px;line-height:1.05;white-space:nowrap;"></h1>
+            </div>
+
+            <!-- children cards -->
+            <div style="position:relative;margin-bottom:108px;" class="anim-card-1">
+                <!-- main child card -->
+                <div class="child-card-main" id="main-child-card" onclick="navigate(3)">
+                    <p class="label-xs" style="margin-bottom:4px;">Активный</p>
+                    <h2 id="child1-name" class="clash" style="font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1;color:var(--text);"></h2>
+                    <p id="child1-age" style="font-size:13px;color:var(--muted);margin-top:4px;"></p>
+                    <!-- arc -->
+                    <div class="arc-wrap">
+                        <svg id="arc-svg" width="192" height="192" viewBox="0 0 192 192" style="overflow:visible;">
+                            <path id="arc-track" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="2" stroke-linecap="round"/>
+                            <path id="arc-progress" fill="none" stroke="#C8FF00" stroke-width="2.5" stroke-linecap="round"/>
+                            <text id="arc-value" x="96" y="102" text-anchor="middle" fill="#C8FF00" font-size="44" font-weight="700" font-family="'Clash Display',sans-serif" letter-spacing="-2"></text>
+                            <text x="96" y="120" text-anchor="middle" fill="#52525B" font-size="9.5" font-family="Inter,sans-serif" letter-spacing="1.5">ЗАНЯТИЙ</text>
+                        </svg>
+                    </div>
+                    <!-- avatar -->
+                    <div class="child-avatar">
+                        <img id="child1-avatar" src="" alt="" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                </div>
+
+                <!-- second child mini card (hidden if only 1 child) -->
+                <div class="child-card-mini anim-card-2" id="child2-card" onclick="navigate(3)" style="display:none;">
+                    <p class="label-xs" style="margin-bottom:2px;" id="child2-label"></p>
+                    <p id="child2-section" class="clash" style="font-size:20px;font-weight:700;letter-spacing:-0.5px;color:var(--text);"></p>
+                    <p id="child2-lessons" style="font-size:11px;color:var(--muted);margin-top:3px;"></p>
                 </div>
             </div>
-            <div class="text-right">
-                <p class="text-sm opacity-90">Готовность</p>
-                <p class="font-bold" id="order-status-eta"></p>
+
+            <!-- today -->
+            <p class="label-xs" style="margin-bottom:14px;">Сегодня</p>
+            <div class="today-card anim-card-3" onclick="navigate(1)">
+                <div class="today-ghost"><span id="today-ghost-text"></span></div>
+                <div style="position:relative;z-index:1;padding:22px 52px 22px 24px;">
+                    <h2 id="today-section" class="clash" style="font-size:58px;font-weight:700;color:var(--text);letter-spacing:-2.5px;line-height:1;white-space:nowrap;"></h2>
+                </div>
+                <!-- trainer bottom-left -->
+                <div style="position:absolute;bottom:20px;left:24px;display:flex;align-items:center;gap:8px;z-index:1;">
+                    <div style="width:26px;height:26px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--card);">
+                        <img id="today-trainer-photo" src="" alt="" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                    <span id="today-trainer-name" style="font-size:12px;color:var(--muted);"></span>
+                </div>
+                <!-- time rotated right -->
+                <div style="position:absolute;right:18px;top:50%;transform:translateY(-50%) rotate(90deg);z-index:1;">
+                    <span id="today-time" class="clash" style="font-size:17px;color:var(--muted);font-weight:600;letter-spacing:0.04em;"></span>
+                </div>
             </div>
         </div>
     </div>
 
-    <main>
-        <!-- ===================== ГЛАВНАЯ ===================== -->
-        <section id="view-home" class="app-view active max-w-screen-xl mx-auto px-4 py-6">
-            <div class="mb-6">
-                <h1 class="text-3xl font-extrabold mb-1" id="home-shop-title"></h1>
-                <p class="text-sm" style="color: var(--text-mid);" id="home-shop-subtitle"></p>
+    <!-- ─────────── SCHEDULE ─────────── -->
+    <div id="screen-schedule" class="screen">
+        <div class="content">
+            <h1 class="clash anim-title" style="font-size:clamp(40px,12vw,52px);font-weight:700;color:var(--text);letter-spacing:-2px;line-height:1.05;margin-bottom:28px;">Расписание</h1>
+
+            <div class="view-toggle">
+                <button class="active" onclick="setScheduleView('week',this)">Неделя</button>
+                <button onclick="setScheduleView('month',this)">Месяц</button>
             </div>
 
-            <div class="mb-6" id="popular-section">
-                <div class="section-title mb-3">
-                    <i class="fas fa-fire" style="color: var(--accent);"></i>
-                    <span>Популярное</span>
+            <div class="day-strip" id="day-strip"></div>
+
+            <div id="lessons-list"></div>
+        </div>
+    </div>
+
+    <!-- ─────────── TRAINER ─────────── -->
+    <div id="screen-trainer" class="screen">
+        <!-- photo -->
+        <div class="photo-zone">
+            <img id="trainer-photo" src="" alt="">
+            <div class="photo-lime-overlay"></div>
+            <div class="photo-fade"></div>
+            <div class="trainer-name">
+                <h1 id="trainer-name-text" class="clash anim-title" style="font-size:clamp(36px,9vw,48px);font-weight:700;color:var(--text);letter-spacing:-1.5px;line-height:1;"></h1>
+            </div>
+            <div class="trainer-spec">
+                <span id="trainer-spec-text" style="font-size:10px;color:var(--muted);font-family:var(--font-inter);letter-spacing:0.14em;text-transform:uppercase;"></span>
+            </div>
+        </div>
+
+        <div class="trainer-content" style="overflow-y:auto;height:calc(100% - 34vh);">
+            <div class="stats-row anim-card-1">
+                <div style="display:flex;align-items:baseline;gap:8px;">
+                    <span id="trainer-exp" class="stat-num"></span>
+                    <span style="font-size:13px;color:var(--muted);">лет опыта</span>
                 </div>
-                <div id="popular-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-            </div>
-
-            <div>
-                <div class="section-title mb-3"><span>Всё меню</span></div>
-                <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-            </div>
-        </section>
-
-        <!-- ===================== КОРЗИНА ===================== -->
-        <section id="view-cart" class="app-view max-w-screen-xl mx-auto px-4 py-6">
-            <h1 class="text-2xl font-extrabold mb-5">Корзина</h1>
-            <div id="cart-content"></div>
-        </section>
-
-        <!-- ===================== ПРОФИЛЬ ===================== -->
-        <section id="view-profile" class="app-view max-w-screen-xl mx-auto px-4 py-6">
-            <div class="profile-header-card mb-5">
-                <div class="flex items-center gap-4 mb-5">
-                    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-user text-2xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-bold mb-1" id="profile-name">Гость</h2>
-                        <p class="text-sm opacity-90" id="profile-phone"></p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="profile-stat-box">
-                        <p class="text-xs opacity-90 mb-1">Заказов</p>
-                        <p class="text-xl font-bold" id="profile-orders-count">0</p>
-                    </div>
-                    <div class="profile-stat-box">
-                        <p class="text-xs opacity-90 mb-1">Потрачено</p>
-                        <p class="text-xl font-bold" id="profile-total-spent">0 ₽</p>
-                    </div>
+                <div style="display:flex;align-items:baseline;gap:8px;">
+                    <span id="trainer-age-range" class="stat-num"></span>
+                    <span style="font-size:13px;color:var(--muted);">лет ученики</span>
                 </div>
             </div>
 
-            <div class="profile-card mb-5">
-                <h2 class="text-lg font-bold mb-3">История заказов</h2>
-                <div id="profile-order-history" class="space-y-3"></div>
+            <div style="height:1px;background:var(--border);margin-bottom:24px;"></div>
+
+            <p id="trainer-bio" style="font-size:15px;color:var(--muted);line-height:1.72;margin-bottom:28px;" class="anim-card-2"></p>
+
+            <div class="rating-card anim-card-3">
+                <div style="display:flex;align-items:baseline;gap:10px;">
+                    <span id="trainer-rating" class="clash" style="font-size:42px;font-weight:700;color:var(--lime);letter-spacing:-1.5px;line-height:1;"></span>
+                    <span style="font-size:13px;color:var(--muted);">средняя оценка</span>
+                </div>
+                <div class="rating-bars" id="rating-bars"></div>
             </div>
-        </section>
+        </div>
+    </div>
 
-        <!-- ===================== АКЦИИ И СОБЫТИЯ ===================== -->
-        <section id="view-promo" class="app-view max-w-screen-xl mx-auto px-4 py-6">
-            <h1 class="text-2xl font-extrabold mb-5">Акции и события</h1>
-            <div id="promo-list" class="space-y-4"></div>
-        </section>
-    </main>
+    <!-- ─────────── BOOKING ─────────── -->
+    <div id="screen-booking" class="screen">
+        <div class="content">
+            <p class="label-xs" style="margin-bottom:6px;">Запись</p>
+            <h1 id="booking-title" class="clash anim-title" style="font-size:clamp(52px,16vw,72px);font-weight:700;color:var(--text);letter-spacing:-2.5px;line-height:1;white-space:nowrap;overflow:visible;margin-bottom:6px;"></h1>
+            <p id="booking-subtitle" style="font-size:14px;color:var(--muted);margin-bottom:36px;"></p>
 
-    <!-- Bottom navigation -->
-    <nav id="bottom-nav">
-        <div class="max-w-screen-xl mx-auto px-4">
-            <div class="flex justify-around items-center h-16">
-                <button class="nav-item active" data-view="home" aria-label="Главная">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10m-9 0l2-2"/></svg>
-                    <span>Главная</span>
-                </button>
-                <button class="nav-item" data-view="cart" aria-label="Корзина">
-                    <div class="relative">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                        <span id="nav-cart-badge" class="hidden">0</span>
-                    </div>
-                    <span>Корзина</span>
-                </button>
-                <button class="nav-item" data-view="profile" aria-label="Профиль">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    <span>Профиль</span>
-                </button>
-                <button class="nav-item" data-view="promo" aria-label="Акции">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.539 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                    <span>Акции</span>
+            <!-- time slots -->
+            <div id="time-slots"></div>
+
+            <!-- form (appears after slot selected) -->
+            <div id="booking-form" style="display:none;">
+                <label>Ребёнок</label>
+                <select id="form-child"></select>
+
+                <label>Телефон для подтверждения</label>
+                <input id="form-phone" type="tel" placeholder="+7 (999) 123-45-67">
+
+                <label>Комментарий (необязательно)</label>
+                <textarea id="form-comment" placeholder="Пожелания или вопросы..."></textarea>
+
+                <button id="confirm-btn" class="visible" onclick="submitBooking()">
+                    <span id="confirm-btn-text">Записать</span>
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- ─────────── NAV DOTS ─────────── -->
+    <nav id="nav-dots">
+        <button class="active" onclick="navigate(0)" title="Главная"><div class="dot"></div></button>
+        <button onclick="navigate(1)" title="Расписание"><div class="dot"></div></button>
+        <button onclick="navigate(2)" title="Тренер"><div class="dot"></div></button>
+        <button onclick="navigate(3)" title="Запись"><div class="dot"></div></button>
     </nav>
 
-    <!-- Product detail modal -->
-    <div id="product-detail" aria-hidden="true">
-        <div class="pd-header">
-            <button id="detail-back-btn" aria-label="Назад">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-            </button>
-            <h2 id="detail-title" class="text-lg font-bold"></h2>
-            <button id="detail-close-btn" aria-label="Закрыть">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-        </div>
-        <div id="detail-content" class="p-4"></div>
+    <!-- ─────────── ADD BTN ─────────── -->
+    <button id="add-btn" onclick="navigate(3)" title="Записаться">
+        <span>+</span>
+    </button>
+
+    <!-- ─────────── TOAST ─────────── -->
+    <div id="toast">
+        <div class="toast-icon">✓</div>
+        <div class="toast-text" id="toast-text"></div>
     </div>
 
-    <!-- Checkout modal -->
-    <div id="checkout-modal" aria-hidden="true">
-        <div class="p-4 border-b flex items-start gap-3" style="border-color:#eee;">
-            <div class="flex-1">
-                <h3 class="text-lg font-bold">Оформление заказа</h3>
-                <p class="text-sm" style="color: var(--text-mid);" id="checkout-pickup-line"></p>
-            </div>
-            <button id="checkout-close" style="color: var(--text-mid);" aria-label="Закрыть">
-                <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-        </div>
-        <div class="p-4 space-y-4">
-            <div class="grid grid-cols-1 gap-3">
-                <label class="text-sm font-bold">Дата самовывоза</label>
-                <input id="checkout-date" type="date" class="input-field p-3 text-sm w-full" min="" required>
-                <label class="text-sm font-bold">Время</label>
-                <input id="checkout-time" type="time" class="input-field p-3 text-sm w-full" required>
-                <label class="text-sm font-bold">Телефон для связи</label>
-                <input id="checkout-phone" type="tel" placeholder="+7 (999) 123-45-67" class="input-field p-3 text-sm w-full" required>
-            </div>
+</div>
 
-            <div class="flex items-center justify-between font-bold text-base pt-3 border-t" style="border-color: #eee;">
-                <span>Итого</span><span id="checkout-total" style="color: var(--accent);">0 ₽</span>
-            </div>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+/* =====================================================================
+ *  CONFIG — ЕДИНСТВЕННОЕ МЕСТО, КОТОРОЕ МЕНЯЕТСЯ ПОД КАЖДОГО КЛИЕНТА.
+ *  Всё что ниже этого блока — общий движок.
+ * ===================================================================== */
+const CONFIG = {
+    pageTitle: 'Детские занятия',
 
-            <div class="space-y-2">
-                <button id="place-order-btn" class="btn-primary w-full h-12 text-base flex items-center justify-center gap-2">Оформить заказ</button>
-                <button id="checkout-back-btn" class="w-full h-12 text-base font-semibold" style="color: var(--text-mid);">Вернуться к корзине</button>
-            </div>
-        </div>
-    </div>
+    // Родитель (имя на главном экране "Привет, [имя]")
+    parentName: 'Анна',
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-        /* =====================================================================
-         *  CONFIG — ЕДИНСТВЕННОЕ МЕСТО, КОТОРОЕ МЕНЯЕТСЯ ПОД КАЖДОГО КЛИЕНТА.
-         *  Всё, что ниже этого блока в файле — общий движок.
-         * ===================================================================== */
-        const CONFIG = {
-            shopName: 'Шаурма House',
-            shopEmoji: '🌯',
-            pageTitle: 'Шаурма House',
-            shopSubtitle: 'Свежая шаурма и вкусные добавки',
+    // Google Apps Script URL для отправки записей
+    backendUrl: 'ВСТАВЬ_СЮДА_URL_ТВОЕГО_APPS_SCRIPT',
 
-            // Свой Google Apps Script + своя Google Sheets под этот проект.
-            backendUrl: 'ВСТАВЬ_СЮДА_URL_ТВОЕГО_APPS_SCRIPT',
-
-            pickup: {
-                address: 'ул. Примерная, 1',
-                timeMin: '10:00',
-                timeMax: '22:00'
-            },
-
-            socialLinks: [
-                // { type: 'telegram', url: 'https://t.me/your_channel', icon: 'fab fa-telegram-plane' }
-            ],
-
-            theme: {
-                bgFrom: '#fff7ed',
-                bgVia: '#ffffff',
-                bgTo: '#fffbeb',
-                accent: '#ea580c',
-                accentDark: '#c2410c',
-                amber: '#d97706',
-                fontBody: "'Nunito', sans-serif"
-            },
-
-            // Бесплатная доставка / самовывоз — плашка в корзине. null чтобы скрыть.
-            freebiePromo: null,
-
-            // products: каждый товар может быть простым (price) или с размерами (sizes).
-            // sauces: список соусов для ЭТОГО товара — пользователь может выбрать
-            //   несколько, один или ни одного (мультивыбор чекбоксами).
-            // removableIngredients: список ингредиентов ЭТОГО товара, которые можно
-            //   исключить из заказа (галочка "убрать"). Это не общий список состава,
-            //   а именно те позиции, которые реально можно попросить не добавлять.
-            products: [
-                {
-                    id: '1',
-                    name: 'Классическая шаурма',
-                    description: 'Куриное мясо, свежие овощи, фирменный соус',
-                    price: 350,
-                    sizes: [
-                        { size: 'S', label: 'Малая', weight: '250 г', price: 350 },
-                        { size: 'M', label: 'Средняя', weight: '350 г', price: 420 },
-                        { size: 'L', label: 'Большая', weight: '450 г', price: 490 }
-                    ],
-                    sauces: ['Классический соус', 'Острый соус', 'Чесночный соус'],
-                    removableIngredients: ['Лук', 'Помидоры', 'Огурцы', 'Капуста'],
-                    images: ['https://images.unsplash.com/photo-1529006557810-274b9b2fc783?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
-                    cartImage: 'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-                    category: 'shawarma',
-                    isHot: true,
-                    rating: 4.8,
-                    ingredients: ['Куриное филе', 'Лаваш', 'Лук', 'Помидоры', 'Огурцы', 'Капуста', 'Фирменный соус']
-                },
-                {
-                    id: '2',
-                    name: 'Шаурма Mega',
-                    description: 'Двойная порция мяса, сыр, острый соус',
-                    price: 480,
-                    sizes: [
-                        { size: 'M', label: 'Средняя', weight: '400 г', price: 480 },
-                        { size: 'L', label: 'Большая', weight: '550 г', price: 590 }
-                    ],
-                    sauces: ['Острый соус', 'Сырный соус', 'Чесночный соус'],
-                    removableIngredients: ['Лук', 'Помидоры', 'Сыр', 'Маринованные огурцы'],
-                    images: ['https://images.unsplash.com/photo-1676300187013-7540d4e9440d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
-                    cartImage: 'https://images.unsplash.com/photo-1676300187013-7540d4e9440d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-                    category: 'shawarma',
-                    isHot: true,
-                    isSpicy: true,
-                    rating: 4.9,
-                    ingredients: ['Двойная порция курицы', 'Сыр', 'Лаваш', 'Лук', 'Помидоры', 'Маринованные огурцы', 'Острый соус']
-                },
-                {
-                    id: '3',
-                    name: 'Фалафель шаурма',
-                    description: 'Вегетарианская с фалафелем и хумусом',
-                    price: 320,
-                    sauces: ['Хумус', 'Тахини', 'Острый соус'],
-                    removableIngredients: ['Лук', 'Помидоры', 'Огурцы', 'Маринованная капуста'],
-                    images: ['https://images.unsplash.com/photo-1680405531955-8b4981bb1b0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
-                    cartImage: 'https://images.unsplash.com/photo-1680405531955-8b4981bb1b0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-                    category: 'shawarma',
-                    rating: 4.7,
-                    ingredients: ['Фалафель', 'Хумус', 'Лаваш', 'Лук', 'Помидоры', 'Огурцы', 'Маринованная капуста']
-                },
-                {
-                    id: '4',
-                    name: 'Картофель фри',
-                    description: 'Хрустящий картофель с фирменным соусом',
-                    price: 150,
-                    sauces: ['Кетчуп', 'Сырный соус', 'Чесночный соус'],
-                    removableIngredients: ['Соль', 'Специи'],
-                    images: ['https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
-                    cartImage: 'https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-                    category: 'sides',
-                    rating: 4.6,
-                    ingredients: ['Картофель', 'Растительное масло', 'Соль', 'Специи']
-                },
-                {
-                    id: '5',
-                    name: 'Кока-Кола',
-                    description: 'Освежающий напиток 0.5л',
-                    price: 100,
-                    images: ['https://images.unsplash.com/photo-1592892111425-15e04305f961?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
-                    cartImage: 'https://images.unsplash.com/photo-1592892111425-15e04305f961?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-                    category: 'drinks',
-                    rating: 4.5,
-                    ingredients: ['Газированный напиток 0.5л']
-                },
-                {
-                    id: '6',
-                    name: 'Хумус',
-                    description: 'Классический хумус с питой',
-                    price: 180,
-                    sauces: ['Оливковое масло', 'Острый соус'],
-                    removableIngredients: ['Пита'],
-                    images: ['https://images.unsplash.com/photo-1637949385162-e416fb15b2ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'],
-                    cartImage: 'https://images.unsplash.com/photo-1637949385162-e416fb15b2ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600',
-                    category: 'sides',
-                    rating: 4.7,
-                    ingredients: ['Нут', 'Тахини', 'Оливковое масло', 'Пита']
-                }
-            ],
-
-            // promos: раздел "Акции и события". Заполняется вручную, как и products.
-            // image — необязательно (если нет, карточка показывается без фото).
-            promos: [
-                {
-                    title: 'Скидка 20% на Mega-шаурму',
-                    description: 'Каждую среду заказывайте Шаурму Mega со скидкой 20%. Акция действует на самовывоз.',
-                    image: 'https://images.unsplash.com/photo-1676300187013-7540d4e9440d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-                    date: '2026-06-25'
-                },
-                {
-                    title: 'Открытие летней веранды',
-                    description: 'С этого месяца открыта летняя веранда — теперь можно есть шаурму с видом на улицу.',
-                    image: 'https://images.unsplash.com/photo-1680405531955-8b4981bb1b0c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080',
-                    date: '2026-06-15'
-                },
-                {
-                    title: 'Новинка: Хумус с питой',
-                    description: 'В меню появился классический хумус с питой — отличное дополнение к любой шаурме.',
-                    image: null,
-                    date: '2026-06-10'
-                }
-            ]
-        };
-        /* =====================================================================
-         *  КОНЕЦ CONFIG. Дальше — общий движок, одинаковый для всех клиентов.
-         * ===================================================================== */
-
-        (function applyTheme() {
-            const t = CONFIG.theme;
-            const root = document.documentElement;
-            root.style.setProperty('--bg-from', t.bgFrom);
-            root.style.setProperty('--bg-via', t.bgVia);
-            root.style.setProperty('--bg-to', t.bgTo);
-            root.style.setProperty('--accent', t.accent);
-            root.style.setProperty('--accent-dark', t.accentDark);
-            root.style.setProperty('--amber', t.amber);
-            root.style.setProperty('--font-body', t.fontBody);
-        })();
-
-        document.getElementById('page-title').textContent = CONFIG.pageTitle;
-        document.getElementById('home-shop-title').textContent = `${CONFIG.shopEmoji ? CONFIG.shopEmoji + ' ' : ''}${CONFIG.shopName}`;
-        document.getElementById('home-shop-subtitle').textContent = CONFIG.shopSubtitle;
-        document.getElementById('checkout-pickup-line').innerHTML = `Самовывоз: <strong>${CONFIG.pickup.address}</strong>`;
-
-        if (window.Telegram?.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
+    // Дети. Первый — "активный" (большая карточка).
+    // Если детей > 1 — второй показывается в мини-карточке.
+    children: [
+        {
+            name: 'Максим',
+            age: 9,
+            section: 'ФУТБОЛ',
+            time: '17:00',
+            lessonsLeft: 8,
+            lessonsTotal: 12,
+            avatar: 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=160&h=160&fit=crop&auto=format'
+        },
+        {
+            name: 'Соня',
+            age: 7,
+            section: 'ГИМН.',
+            lessonsLeft: 5,
+            lessonsTotal: 10,
+            avatar: null
         }
+    ],
 
-        const products = CONFIG.products;
+    // Расписание на неделю. День (0=пн, 1=вт, ..., 6=вс)
+    schedule: [
+        { day: 0, time: '10:00', section: 'ФУТБОЛ',     trainer: 'А. Козлов',    primary: true  },
+        { day: 0, time: '12:30', section: 'ПЛАВАНИЕ',   trainer: 'И. Морозова',  primary: false },
+        { day: 0, time: '15:00', section: 'ГИМНАСТИКА', trainer: 'Е. Петрова',   primary: false },
+        { day: 0, time: '17:00', section: 'ФУТБОЛ',     trainer: 'А. Козлов',    primary: false },
+        { day: 2, time: '10:00', section: 'ФУТБОЛ',     trainer: 'А. Козлов',    primary: true  },
+        { day: 2, time: '15:00', section: 'ГИМНАСТИКА', trainer: 'Е. Петрова',   primary: false },
+        { day: 4, time: '10:00', section: 'ФУТБОЛ',     trainer: 'А. Козлов',    primary: true  },
+        { day: 4, time: '12:30', section: 'ПЛАВАНИЕ',   trainer: 'И. Морозова',  primary: false },
+    ],
 
-        const appState = {
-            currentView: 'home',
-            cart: [], selectedProduct: null, selectedSize: null,
-            selectedSauces: [], excludedIngredients: [],
-            productImageIndex: 0, detailQuantity: 1,
-            addedAnimating: new Set()
-        };
-
-        const elements = {
-            views: { home: document.getElementById('view-home'), cart: document.getElementById('view-cart'), profile: document.getElementById('view-profile'), promo: document.getElementById('view-promo') },
-            navItems: document.querySelectorAll('#bottom-nav .nav-item'),
-            navCartBadge: document.getElementById('nav-cart-badge'),
-            popularGrid: document.getElementById('popular-grid'),
-            popularSection: document.getElementById('popular-section'),
-            productsGrid: document.getElementById('products-grid'),
-            cartContent: document.getElementById('cart-content'),
-            productDetail: document.getElementById('product-detail'),
-            detailBackBtn: document.getElementById('detail-back-btn'),
-            detailCloseBtn: document.getElementById('detail-close-btn'),
-            detailTitle: document.getElementById('detail-title'),
-            detailContent: document.getElementById('detail-content'),
-            checkoutModal: document.getElementById('checkout-modal'),
-            checkoutClose: document.getElementById('checkout-close'),
-            checkoutBackBtn: document.getElementById('checkout-back-btn'),
-            placeOrderBtn: document.getElementById('place-order-btn'),
-            checkoutTotal: document.getElementById('checkout-total'),
-            checkoutDate: document.getElementById('checkout-date'),
-            checkoutTime: document.getElementById('checkout-time'),
-            checkoutPhone: document.getElementById('checkout-phone'),
-            modalBackdrop: document.getElementById('modal-backdrop'),
-            orderBanner: document.getElementById('order-status-banner'),
-            profileOrdersCount: document.getElementById('profile-orders-count'),
-            profileTotalSpent: document.getElementById('profile-total-spent'),
-            profileOrderHistory: document.getElementById('profile-order-history'),
-            profileName: document.getElementById('profile-name'),
-            profilePhone: document.getElementById('profile-phone'),
-            promoList: document.getElementById('promo-list')
-        };
-        const modalState = { detail: false, checkout: false };
-
-        /* ---------- View switching (Главная / Корзина / Профиль) ---------- */
-        function switchView(viewName) {
-            appState.currentView = viewName;
-            Object.entries(elements.views).forEach(([name, el]) => el.classList.toggle('active', name === viewName));
-            elements.navItems.forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewName));
-            if (viewName === 'cart') renderCart();
-            if (viewName === 'profile') renderProfile();
-            if (viewName === 'promo') renderPromos();
-            window.scrollTo({ top: 0, behavior: 'instant' });
+    // Тренеры (массив — движок готов к нескольким, сейчас берём [0])
+    trainers: [
+        {
+            name: 'Алексей\nКозлов',
+            photo: 'https://images.unsplash.com/photo-1546961342-ea5f62d5e5ee?w=400&h=380&fit=crop&auto=format',
+            spec: 'ФУТБОЛ · СПОРТ',
+            experience: 8,
+            ageRange: '6–14',
+            bio: 'Тренер высшей категории. Специализация — детский футбол и командная тактика. Чемпион города по юношескому футболу 2019, мастер спорта.',
+            rating: 4.9
         }
+    ],
 
-        function initNav() {
-            elements.navItems.forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
-        }
+    // Слоты для записи. free: true — доступен
+    timeSlots: [
+        { time: '09:00', free: false },
+        { time: '10:30', free: true  },
+        { time: '12:00', free: true  },
+        { time: '14:00', free: false },
+        { time: '15:30', free: true  },
+        { time: '17:00', free: false },
+        { time: '18:30', free: true  },
+        { time: '20:00', free: true  },
+    ],
 
-        function updateModalBackdrop() {
-            const anyOpen = modalState.detail || modalState.checkout;
-            elements.modalBackdrop.classList.toggle('visible', anyOpen);
-            elements.modalBackdrop.setAttribute('aria-hidden', !anyOpen);
-        }
+    // Для экрана "Запись": секция и тренер (откуда пишем)
+    bookingSection: 'ФУТБОЛ',
+    bookingTrainer: 'А. Козлов',
 
-        function initEventListeners() {
-            elements.detailBackBtn.addEventListener('click', closeProductDetail);
-            elements.detailCloseBtn.addEventListener('click', closeProductDetail);
-            elements.checkoutClose.addEventListener('click', closeCheckout);
-            elements.checkoutBackBtn.addEventListener('click', closeCheckout);
-            elements.placeOrderBtn.addEventListener('click', placeOrder);
-            elements.modalBackdrop.addEventListener('click', () => {
-                if (modalState.checkout) closeCheckout();
-                else if (modalState.detail) closeProductDetail();
-            });
-            initNav();
-        }
+    // Тема (CSS-переменные)
+    theme: {
+        bg:     '#0A0A0F',
+        card:   '#111116',
+        lime:   '#C8FF00',
+        muted:  '#52525B',
+        text:   '#F0EEE8',
+    }
+};
+/* =====================================================================
+ *  КОНЕЦ CONFIG. Дальше — общий движок, одинаковый для всех клиентов.
+ * ===================================================================== */
 
-        function normalizeKey(val) { return val == null ? '' : String(val); }
+// ── Применяем тему ────────────────────────────────────────────────────
+(function applyTheme() {
+    const t = CONFIG.theme;
+    const r = document.documentElement;
+    r.style.setProperty('--bg',    t.bg);
+    r.style.setProperty('--card',  t.card);
+    r.style.setProperty('--lime',  t.lime);
+    r.style.setProperty('--muted', t.muted);
+    r.style.setProperty('--text',  t.text);
+})();
 
-        function getProductBasePrice(product) {
-            if (product.sizes && product.sizes.length) return Math.min(...product.sizes.map(s => s.price));
-            return product.price;
-        }
+document.getElementById('page-title').textContent = CONFIG.pageTitle;
 
-        function getItemPrice(item) {
-            const product = products.find(p => p.id === item.id);
-            if (!product) return item.price || 0;
-            const size = product.sizes ? product.sizes.find(s => s.size === item.selectedSize) : null;
-            return size ? size.price : product.price;
-        }
+// ── Telegram WebApp init ──────────────────────────────────────────────
+if (window.Telegram?.WebApp) {
+    window.Telegram.WebApp.ready();
+    window.Telegram.WebApp.expand();
+}
 
-        /* ---------- Product cards (главная) ---------- */
-        function renderProducts() {
-            const popular = products.filter(p => p.isHot);
-            elements.popularSection.style.display = popular.length ? 'block' : 'none';
-            elements.popularGrid.innerHTML = popular.map(renderProductCard).join('');
-            elements.productsGrid.innerHTML = products.map(renderProductCard).join('');
-        }
+// ── State ─────────────────────────────────────────────────────────────
+const state = {
+    activeScreen: 0,
+    scheduleView: 'week',
+    activeDayIdx: 0,
+    selectedSlot: null,
+    submitting: false,
+    submitted: false
+};
 
-        function renderProductCard(product) {
-            const price = getProductBasePrice(product);
-            const hasVariants = !!(product.sizes || product.sauces?.length || product.removableIngredients?.length);
-            const priceLabel = hasVariants ? `от ${price} ₽` : `${price} ₽`;
-            const isAdded = appState.addedAnimating.has(product.id);
-            return `
-            <div class="product-card">
-                <div class="image-wrap" onclick="openProductDetailById('${product.id}')">
-                    <img data-product-id="${product.id}" src="${product.cartImage || product.images[0]}" alt="${product.name}">
-                    ${product.isHot ? `<div class="badge-hot"><i class="fas fa-fire"></i> Хит</div>` : ''}
-                    ${product.isSpicy ? `<div class="badge-spicy">🌶️ Острое</div>` : ''}
-                </div>
-                <div class="p-4">
-                    <div class="flex items-start justify-between mb-1 gap-2">
-                        <h3 onclick="openProductDetailById('${product.id}')" class="cursor-pointer">${product.name}</h3>
-                        ${product.rating ? `<div class="rating-pill flex-shrink-0"><i class="fas fa-star text-xs" style="color:#fbbf24;"></i><span class="text-xs font-bold">${product.rating}</span></div>` : ''}
-                    </div>
-                    <p class="text-sm mb-3" style="color: var(--text-mid); min-height: 36px;">${product.description}</p>
-                    <div class="flex items-center justify-between">
-                        <span class="price">${priceLabel}</span>
-                        <button onclick="${hasVariants ? `openProductDetailById('${product.id}')` : `addToCartById('${product.id}',1)`}; event.stopPropagation();" class="add-to-cart-btn ${isAdded ? 'added' : ''}">
-                            ${isAdded ? '<i class="fas fa-check"></i><span>Добавлено</span>' : `<i class="fas fa-plus"></i><span>${hasVariants ? 'Выбрать' : 'В корзину'}</span>`}
-                        </button>
-                    </div>
-                </div>
+const SCREENS = ['home', 'schedule', 'trainer', 'booking'];
+
+// ── Navigation ────────────────────────────────────────────────────────
+function navigate(idx) {
+    if (idx === state.activeScreen) return;
+    const prev = document.getElementById('screen-' + SCREENS[state.activeScreen]);
+    const next = document.getElementById('screen-' + SCREENS[idx]);
+    const navBtns = document.querySelectorAll('#nav-dots button');
+
+    prev.classList.remove('active');
+    prev.style.animation = 'screenExit 280ms ease-in both';
+    setTimeout(() => { prev.style.animation = ''; }, 290);
+
+    next.classList.add('active');
+    next.style.animation = 'screenEnter 500ms cubic-bezier(0.16,1,0.3,1) both';
+    setTimeout(() => { next.style.animation = ''; }, 510);
+
+    navBtns.forEach((b, i) => b.classList.toggle('active', i === idx));
+    state.activeScreen = idx;
+
+    // refresh per-screen
+    if (idx === 1) renderSchedule();
+    if (idx === 2) renderTrainer();
+    if (idx === 3) renderBooking();
+}
+
+// ── HOME ──────────────────────────────────────────────────────────────
+function renderHome() {
+    // date
+    const now = new Date();
+    const days = ['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
+    const months = ['ЯНВАРЯ','ФЕВРАЛЯ','МАРТА','АПРЕЛЯ','МАЯ','ИЮНЯ','ИЮЛЯ','АВГУСТА','СЕНТЯБРЯ','ОКТЯБРЯ','НОЯБРЯ','ДЕКАБРЯ'];
+    document.getElementById('home-date').textContent =
+        `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+    document.getElementById('home-greeting').textContent = `Привет, ${CONFIG.parentName}`;
+
+    // child 1
+    const c1 = CONFIG.children[0];
+    document.getElementById('child1-name').textContent = c1.name;
+    document.getElementById('child1-age').textContent = `${c1.age} лет`;
+    document.getElementById('child1-avatar').src = c1.avatar || 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=160&h=160&fit=crop&auto=format';
+    document.getElementById('child1-avatar').alt = c1.name;
+
+    // arc
+    renderArc(c1.lessonsLeft, c1.lessonsTotal);
+
+    // child 2
+    if (CONFIG.children.length > 1) {
+        const c2 = CONFIG.children[1];
+        const card2 = document.getElementById('child2-card');
+        card2.style.display = 'block';
+        document.getElementById('child2-label').textContent = `${c2.name} · ${c2.age} лет`;
+        document.getElementById('child2-section').textContent = c2.section;
+        document.getElementById('child2-lessons').textContent = `${c2.lessonsLeft} занятий`;
+    }
+
+    // today card
+    document.getElementById('today-ghost-text').textContent = c1.section;
+    document.getElementById('today-section').textContent = c1.section;
+    document.getElementById('today-time').textContent = c1.time;
+
+    const t0 = CONFIG.trainers[0];
+    document.getElementById('today-trainer-photo').src = t0.photo;
+    document.getElementById('today-trainer-name').textContent = t0.name.replace('\n', ' ');
+}
+
+// ── ARC PROGRESS ─────────────────────────────────────────────────────
+function renderArc(value, total) {
+    const r = 66, cx = 96, cy = 96;
+    function toXY(deg) {
+        const rad = ((deg - 90) * Math.PI) / 180;
+        return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+    }
+    const start = toXY(225);
+    const end   = toXY(135);
+    const d = `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${r} ${r} 0 1 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+    const arcLen = r * (270 * Math.PI) / 180;
+    const progress = value / total;
+    const dashOffset = arcLen * (1 - progress);
+
+    document.getElementById('arc-track').setAttribute('d', d);
+    document.getElementById('arc-progress').setAttribute('d', d);
+    document.getElementById('arc-progress').setAttribute('stroke-dasharray', arcLen);
+    document.getElementById('arc-progress').setAttribute('stroke-dashoffset', arcLen); // start at 0
+    document.getElementById('arc-value').textContent = value;
+
+    // animate after paint
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            document.getElementById('arc-progress').style.transition = 'stroke-dashoffset 1100ms cubic-bezier(0.34,1.56,0.64,1)';
+            document.getElementById('arc-progress').setAttribute('stroke-dashoffset', dashOffset);
+        }, 300);
+    });
+}
+
+// ── SCHEDULE ─────────────────────────────────────────────────────────
+function renderSchedule() {
+    // build week days anchored to today
+    const today = new Date();
+    const todayDow = today.getDay(); // 0=вс,1=пн...
+    // Monday-based week offset
+    const mondayOffset = todayDow === 0 ? -6 : 1 - todayDow;
+    const DAY_LETTERS = ['П','В','С','Ч','П','С','В']; // пн..вс
+
+    const strip = document.getElementById('day-strip');
+    strip.innerHTML = '';
+
+    // которой индекс по умолчанию = сегодня
+    let todayIdx = todayDow === 0 ? 6 : todayDow - 1;
+    if (state.activeDayIdx === 0) state.activeDayIdx = todayIdx;
+
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + mondayOffset + i);
+        const btn = document.createElement('button');
+        btn.className = 'day-btn' + (i === state.activeDayIdx ? ' active' : '');
+        btn.innerHTML = `
+            <span class="day-l">${DAY_LETTERS[i]}</span>
+            <span class="day-d">${date.getDate()}</span>
+            <div class="day-dot"></div>`;
+        btn.onclick = () => { state.activeDayIdx = i; renderSchedule(); };
+        strip.appendChild(btn);
+    }
+
+    // lessons for active day (0=пн)
+    const daySchedule = CONFIG.schedule.filter(l => l.day === state.activeDayIdx);
+    const list = document.getElementById('lessons-list');
+    list.innerHTML = '';
+
+    if (daySchedule.length === 0) {
+        list.innerHTML = `<p style="color:var(--muted);font-size:15px;padding:20px 0;">Занятий нет</p>`;
+        return;
+    }
+
+    daySchedule.forEach((lesson, i) => {
+        const delay = i * 80 + 80;
+        if (lesson.primary) {
+            list.innerHTML += `
+            <div class="lesson-card-primary" style="animation:cardSlide 500ms cubic-bezier(0.16,1,0.3,1) ${delay}ms both;">
+                <p class="label-xs" style="margin-bottom:6px;">${lesson.time}</p>
+                <h3 class="clash" style="font-size:32px;font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1;">${lesson.section}</h3>
+                <p style="font-size:13px;color:var(--muted);margin-top:6px;">${lesson.trainer}</p>
+            </div>`;
+        } else {
+            list.innerHTML += `
+            <div class="lesson-row" style="animation:cardSlide 500ms cubic-bezier(0.16,1,0.3,1) ${delay}ms both;">
+                <span style="font-size:14px;color:var(--muted);min-width:44px;">${lesson.time}</span>
+                <div class="lesson-divider"></div>
+                <span class="clash" style="font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.4px;flex:1;">${lesson.section}</span>
+                <div class="lesson-divider"></div>
+                <span style="font-size:12px;color:var(--muted);">${lesson.trainer}</span>
             </div>`;
         }
+    });
+}
 
-        function flashAdded(productId) {
-            appState.addedAnimating.add(productId);
-            renderProducts();
-            setTimeout(() => { appState.addedAnimating.delete(productId); renderProducts(); }, 1000);
-        }
+function setScheduleView(v, btn) {
+    state.scheduleView = v;
+    document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderSchedule();
+}
 
-        function findProductCardImageByButton(buttonEl) {
-            if (!buttonEl) return null;
-            const card = buttonEl.closest('.product-card');
-            if (!card) return null;
-            return card.querySelector('img');
-        }
+// ── TRAINER ───────────────────────────────────────────────────────────
+function renderTrainer() {
+    const t = CONFIG.trainers[0];
+    document.getElementById('trainer-photo').src = t.photo;
+    document.getElementById('trainer-photo').alt = t.name.replace('\n',' ');
+    document.getElementById('trainer-name-text').innerHTML = t.name.replace('\n','<br>');
+    document.getElementById('trainer-spec-text').textContent = t.spec;
+    document.getElementById('trainer-exp').textContent = t.experience;
+    document.getElementById('trainer-age-range').textContent = t.ageRange;
+    document.getElementById('trainer-bio').textContent = t.bio;
+    document.getElementById('trainer-rating').textContent = t.rating;
 
-        /* ---------- Cart ----------
-         * Позиция в корзине теперь хранит:
-         *   selectedSize       — размер (если у товара есть sizes)
-         *   selectedSauces     — массив выбранных соусов (мультивыбор, может быть [])
-         *   excludedIngredients — массив ингредиентов, которые просили убрать (может быть [])
-         * Две позиции одного товара считаются разными строками корзины, если
-         * отличаются по размеру, набору соусов или набору исключений.
-         */
-        function addToCartById(productId, quantity = 1) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            const isSameProductOpen = appState.selectedProduct?.id === productId;
-            const size = product.sizes ? (isSameProductOpen ? appState.selectedSize : product.sizes[0].size) : null;
-            const sauces = isSameProductOpen ? [...appState.selectedSauces] : [];
-            const excluded = isSameProductOpen ? [...appState.excludedIngredients] : [];
-            const sauceKey = normalizeKey([...sauces].sort().join('|'));
-            const excludedKey = normalizeKey([...excluded].sort().join('|'));
-            const existingItem = appState.cart.find(item =>
-                String(item.id) === String(product.id) &&
-                normalizeKey(item.selectedSize) === normalizeKey(size) &&
-                normalizeKey([...(item.selectedSauces || [])].sort().join('|')) === sauceKey &&
-                normalizeKey([...(item.excludedIngredients || [])].sort().join('|')) === excludedKey
-            );
-            if (existingItem) { existingItem.quantity += quantity; }
-            else { appState.cart.push({ ...product, quantity, selectedSize: size, selectedSauces: sauces, excludedIngredients: excluded }); }
-            try { localStorage.setItem('cart', JSON.stringify(appState.cart)); } catch (e) { console.error('LocalStorage set error', e); }
-            updateCartBadge();
-            flashAdded(productId);
-            showNotification(`${product.name} добавлен в корзину`, 'success');
-            if (appState.currentView === 'cart') renderCart();
-        }
+    // rating bars (filled based on rating/5)
+    const bars = document.getElementById('rating-bars');
+    bars.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'rating-bar';
+        const pct = t.rating / 5;
+        bar.style.background = i / 5 <= pct ? 'var(--lime)' : 'rgba(200,255,0,0.2)';
+        bars.appendChild(bar);
+    }
+}
 
-        function updateCartQuantity(cartIndex, newQuantity) {
-            const item = appState.cart[cartIndex];
-            if (!item) return;
-            if (newQuantity <= 0) { removeFromCart(cartIndex); return; }
-            item.quantity = newQuantity;
-            try { localStorage.setItem('cart', JSON.stringify(appState.cart)); } catch (e) { console.error(e); }
-            updateCartBadge();
-            renderCart();
-        }
+// ── BOOKING ───────────────────────────────────────────────────────────
+function renderBooking() {
+    // today's date for subtitle
+    const today = new Date();
+    const DAY_NAMES = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+    const MONTH_NAMES = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+    const dateStr = `${DAY_NAMES[today.getDay()]}, ${today.getDate()} ${MONTH_NAMES[today.getMonth()]}`;
 
-        function removeFromCart(cartIndex) {
-            appState.cart.splice(cartIndex, 1);
-            try { localStorage.setItem('cart', JSON.stringify(appState.cart)); } catch (e) { console.error(e); }
-            updateCartBadge();
-            renderCart();
-        }
+    document.getElementById('booking-title').textContent = CONFIG.bookingSection;
+    document.getElementById('booking-subtitle').textContent = `${dateStr} · ${CONFIG.bookingTrainer}`;
 
-        function clearCart() {
-            appState.cart = [];
-            try { localStorage.setItem('cart', JSON.stringify(appState.cart)); } catch (e) {}
-            updateCartBadge();
-            renderCart();
-        }
-
-        function updateCartBadge() {
-            const totalItems = appState.cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
-            elements.navCartBadge.textContent = totalItems;
-            elements.navCartBadge.classList.toggle('hidden', totalItems === 0);
-        }
-
-        function getMinOrderDate() {
-            const today = new Date();
-            today.setDate(today.getDate());
-            return today.toISOString().split('T')[0];
-        }
-
-        function renderCart() {
-            const cartContent = elements.cartContent;
-            const totalAmount = appState.cart.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0);
-            if (appState.cart.length === 0) {
-                cartContent.innerHTML = `
-                <div class="text-center py-16">
-                    <i class="fas fa-shopping-bag" style="font-size: 64px; color: #d1d5db;"></i>
-                    <h2 class="text-xl font-bold mt-4 mb-2">Корзина пуста</h2>
-                    <p class="text-sm mb-6" style="color: var(--text-mid);">Добавьте что-нибудь вкусное из меню</p>
-                    <button onclick="switchView('home')" class="btn-primary px-6 py-3 inline-flex items-center gap-2">
-                        Перейти в меню <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>`;
-                return;
-            }
-            const freebieHtml = CONFIG.freebiePromo ? `<div class="mt-4 p-3 rounded-xl text-sm" style="background:#f0fdf4; color:#15803d;">${CONFIG.freebiePromo}</div>` : '';
-            cartContent.innerHTML = `
-            <div class="space-y-3 mb-5">
-                ${appState.cart.map((item, idx) => {
-                    const price = getItemPrice(item);
-                    const sauces = item.selectedSauces || [];
-                    const excluded = item.excludedIngredients || [];
-                    const detailLines = [];
-                    if (item.selectedSize) detailLines.push(`Размер: ${item.selectedSize}`);
-                    if (sauces.length) detailLines.push(`Соусы: ${sauces.join(', ')}`);
-                    if (excluded.length) detailLines.push(`Без: ${excluded.join(', ')}`);
-                    return `<div class="cart-item animate-fade-in flex gap-4 p-4">
-                        <img src="${item.cartImage || 'https://via.placeholder.com/150'}" alt="${item.name}" class="w-20 h-20 object-cover rounded-xl flex-shrink-0">
-                        <div class="flex-1 min-w-0">
-                            <h4 class="font-bold mb-1">${item.name}</h4>
-                            ${detailLines.length ? `<p class="text-xs mb-1" style="color: var(--text-mid);">${detailLines.join(' · ')}</p>` : ''}
-                            <p class="text-sm mb-2" style="color: var(--accent); font-weight: 700;">${price} ₽ × ${item.quantity} = ${price * item.quantity} ₽</p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
-                                    <button class="quantity-btn" onclick="updateCartQuantity(${idx}, ${item.quantity - 1})">-</button>
-                                    <span class="w-8 text-center font-bold">${item.quantity}</span>
-                                    <button class="quantity-btn" onclick="updateCartQuantity(${idx}, ${item.quantity + 1})">+</button>
-                                </div>
-                                <button onclick="removeFromCart(${idx})" class="p-2 rounded-lg" style="color: var(--danger);">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>`;
-                }).join('')}
-            </div>
-            <div class="profile-card">
-                <h2 class="text-lg font-bold mb-3">Итого</h2>
-                <div class="flex justify-between text-base font-bold pt-2">
-                    <span>Всего</span><span style="color: var(--accent);">${totalAmount} ₽</span>
-                </div>
-                ${freebieHtml}
-                <button id="checkout-open-btn" class="btn-primary w-full h-12 mt-4">Перейти к оформлению</button>
-                <button onclick="clearCart()" class="w-full h-10 mt-2 text-sm font-semibold" style="color: var(--text-mid);">Очистить корзину</button>
-            </div>`;
-            const checkoutBtn = document.getElementById('checkout-open-btn');
-            if (checkoutBtn) checkoutBtn.addEventListener('click', openCheckout);
-        }
-
-        /* ---------- Product detail modal ---------- */
-        function openProductDetailById(productId) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            appState.selectedProduct = product;
-            appState.selectedSize = product.sizes ? product.sizes[0].size : null;
-            appState.selectedSauces = [];
-            appState.excludedIngredients = [];
-            appState.productImageIndex = 0;
-            appState.detailQuantity = 1;
-            elements.detailTitle.textContent = product.name;
-            modalState.detail = true;
-            updateModalBackdrop();
-            elements.productDetail.style.transform = 'translateY(0)';
-            elements.productDetail.setAttribute('aria-hidden', 'false');
-            renderProductDetail();
-        }
-
-        function closeProductDetail() {
-            modalState.detail = false;
-            elements.productDetail.style.transform = 'translateY(100%)';
-            elements.productDetail.setAttribute('aria-hidden', 'true');
-            appState.detailQuantity = 1;
-            updateModalBackdrop();
-        }
-
-        function selectSize(size) { appState.selectedSize = size; renderProductDetail(); }
-
-        function toggleSauce(sauceName) {
-            const idx = appState.selectedSauces.indexOf(sauceName);
-            if (idx === -1) appState.selectedSauces.push(sauceName);
-            else appState.selectedSauces.splice(idx, 1);
-            renderProductDetail();
-        }
-
-        function toggleExcludeIngredient(ingredientName) {
-            const idx = appState.excludedIngredients.indexOf(ingredientName);
-            if (idx === -1) appState.excludedIngredients.push(ingredientName);
-            else appState.excludedIngredients.splice(idx, 1);
-            renderProductDetail();
-        }
-
-        function renderProductDetail() {
-            if (!appState.selectedProduct) return;
-            const product = appState.selectedProduct;
-            const size = product.sizes ? product.sizes.find(s => s.size === appState.selectedSize) : null;
-            const price = size ? size.price : product.price;
-            elements.detailContent.innerHTML = `
-            <div class="product-image-carousel">
-                ${product.images.map((img, i) => `<img src="${img}" alt="${product.name}" class="${i === 0 ? 'active' : ''}">`).join('')}
-                <div class="product-image-dots">${product.images.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('')}</div>
-            </div>
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <h1 class="text-xl font-bold">${product.name}</h1>
-                    ${product.rating ? `<div class="rating-pill"><i class="fas fa-star text-xs" style="color:#fbbf24;"></i><span class="text-xs font-bold">${product.rating}</span></div>` : ''}
-                </div>
-                ${product.sizes ? `<div class="space-y-2">
-                    <h3 class="font-bold text-base">Размер</h3>
-                    <div class="grid grid-cols-3 gap-3">
-                        ${product.sizes.map(s => `<button class="size-btn p-3 ${appState.selectedSize === s.size ? 'active' : ''} text-left" onclick="selectSize('${s.size}')">
-                            <div class="font-bold text-sm">${s.label || s.size}</div>
-                            <div class="text-xs muted">${s.weight || ''} · ${s.price} ₽</div>
-                        </button>`).join('')}
-                    </div>
-                </div>` : ''}
-                ${(product.sauces?.length || product.removableIngredients?.length) ? `<div class="space-y-3">
-                    <h3 class="font-bold text-base">Настроить состав</h3>
-                    ${product.sauces?.length ? `<div class="space-y-2">
-                        <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--text-mid);">Соусы (можно выбрать несколько)</p>
-                        <div class="space-y-2">
-                            ${product.sauces.map(sauceName => {
-                                const checked = appState.selectedSauces.includes(sauceName);
-                                return `<label class="customize-row ${checked ? 'checked-sauce' : ''}" onclick="event.preventDefault(); toggleSauce('${sauceName}')">
-                                    <input type="checkbox" ${checked ? 'checked' : ''} readonly>
-                                    <div class="checkbox-visual">${checked ? '<i class="fas fa-check text-xs"></i>' : ''}</div>
-                                    <span class="row-label">${sauceName}</span>
-                                </label>`;
-                            }).join('')}
-                        </div>
-                    </div>` : ''}
-                    ${product.removableIngredients?.length ? `<div class="space-y-2">
-                        <p class="text-xs font-bold uppercase tracking-wide" style="color: var(--text-mid);">Убрать ингредиенты</p>
-                        <div class="space-y-2">
-                            ${product.removableIngredients.map(ingName => {
-                                const excluded = appState.excludedIngredients.includes(ingName);
-                                return `<label class="customize-row exclude-row ${excluded ? 'checked-exclude' : ''}" onclick="event.preventDefault(); toggleExcludeIngredient('${ingName}')">
-                                    <input type="checkbox" ${excluded ? 'checked' : ''} readonly>
-                                    <div class="checkbox-visual">${excluded ? '<i class="fas fa-times text-xs"></i>' : ''}</div>
-                                    <span class="row-label ${excluded ? 'is-excluded' : ''}">${ingName}</span>
-                                </label>`;
-                            }).join('')}
-                        </div>
-                    </div>` : ''}
-                </div>` : ''}
-                <p class="text-sm" style="color: var(--text-mid);">${product.description}</p>
-                ${product.ingredients?.length ? `<div class="space-y-2">
-                    <h3 class="font-bold text-base">Полный состав</h3>
-                    <p class="text-sm" style="color: var(--text-mid);">${product.ingredients.join(', ')}</p>
-                </div>` : ''}
-                <div class="space-y-3 pt-3">
-                    <div class="flex items-center justify-center gap-4">
-                        <button class="quantity-btn" onclick="changeDetailQuantity(-1)">-</button>
-                        <span id="detail-quantity" class="font-bold text-lg">${appState.detailQuantity || 1}</span>
-                        <button class="quantity-btn" onclick="changeDetailQuantity(1)">+</button>
-                    </div>
-                    <button onclick="addToCartFromDetail()" class="btn-primary w-full h-12">Добавить за <span id="detail-total-price">${price}</span> ₽</button>
-                </div>
-            </div>`;
-            startProductImageCarousel();
-        }
-
-        function startProductImageCarousel() {
-            const carousel = elements.detailContent.querySelector('.product-image-carousel');
-            if (!carousel) return;
-            const images = Array.from(carousel.querySelectorAll('img'));
-            const dotsContainer = elements.detailContent.querySelector('.product-image-dots');
-            if (!dotsContainer) return;
-            const dots = Array.from(dotsContainer.querySelectorAll('.dot'));
-            let currentIndex = (typeof appState.productImageIndex === 'number') ? appState.productImageIndex : 0;
-            let startX = 0;
-            let isPointerDown = false;
-            function showImage(index) {
-                index = Math.max(0, Math.min(images.length - 1, index));
-                images.forEach((img, i) => img.classList.toggle('active', i === index));
-                dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
-                currentIndex = index;
-                appState.productImageIndex = index;
-            }
-            dots.forEach((dot, i) => dot.addEventListener('click', () => showImage(i)));
-            carousel.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; isPointerDown = true; });
-            carousel.addEventListener('touchend', (e) => {
-                if (!isPointerDown) return;
-                const deltaX = startX - e.changedTouches[0].clientX;
-                if (Math.abs(deltaX) > 40) {
-                    if (deltaX > 0 && currentIndex < images.length - 1) showImage(currentIndex + 1);
-                    else if (deltaX < 0 && currentIndex > 0) showImage(currentIndex - 1);
-                }
-                isPointerDown = false;
-            });
-            showImage(currentIndex);
-        }
-
-        function changeDetailQuantity(change) {
-            appState.detailQuantity = Math.max(1, (appState.detailQuantity || 1) + change);
-            const el = document.getElementById('detail-quantity');
-            if (el) el.textContent = appState.detailQuantity;
-            if (appState.selectedProduct) {
-                const size = appState.selectedProduct.sizes ? appState.selectedProduct.sizes.find(s => s.size === appState.selectedSize) : null;
-                const price = size ? size.price : appState.selectedProduct.price;
-                const totalPriceEl = document.getElementById('detail-total-price');
-                if (totalPriceEl) totalPriceEl.textContent = price * appState.detailQuantity;
-            }
-        }
-
-        function addToCartFromDetail() {
-            if (!appState.selectedProduct) return;
-            addToCartById(appState.selectedProduct.id, appState.detailQuantity || 1);
-            closeProductDetail();
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl text-white font-bold animate-zoom-in shadow-lg ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 4000);
-        }
-
-        /* ---------- Checkout ---------- */
-        function openCheckout() {
-            modalState.checkout = true;
-            updateModalBackdrop();
-            elements.checkoutDate.min = getMinOrderDate();
-            elements.checkoutDate.value = getMinOrderDate();
-            elements.checkoutTime.min = CONFIG.pickup.timeMin;
-            elements.checkoutTime.max = CONFIG.pickup.timeMax;
-            updateCheckoutTotal();
-            elements.checkoutModal.classList.add('open');
-            elements.checkoutModal.setAttribute('aria-hidden', 'false');
-            const telegram = window.Telegram?.WebApp;
-            const user = telegram?.initDataUnsafe?.user || {};
-            if (user.phone_number && !elements.checkoutPhone.value) elements.checkoutPhone.value = user.phone_number;
-        }
-
-        function closeCheckout() {
-            modalState.checkout = false;
-            elements.checkoutModal.classList.remove('open');
-            elements.checkoutModal.setAttribute('aria-hidden', 'true');
-            updateModalBackdrop();
-        }
-
-        function updateCheckoutTotal() {
-            const totalAmount = appState.cart.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0);
-            elements.checkoutTotal.textContent = `${totalAmount} ₽`;
-        }
-
-        function placeOrder() {
-            const checkoutButton = elements.placeOrderBtn;
-            const dateInput = elements.checkoutDate;
-            const timeInput = elements.checkoutTime;
-            const phoneInput = elements.checkoutPhone;
-            if (!dateInput.value || !timeInput.value || !phoneInput.value) { showNotification('Заполните все поля', 'error'); return; }
-            if (appState.cart.length === 0) { showNotification('Корзина пуста', 'error'); return; }
-            checkoutButton.disabled = true;
-            checkoutButton.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Заказ формируется...`;
-            const totalAmount = appState.cart.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0);
-            const telegram = window.Telegram?.WebApp;
-            const user = telegram?.initDataUnsafe?.user || {};
-            const orderId = `ORDER_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            const orderItemsSnapshot = appState.cart.map(item => ({
-                id: item.id,
-                name: item.name,
-                price: getItemPrice(item),
-                quantity: item.quantity,
-                size: item.selectedSize,
-                sauces: item.selectedSauces || [],
-                excluded_ingredients: item.excludedIngredients || []
-            }));
-            const orderData = {
-                event: 'order_submit',
-                user_id: user.id || 'unknown',
-                username: user.username || '',
-                first_name: user.first_name || '',
-                last_name: user.last_name || '',
-                timestamp: new Date().toISOString(),
-                url: window.location.href,
-                userAgent: navigator.userAgent,
-                additional: {
-                    order_id: orderId,
-                    order_details: orderItemsSnapshot,
-                    total_amount: totalAmount,
-                    delivery_type: 'pickup',
-                    delivery_fee: 0,
-                    final_amount: totalAmount,
-                    date: dateInput.value,
-                    time: timeInput.value,
-                    address: CONFIG.pickup.address,
-                    phone: phoneInput.value
-                }
+    // time slots
+    const slotsEl = document.getElementById('time-slots');
+    slotsEl.innerHTML = '';
+    CONFIG.timeSlots.forEach((slot, i) => {
+        const btn = document.createElement('button');
+        const isSel = state.selectedSlot === slot.time;
+        btn.className = 'time-slot' + (isSel ? ' selected' : '') + (!slot.free ? ' disabled' : '');
+        btn.style.animation = `cardSlide 450ms cubic-bezier(0.16,1,0.3,1) ${i * 45 + 80}ms both`;
+        btn.innerHTML = `
+            <span class="slot-time">${slot.time}</span>
+            <span class="slot-label">${slot.free ? 'свободно' : 'занято'}</span>`;
+        if (slot.free) {
+            btn.onclick = () => {
+                state.selectedSlot = isSel ? null : slot.time;
+                state.submitted = false;
+                renderBookingSlots();
+                updateBookingForm();
             };
-            fetch(CONFIG.backendUrl, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData), mode: 'no-cors'
-            })
-            .then(() => {
-                showNotification('Заказ успешно оформлен! Ожидайте подтверждения. Оплата наличными.', 'success');
-                saveOrderToLocalHistory(orderId, orderItemsSnapshot, totalAmount, dateInput.value, timeInput.value);
-                startOrderStatusTracking(orderId);
-                clearCart();
-                closeCheckout();
-                checkoutButton.disabled = false;
-                checkoutButton.textContent = 'Оформить заказ';
-                switchView('home');
-            })
-            .catch(error => {
-                console.error('Error sending order:', error);
-                showNotification('Ошибка при отправке заказа', 'error');
-                checkoutButton.disabled = false;
-                checkoutButton.textContent = 'Оформить заказ';
-            });
         }
+        slotsEl.appendChild(btn);
+    });
 
-        /* ---------- Order status banner ----------
-         * Нет backend-эндпоинта со статусом заказа в реальном времени, поэтому
-         * статус меняется по таймеру локально (имитация "готовится" -> "готов"),
-         * пока на стороне Apps Script не появится реальный статус. Когда появится —
-         * заменить setTimeout на периодический опрос CONFIG.backendUrl?event=order_status.
-         */
-        function startOrderStatusTracking(orderId) {
-            const activeOrder = { id: orderId, status: 'accepted', startedAt: Date.now() };
-            try { localStorage.setItem('activeOrder', JSON.stringify(activeOrder)); } catch (e) {}
-            renderOrderBanner();
-            setTimeout(() => { updateActiveOrderStatus('preparing'); }, 4000);
-            setTimeout(() => { updateActiveOrderStatus('ready'); }, 15000);
-            setTimeout(() => { clearActiveOrder(); }, 45000);
+    updateBookingForm();
+
+    // populate child selector
+    const sel = document.getElementById('form-child');
+    sel.innerHTML = '';
+    CONFIG.children.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.name;
+        opt.textContent = `${c.name}, ${c.age} лет · ${c.section}`;
+        sel.appendChild(opt);
+    });
+
+    // pre-fill phone from Telegram
+    const tg = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    if (tg?.phone_number && !document.getElementById('form-phone').value) {
+        document.getElementById('form-phone').value = tg.phone_number;
+    }
+}
+
+function renderBookingSlots() {
+    // just re-render slot classes without animation
+    const buttons = document.querySelectorAll('#time-slots .time-slot');
+    buttons.forEach((btn, i) => {
+        const slot = CONFIG.timeSlots[i];
+        const isSel = state.selectedSlot === slot.time;
+        btn.className = 'time-slot' + (isSel ? ' selected' : '') + (!slot.free ? ' disabled' : '');
+        btn.style.animation = '';
+    });
+}
+
+function updateBookingForm() {
+    const form = document.getElementById('booking-form');
+    if (!state.selectedSlot) { form.style.display = 'none'; return; }
+    form.style.display = 'block';
+    const btn = document.getElementById('confirm-btn');
+    const btnText = document.getElementById('confirm-btn-text');
+    if (state.submitted) {
+        btn.className = 'visible confirmed';
+        btnText.textContent = `✓ Записано на ${state.selectedSlot}`;
+    } else {
+        btn.className = 'visible';
+        btnText.textContent = `Записать на ${state.selectedSlot}`;
+    }
+}
+
+// ── SUBMIT BOOKING ────────────────────────────────────────────────────
+function submitBooking() {
+    if (state.submitting || state.submitted) return;
+    const phone = document.getElementById('form-phone').value.trim();
+    if (!phone) { showToast('Введите телефон для подтверждения', false); return; }
+    if (!state.selectedSlot) return;
+
+    state.submitting = true;
+    const btn = document.getElementById('confirm-btn');
+    const btnText = document.getElementById('confirm-btn-text');
+    btn.disabled = true;
+    btnText.textContent = 'Отправка...';
+
+    const tg = window.Telegram?.WebApp;
+    const user = tg?.initDataUnsafe?.user || {};
+    const today = new Date();
+
+    const data = {
+        event: 'booking_submit',
+        user_id: user.id || 'unknown',
+        username: user.username || '',
+        first_name: user.first_name || '',
+        timestamp: new Date().toISOString(),
+        booking: {
+            booking_id: `BK_${Date.now()}_${Math.random().toString(36).substr(2,6).toUpperCase()}`,
+            child: document.getElementById('form-child').value,
+            section: CONFIG.bookingSection,
+            trainer: CONFIG.bookingTrainer,
+            date: `${today.getDate()}.${today.getMonth()+1}.${today.getFullYear()}`,
+            time: state.selectedSlot,
+            phone: phone,
+            comment: document.getElementById('form-comment').value.trim() || null
         }
+    };
 
-        function updateActiveOrderStatus(status) {
-            try {
-                const raw = localStorage.getItem('activeOrder');
-                if (!raw) return;
-                const order = JSON.parse(raw);
-                order.status = status;
-                localStorage.setItem('activeOrder', JSON.stringify(order));
-                renderOrderBanner();
-            } catch (e) {}
-        }
+    fetch(CONFIG.backendUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        mode: 'no-cors'
+    })
+    .then(() => {
+        state.submitting = false;
+        state.submitted = true;
+        btn.disabled = false;
+        updateBookingForm();
+        showToast(`<strong>${document.getElementById('form-child').value}</strong> записан на ${state.selectedSlot}`, true);
+    })
+    .catch(err => {
+        console.error(err);
+        state.submitting = false;
+        btn.disabled = false;
+        btnText.textContent = `Записать на ${state.selectedSlot}`;
+        showToast('Ошибка. Попробуйте ещё раз', false);
+    });
+}
 
-        function clearActiveOrder() {
-            try { localStorage.removeItem('activeOrder'); } catch (e) {}
-            renderOrderBanner();
-        }
+// ── TOAST ─────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(html, success = true) {
+    const toast = document.getElementById('toast');
+    const icon  = toast.querySelector('.toast-icon');
+    const text  = document.getElementById('toast-text');
+    icon.textContent = success ? '✓' : '!';
+    icon.style.color = success ? 'var(--lime)' : '#ff6b6b';
+    toast.style.borderColor = success ? 'var(--lime)' : '#ff6b6b';
+    text.innerHTML = html;
+    toast.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('visible'), 4000);
+}
 
-        function renderOrderBanner() {
-            let order = null;
-            try { const raw = localStorage.getItem('activeOrder'); if (raw) order = JSON.parse(raw); } catch (e) {}
-            if (!order) { elements.orderBanner.classList.remove('visible'); elements.orderBanner.setAttribute('aria-hidden', 'true'); return; }
-            const statusMap = {
-                accepted: { icon: '<i class="fas fa-clock"></i>', text: 'Заказ принят', cls: 'status-accepted', eta: '20-25 мин' },
-                preparing: { icon: '<i class="fas fa-utensils"></i>', text: 'Ваш заказ готовится', cls: 'status-preparing', eta: '10-15 мин' },
-                ready: { icon: '<i class="fas fa-check-circle"></i>', text: 'Заказ готов к выдаче', cls: 'status-ready', eta: 'Можно забирать' }
-            };
-            const info = statusMap[order.status] || statusMap.accepted;
-            elements.orderBanner.className = `visible ${info.cls}`;
-            elements.orderBanner.setAttribute('aria-hidden', 'false');
-            document.getElementById('order-status-icon').innerHTML = info.icon;
-            document.getElementById('order-status-id').textContent = '#' + order.id.slice(-6);
-            document.getElementById('order-status-text').textContent = info.text;
-            document.getElementById('order-status-eta').textContent = info.eta;
-        }
+// ── INIT ──────────────────────────────────────────────────────────────
+function init() {
+    renderHome();
+    renderSchedule();
+    // trainer & booking rendered on demand
+}
 
-        /* ---------- Order history (локально, в этом браузере/Telegram-клиенте) ---------- */
-        function saveOrderToLocalHistory(orderId, items, total, date, time) {
-            let history = [];
-            try { history = JSON.parse(localStorage.getItem('orderHistory') || '[]'); } catch (e) {}
-            history.unshift({
-                id: '#' + orderId.slice(-6),
-                date: `${date}, ${time}`,
-                items: items.map(it => {
-                    let label = it.name;
-                    if (it.size) label += ` (${it.size})`;
-                    if (it.quantity > 1) label += ` x${it.quantity}`;
-                    const extras = [];
-                    if (it.sauces?.length) extras.push(`соусы: ${it.sauces.join(', ')}`);
-                    if (it.excluded_ingredients?.length) extras.push(`без: ${it.excluded_ingredients.join(', ')}`);
-                    if (extras.length) label += ` — ${extras.join('; ')}`;
-                    return label;
-                }),
-                total,
-                status: 'completed'
-            });
-            try { localStorage.setItem('orderHistory', JSON.stringify(history.slice(0, 20))); } catch (e) {}
-        }
-
-        function getOrderHistory() {
-            try { return JSON.parse(localStorage.getItem('orderHistory') || '[]'); } catch (e) { return []; }
-        }
-
-        /* ---------- Profile ---------- */
-        function renderProfile() {
-            const telegram = window.Telegram?.WebApp;
-            const user = telegram?.initDataUnsafe?.user || {};
-            elements.profileName.textContent = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Гость';
-            elements.profilePhone.textContent = user.phone_number || '';
-
-            const history = getOrderHistory();
-            const completedOrders = history.filter(o => o.status === 'completed');
-            elements.profileOrdersCount.textContent = completedOrders.length;
-            elements.profileTotalSpent.textContent = `${completedOrders.reduce((sum, o) => sum + o.total, 0)} ₽`;
-
-            if (history.length === 0) {
-                elements.profileOrderHistory.innerHTML = `<p class="text-sm" style="color: var(--text-mid);">Здесь появится история ваших заказов</p>`;
-            } else {
-                elements.profileOrderHistory.innerHTML = history.map(order => `
-                <div class="order-history-item ${order.status}">
-                    <div class="flex items-start justify-between mb-2">
-                        <div>
-                            <h3 class="font-bold">Заказ ${order.id}</h3>
-                            <p class="text-xs flex items-center gap-1 mt-1" style="color: var(--text-mid);"><i class="fas fa-clock"></i> ${order.date}</p>
-                        </div>
-                        <p class="text-lg font-bold">${order.total} ₽</p>
-                    </div>
-                    <ul class="text-sm space-y-1" style="color: var(--text-mid);">
-                        ${order.items.map(it => `<li class="flex items-center gap-2"><i class="fas fa-box text-xs" style="color: var(--accent);"></i>${it}</li>`).join('')}
-                    </ul>
-                </div>`).join('');
-            }
-        }
-
-        /* ---------- Акции и события ---------- */
-        function renderPromos() {
-            const promos = CONFIG.promos || [];
-            if (promos.length === 0) {
-                elements.promoList.innerHTML = `<p class="text-sm" style="color: var(--text-mid);">Пока нет активных акций — загляните позже</p>`;
-                return;
-            }
-            const formatDate = (iso) => {
-                try { return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }); }
-                catch (e) { return iso; }
-            };
-            elements.promoList.innerHTML = promos.map(promo => `
-            <div class="promo-card">
-                ${promo.image ? `<img src="${promo.image}" alt="${promo.title}" class="promo-image">` : ''}
-                <div class="p-4">
-                    <span class="promo-date mb-2"><i class="fas fa-calendar"></i> ${formatDate(promo.date)}</span>
-                    <h3 class="font-bold text-lg mt-2 mb-1">${promo.title}</h3>
-                    <p class="text-sm" style="color: var(--text-mid);">${promo.description}</p>
-                </div>
-            </div>`).join('');
-        }
-
-        function init() {
-            const savedCart = localStorage.getItem('cart');
-            if (savedCart) {
-                try { const parsedCart = JSON.parse(savedCart); if (Array.isArray(parsedCart)) appState.cart = parsedCart; }
-                catch (e) { console.error('Could not parse cart from localStorage'); }
-            }
-            initEventListeners();
-            renderProducts();
-            updateCartBadge();
-            renderOrderBanner();
-        }
-
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+document.addEventListener('DOMContentLoaded', init);
+</script>
 </body>
 </html>
