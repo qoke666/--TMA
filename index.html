@@ -1,1086 +1,1149 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title id="page-title">Детские занятия</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title id="page-title">Детские занятия</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@700,600,500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#111}
+body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;color:#F0EEE8}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+::-webkit-scrollbar{display:none}
+input,select,textarea{font-family:inherit}
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+:root{
+  --bg:#0A0A0F;--card:#111116;--lime:#C8FF00;--muted:#52525B;
+  --text:#F0EEE8;--border:rgba(255,255,255,0.06);
+  --danger:#ff4d4d;--success:#4dff91;
+  --clash:'Clash Display',sans-serif;--inter:'Inter',sans-serif;
+}
 
-    <!-- Clash Display via CDN -->
-    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@700,600,500&display=swap">
+/* ── APP SHELL ── */
+#app{
+  position:relative;
+  width:min(390px,100vw);height:min(844px,100dvh);
+  margin:0 auto;background:var(--bg);
+  border-radius:clamp(0px,4vw,40px);overflow:hidden;
+  box-shadow:0 64px 128px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.07);
+  display:flex;flex-direction:column;
+}
 
-    <style>
-        /* ======================================================
-           RESET & BASE
-           ====================================================== */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body { height: 100%; overflow: hidden; background: #0A0A0F; }
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; color: #F0EEE8; }
-        button { font-family: inherit; cursor: pointer; border: none; background: none; }
-        ::-webkit-scrollbar { display: none; }
+/* ── SCREENS ── */
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;display:none;padding-bottom:72px}
+.screen.active{display:block}
 
-        /* ======================================================
-           CSS VARIABLES — тема (применяются из CONFIG.theme в JS)
-           ====================================================== */
-        :root {
-            --bg:         #0A0A0F;
-            --card:       #111116;
-            --lime:       #C8FF00;
-            --muted:      #52525B;
-            --text:       #F0EEE8;
-            --border:     rgba(255,255,255,0.06);
-            --font-clash: 'Clash Display', sans-serif;
-            --font-inter: 'Inter', sans-serif;
-        }
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes titleReveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0% 0 0)}}
+.anim-title{animation:titleReveal 700ms cubic-bezier(.16,1,.3,1) both}
+.anim-1{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 80ms both}
+.anim-2{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 180ms both}
+.anim-3{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 280ms both}
+.anim-4{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 380ms both}
 
-        /* ======================================================
-           APP SHELL
-           ====================================================== */
-        #app {
-            position: relative;
-            width: min(390px, 100vw);
-            height: min(844px, 100dvh);
-            margin: 0 auto;
-            background: var(--bg);
-            border-radius: clamp(0px, 4vw, 40px);
-            overflow: hidden;
-            box-shadow: 0 64px 128px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.07);
-        }
+/* ── BOTTOM NAV ── */
+#bottom-nav{
+  flex-shrink:0;height:60px;
+  background:rgba(17,17,22,.96);
+  border-top:1px solid var(--border);
+  backdrop-filter:blur(12px);
+  display:flex;align-items:center;
+  overflow-x:auto;gap:0;
+  padding:0 4px;
+}
+#bottom-nav::-webkit-scrollbar{display:none}
+.nav-tab{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;flex:1;min-width:60px;height:52px;
+  border-radius:10px;color:var(--muted);
+  transition:color .2s,background .2s;font-size:10px;letter-spacing:.02em;
+}
+.nav-tab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-tab.active{color:var(--lime)}
+.nav-tab.active svg{filter:drop-shadow(0 0 4px rgba(200,255,0,.5))}
 
-        /* ======================================================
-           SCREENS
-           ====================================================== */
-        .screen {
-            position: absolute; inset: 0;
-            overflow-y: auto; overflow-x: hidden;
-            scroll-behavior: smooth;
-            display: none;
-        }
-        .screen.active { display: block; }
+/* ── SCREEN PADDING ── */
+.content{padding:44px 20px 20px}
 
-        @keyframes screenEnter {
-            from { opacity: 0; transform: scale(1.04); }
-            to   { opacity: 1; transform: scale(1); }
-        }
-        @keyframes screenExit {
-            from { opacity: 1; transform: scale(1); }
-            to   { opacity: 0; transform: scale(0.92); }
-        }
-        @keyframes titleReveal {
-            from { clip-path: inset(0 100% 0 0); }
-            to   { clip-path: inset(0 0% 0 0); }
-        }
-        @keyframes cardSlide {
-            from { opacity: 0; transform: translateY(48px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-        }
+/* ── CARD ── */
+.card{background:var(--card);border-radius:16px;border:1px solid var(--border)}
+.card-sm{border-radius:12px}
 
-        .anim-title    { animation: titleReveal 700ms cubic-bezier(0.16,1,0.3,1) both; }
-        .anim-card-1   { animation: cardSlide 600ms cubic-bezier(0.16,1,0.3,1) 100ms both; }
-        .anim-card-2   { animation: cardSlide 600ms cubic-bezier(0.16,1,0.3,1) 220ms both; }
-        .anim-card-3   { animation: cardSlide 600ms cubic-bezier(0.16,1,0.3,1) 340ms both; }
-        .anim-card-4   { animation: cardSlide 600ms cubic-bezier(0.16,1,0.3,1) 460ms both; }
+/* ── HOME ── */
+.home-greeting{font-size:clamp(36px,10vw,48px);font-family:var(--clash);font-weight:700;
+  color:var(--text);letter-spacing:-2px;line-height:1.05}
 
-        /* ======================================================
-           TYPOGRAPHY HELPERS
-           ====================================================== */
-        .clash { font-family: var(--font-clash); }
-        .muted { color: var(--muted); }
-        .label-xs { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-family: var(--font-inter); }
+/* Children grid */
+#children-grid{display:grid;gap:12px;margin-bottom:24px}
 
-        /* ======================================================
-           CARDS
-           ====================================================== */
-        .card {
-            background: var(--card);
-            border-radius: 14px;
-            border: 1px solid var(--border);
-        }
-        .card-lg { border-radius: 18px; }
+/* 1 ребёнок */
+#children-grid.count-1{grid-template-columns:1fr}
+/* 2 ребёнка */
+#children-grid.count-2{grid-template-columns:1fr 1fr}
+/* 3+ */
+#children-grid.count-3,
+#children-grid.count-more{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
+#children-grid.count-3 .child-card:first-child{grid-column:1/-1}
 
-        /* ======================================================
-           NAV DOTS (вертикальные, справа)
-           ====================================================== */
-        #nav-dots {
-            position: absolute;
-            right: 18px; top: 50%;
-            transform: translateY(-50%);
-            display: flex; flex-direction: column;
-            align-items: center; gap: 12px;
-            z-index: 100;
-        }
-        #nav-dots button {
-            padding: 5px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        #nav-dots .dot {
-            height: 4px; border-radius: 2px;
-            background: rgba(82,82,91,0.7);
-            transition: all 300ms cubic-bezier(0.34,1.56,0.64,1);
-            width: 4px;
-        }
-        #nav-dots button.active .dot {
-            width: 18px;
-            background: var(--lime);
-        }
+.child-card{
+  background:var(--card);border-radius:16px;border:1px solid var(--border);
+  padding:18px 16px;cursor:pointer;
+  transition:border-color .2s,transform .2s;
+  position:relative;overflow:hidden;min-height:110px;
+}
+.child-card:active{transform:scale(.97)}
+.child-card.primary{border-color:rgba(200,255,0,.25)}
+.child-card .child-name{font-family:var(--clash);font-size:26px;font-weight:700;
+  color:var(--text);letter-spacing:-1px;line-height:1.1;margin-bottom:2px}
+.child-card.compact .child-name{font-size:20px}
+.child-card .child-sub{font-size:12px;color:var(--muted)}
+.child-card .child-section{
+  display:inline-block;margin-top:8px;
+  font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--lime);background:rgba(200,255,0,.1);
+  padding:3px 10px;border-radius:20px}
+.child-card .arc-corner{position:absolute;right:-6px;top:-6px;pointer-events:none}
 
-        /* ======================================================
-           ADD / BOOK BUTTON (нижний левый)
-           ====================================================== */
-        #add-btn {
-            position: absolute;
-            bottom: 28px; left: 20px;
-            width: 56px; height: 36px;
-            background: var(--card);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 100;
-            transition: background 200ms;
-        }
-        #add-btn:hover { background: rgba(200,255,0,0.12); }
-        #add-btn span { color: var(--lime); font-size: 22px; font-weight: 300; line-height: 1; }
+/* Add child button */
+.add-child-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--card);border-radius:16px;border:1.5px dashed rgba(255,255,255,.15);
+  padding:18px;color:var(--muted);font-size:14px;font-weight:500;
+  cursor:pointer;transition:border-color .2s,color .2s;min-height:70px;
+}
+.add-child-btn:hover{border-color:var(--lime);color:var(--lime)}
 
-        /* ======================================================
-           HOME SCREEN
-           ====================================================== */
-        #screen-home .content { padding: 48px 24px 100px; position: relative; z-index: 1; }
-        #screen-home .glow-blob {
-            position: absolute;
-            top: 8%; right: -25%;
-            width: 320px; height: 320px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(200,255,0,0.055) 0%, transparent 68%);
-            filter: blur(48px);
-            pointer-events: none; z-index: 0;
-        }
+/* Today card */
+.today-card{
+  background:var(--card);border-radius:16px;border:1px solid var(--border);
+  padding:20px;cursor:pointer;position:relative;overflow:hidden;
+  transition:border-color .2s;
+}
+.today-card:hover{border-color:rgba(200,255,0,.3)}
+.today-ghost{
+  position:absolute;inset:0;display:flex;align-items:center;padding-left:20px;
+  pointer-events:none;
+}
+.today-ghost span{
+  font-size:80px;font-family:var(--clash);font-weight:700;
+  color:rgba(240,238,232,.04);letter-spacing:-3px;white-space:nowrap;user-select:none}
 
-        /* active child card */
-        #screen-home .child-card-main {
-            position: relative;
-            background: var(--card);
-            border-radius: 18px;
-            height: 180px;
-            padding: 22px 24px;
-            overflow: visible;
-            cursor: pointer;
-            z-index: 1;
-        }
-        /* second child mini-card */
-        #screen-home .child-card-mini {
-            position: absolute;
-            bottom: -72px; right: 28px;
-            width: 42%;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 14px 16px;
-            z-index: 10;
-            cursor: pointer;
-        }
-        /* arc progress svg wrapper */
-        #screen-home .arc-wrap {
-            position: absolute;
-            right: -8px; top: -16px;
-            pointer-events: none;
-        }
-        /* avatar overflow */
-        #screen-home .child-avatar {
-            position: absolute;
-            right: -12px; bottom: -20px;
-            width: 76px; height: 76px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 3px solid var(--bg);
-            z-index: 5;
-        }
-        /* today lesson card */
-        #screen-home .today-card {
-            position: relative;
-            background: var(--card);
-            border-radius: 18px;
-            height: 148px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-        #screen-home .today-ghost {
-            position: absolute; inset: 0;
-            display: flex; align-items: center;
-            padding-left: 20px;
-            pointer-events: none;
-        }
-        #screen-home .today-ghost span {
-            font-size: 88px;
-            font-family: var(--font-clash);
-            font-weight: 700;
-            color: rgba(240,238,232,0.05);
-            letter-spacing: -3px;
-            white-space: nowrap;
-            line-height: 1;
-            user-select: none;
-        }
+/* ── SCHEDULE ── */
+.view-toggle{display:flex;gap:24px;margin-bottom:24px}
+.view-toggle button{
+  font-size:14px;color:var(--muted);font-family:var(--inter);
+  border-bottom:1.5px solid transparent;padding-bottom:4px;transition:all .2s}
+.view-toggle button.active{color:var(--text);font-weight:500;border-bottom-color:var(--lime)}
 
-        /* ======================================================
-           SCHEDULE SCREEN
-           ====================================================== */
-        #screen-schedule .content { padding: 48px 24px 100px; }
+.day-strip{display:flex;gap:16px;overflow-x:auto;padding-bottom:6px;margin-bottom:24px}
+.day-btn{display:flex;flex-direction:column;align-items:center;gap:3px;
+  flex-shrink:0;cursor:pointer;padding:0;border:none;background:none}
+.day-btn .dl{font-size:10px;color:var(--muted);letter-spacing:.04em;transition:color .2s}
+.day-btn .dd{font-size:14px;font-family:var(--clash);font-weight:600;color:var(--muted);transition:color .2s}
+.day-btn .dot{width:4px;height:4px;border-radius:50%;background:transparent;transition:background .2s}
+.day-btn.active .dl,.day-btn.active .dd{color:var(--lime)}
+.day-btn.active .dot{background:var(--lime)}
+.day-btn.disabled .dl,.day-btn.disabled .dd{color:rgba(82,82,91,.4)}
+.day-btn.disabled{pointer-events:none}
 
-        .view-toggle { display: flex; gap: 28px; margin-bottom: 28px; }
-        .view-toggle button {
-            font-family: var(--font-inter);
-            font-size: 15px;
-            color: var(--muted);
-            background: none; border: none;
-            border-bottom: 1.5px solid transparent;
-            padding-bottom: 5px;
-            transition: all 220ms;
-        }
-        .view-toggle button.active {
-            color: var(--text);
-            font-weight: 500;
-            border-bottom-color: var(--lime);
-        }
+.lesson-card{background:var(--card);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.lesson-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.lesson-row:last-child{border-bottom:none}
+.lesson-sep{width:1px;height:12px;background:rgba(255,255,255,.12);flex-shrink:0}
 
-        .day-strip { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 28px; }
-        .day-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; background: none; border: none; cursor: pointer; padding: 0; }
-        .day-btn .day-l { font-size: 11px; color: var(--muted); font-family: var(--font-inter); letter-spacing: 0.04em; transition: color 200ms; }
-        .day-btn .day-d { font-size: 15px; font-family: var(--font-clash); font-weight: 600; color: var(--muted); transition: color 200ms; }
-        .day-btn .day-dot { width: 4px; height: 4px; border-radius: 50%; background: transparent; transition: background 200ms; }
-        .day-btn.active .day-l,
-        .day-btn.active .day-d { color: var(--lime); }
-        .day-btn.active .day-dot { background: var(--lime); }
+/* ── TRAINER ── */
+.photo-zone{position:relative;height:240px;background:var(--card);flex-shrink:0}
+.photo-zone img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(100%)}
+.photo-lime{position:absolute;inset:0;background:rgba(200,255,0,.07);mix-blend-mode:screen}
+.photo-fade{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,10,15,0) 40%,#0A0A0F 100%)}
+.trainer-name-overlay{position:absolute;bottom:0;left:20px;right:40px}
+.trainer-spec-side{position:absolute;right:14px;bottom:28px;writing-mode:vertical-rl;transform:rotate(180deg)}
 
-        .lesson-card-primary {
-            background: var(--card);
-            border-radius: 14px;
-            padding: 20px 22px;
-            margin-bottom: 16px;
-        }
-        .lesson-row {
-            display: flex; align-items: center; gap: 14px;
-            padding: 14px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        .lesson-row:last-child { border-bottom: none; }
-        .lesson-divider { width: 1px; height: 14px; background: rgba(255,255,255,0.12); flex-shrink: 0; }
+/* ── BOOKING ── */
+.slot-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;padding:14px 0;background:transparent;
+  border:none;border-bottom:1px solid var(--border);
+  border-radius:0;transition:all .2s cubic-bezier(.16,1,.3,1);
+}
+.slot-btn.selected{padding:14px 14px;background:var(--lime);border-bottom:none;border-radius:10px}
+.slot-btn.disabled{cursor:not-allowed}
+.slot-btn .st{font-size:22px;font-family:var(--clash);font-weight:600;letter-spacing:-.5px;color:var(--text);transition:color .2s}
+.slot-btn.selected .st{color:#0A0A0F}
+.slot-btn.disabled .st{color:var(--muted)}
+.slot-btn .sl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);transition:color .2s}
+.slot-btn.selected .sl{color:#0A0A0F}
+.slot-capacity{display:flex;align-items:center;gap:4px}
+.cap-bar{display:flex;gap:2px;align-items:center}
+.cap-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.15)}
+.cap-dot.filled{background:var(--lime)}
+.cap-dot.filled.danger{background:var(--danger)}
+.slot-btn.selected .cap-dot{background:rgba(10,10,15,.2)}
+.slot-btn.selected .cap-dot.filled{background:#0A0A0F}
 
-        /* ======================================================
-           TRAINER SCREEN
-           ====================================================== */
-        #screen-trainer .photo-zone {
-            position: relative;
-            height: 34vh; min-height: 240px;
-            background: var(--card);
-            overflow: hidden;
-        }
-        #screen-trainer .photo-zone img {
-            position: absolute; inset: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-            filter: grayscale(100%);
-        }
-        #screen-trainer .photo-lime-overlay {
-            position: absolute; inset: 0;
-            background: rgba(200,255,0,0.08);
-            mix-blend-mode: screen;
-        }
-        #screen-trainer .photo-fade {
-            position: absolute; inset: 0;
-            background: linear-gradient(to bottom, rgba(10,10,15,0) 40%, #0A0A0F 100%);
-        }
-        #screen-trainer .trainer-name {
-            position: absolute; bottom: 0; left: 24px; right: 40px;
-        }
-        #screen-trainer .trainer-spec {
-            position: absolute;
-            right: 16px; bottom: 32px;
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-        }
-        #screen-trainer .trainer-content { padding: 28px 24px 96px; }
-        #screen-trainer .stats-row { display: flex; gap: 32px; margin-bottom: 28px; }
-        #screen-trainer .stat-num {
-            font-size: 40px;
-            font-family: var(--font-clash);
-            font-weight: 700;
-            color: var(--lime);
-            letter-spacing: -1.5px;
-            line-height: 1;
-        }
-        #screen-trainer .rating-card {
-            background: var(--card);
-            border-radius: 14px;
-            padding: 20px 22px;
-        }
-        #screen-trainer .rating-bars { display: flex; gap: 6px; margin-top: 12px; }
-        #screen-trainer .rating-bar { flex: 1; height: 3px; border-radius: 2px; }
+/* Form */
+.booking-form{margin-top:24px;animation:fadeUp 350ms cubic-bezier(.16,1,.3,1) both}
+.form-label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;
+  letter-spacing:.08em;text-transform:uppercase}
+.form-input,.form-select,.form-textarea{
+  width:100%;background:var(--card);
+  border:1px solid rgba(255,255,255,.1);border-radius:10px;
+  padding:12px 14px;color:var(--text);font-size:14px;margin-bottom:16px;
+  transition:border-color .2s;-webkit-appearance:none;outline:none;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--lime)}
+.form-select option{background:#1a1a22}
+.form-textarea{resize:none;height:70px}
 
-        /* ======================================================
-           BOOKING SCREEN
-           ====================================================== */
-        #screen-booking .content { padding: 48px 24px 96px; }
+/* Payment method toggle */
+.payment-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.pay-btn{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:11px;border-radius:10px;font-size:13px;font-weight:500;
+  border:1.5px solid rgba(255,255,255,.1);color:var(--muted);
+  background:var(--card);transition:all .2s;
+}
+.pay-btn.active{border-color:var(--lime);color:var(--lime);background:rgba(200,255,0,.08)}
 
-        .time-slot {
-            display: flex; align-items: center; justify-content: space-between;
-            width: 100%;
-            padding: 15px 0;
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid var(--border);
-            border-radius: 0;
-            transition: all 220ms cubic-bezier(0.16,1,0.3,1);
-        }
-        .time-slot.selected {
-            padding: 15px 16px;
-            background: var(--lime);
-            border-bottom: none;
-            border-radius: 10px;
-        }
-        .time-slot .slot-time {
-            font-size: 24px;
-            font-family: var(--font-clash);
-            font-weight: 600;
-            letter-spacing: -0.5px;
-            color: var(--text);
-            transition: color 220ms;
-        }
-        .time-slot.selected .slot-time { color: #0A0A0F; }
-        .time-slot.disabled .slot-time { color: var(--muted); }
-        .time-slot .slot-label {
-            font-size: 11px;
-            font-family: var(--font-inter);
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--muted);
-            transition: color 220ms;
-        }
-        .time-slot.selected .slot-label { color: #0A0A0F; }
+/* Submit button */
+.submit-btn{
+  width:100%;padding:16px;background:var(--lime);border:none;border-radius:12px;
+  font-size:14px;font-family:var(--clash);font-weight:700;letter-spacing:-.2px;
+  color:#0A0A0F;transition:all .3s;cursor:pointer;
+}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed}
+.submit-btn.done{background:rgba(200,255,0,.15);border:1.5px solid var(--lime);color:var(--lime)}
 
-        #confirm-btn {
-            margin-top: 28px;
-            width: 100%;
-            padding: 18px;
-            background: var(--lime);
-            border: none;
-            border-radius: 12px;
-            transition: all 300ms;
-            display: none;
-        }
-        #confirm-btn.visible { display: block; animation: fadeIn 300ms ease both; }
-        #confirm-btn.confirmed {
-            background: rgba(200,255,0,0.15);
-            border: 1px solid var(--lime);
-        }
-        #confirm-btn span {
-            font-size: 15px;
-            font-family: var(--font-clash);
-            font-weight: 700;
-            letter-spacing: -0.2px;
-            color: #0A0A0F;
-        }
-        #confirm-btn.confirmed span { color: var(--lime); }
+/* ── PAYMENT SCREEN ── */
+.payment-card{background:var(--card);border-radius:16px;padding:20px;border:1px solid var(--border);margin-bottom:16px}
+.payment-card h3{font-size:16px;font-family:var(--clash);font-weight:700;color:var(--text);margin-bottom:4px}
+.payment-card p{font-size:13px;color:var(--muted);line-height:1.5}
+.payment-card .price-big{font-size:36px;font-family:var(--clash);font-weight:700;color:var(--lime);letter-spacing:-1.5px;margin:12px 0 4px}
 
-        /* booking form fields */
-        #booking-form { margin-top: 28px; animation: cardSlide 350ms cubic-bezier(0.16,1,0.3,1) both; }
-        #booking-form label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.08em; text-transform: uppercase; }
-        #booking-form input, #booking-form select, #booking-form textarea {
-            width: 100%;
-            background: var(--card);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 13px 14px;
-            color: var(--text);
-            font-family: var(--font-inter);
-            font-size: 15px;
-            margin-bottom: 18px;
-            transition: border-color 200ms;
-            -webkit-appearance: none;
-        }
-        #booking-form input:focus, #booking-form select:focus, #booking-form textarea:focus {
-            outline: none;
-            border-color: var(--lime);
-        }
-        #booking-form select option { background: #1a1a22; }
-        #booking-form textarea { resize: none; height: 80px; }
+/* ── CONTACTS SCREEN ── */
+.contact-item{
+  display:flex;align-items:center;gap:14px;
+  background:var(--card);border-radius:14px;padding:16px 18px;
+  border:1px solid var(--border);margin-bottom:12px;
+  cursor:pointer;transition:border-color .2s;text-decoration:none;
+}
+.contact-item:hover{border-color:rgba(200,255,0,.3)}
+.contact-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(200,255,0,.1);font-size:20px;flex-shrink:0;
+}
+.contact-item h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.contact-item p{font-size:12px;color:var(--muted)}
 
-        /* ======================================================
-           NOTIFICATION (toast)
-           ====================================================== */
-        #toast {
-            position: absolute;
-            bottom: 80px; left: 20px; right: 20px;
-            background: var(--card);
-            border: 1px solid var(--lime);
-            border-radius: 12px;
-            padding: 14px 18px;
-            display: flex; align-items: center; gap: 12px;
-            z-index: 200;
-            transform: translateY(20px);
-            opacity: 0;
-            transition: all 300ms cubic-bezier(0.16,1,0.3,1);
-            pointer-events: none;
-        }
-        #toast.visible { transform: translateY(0); opacity: 1; }
-        #toast .toast-icon { color: var(--lime); font-size: 18px; flex-shrink: 0; }
-        #toast .toast-text { font-size: 13px; color: var(--text); line-height: 1.45; }
-        #toast .toast-text strong { color: var(--lime); }
+/* ── ADD CHILD MODAL ── */
+.modal-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.7);
+  backdrop-filter:blur(8px);z-index:200;
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal-sheet{
+  background:var(--bg);border-radius:20px 20px 0 0;
+  border-top:1px solid var(--border);
+  padding:24px 20px 40px;width:100%;
+  transform:translateY(100%);transition:transform .3s cubic-bezier(.16,1,.3,1);
+}
+.modal-overlay.open .modal-sheet{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 20px}
 
-        /* ======================================================
-           ARC PROGRESS SVG (inline-draw, controlled by JS)
-           ====================================================== */
-        #arc-svg { display: block; }
-    </style>
+/* ── TOAST ── */
+#toast{
+  position:absolute;bottom:72px;left:16px;right:16px;
+  background:var(--card);border:1px solid var(--lime);border-radius:12px;
+  padding:12px 16px;display:flex;align-items:center;gap:10px;
+  z-index:300;opacity:0;transform:translateY(12px);
+  transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;
+}
+#toast.visible{opacity:1;transform:translateY(0)}
+#toast.error{border-color:var(--danger)}
+.toast-icon{font-size:16px;flex-shrink:0}
+.toast-msg{font-size:13px;color:var(--text);line-height:1.4}
+
+/* ── PHONE PROMPT ── */
+.phone-prompt{
+  background:rgba(200,255,0,.06);border:1.5px solid rgba(200,255,0,.25);
+  border-radius:14px;padding:16px 18px;margin-bottom:20px;
+}
+.phone-prompt p{font-size:13px;color:var(--text);line-height:1.5;margin-bottom:12px}
+
+/* ── ARC SVG ── */
+.arc-corner svg{display:block}
+</style>
 </head>
 <body>
-
 <div id="app">
 
-    <!-- ─────────── AMBIENT GLOW ─────────── -->
-    <div style="position:absolute;inset:-40px;background:radial-gradient(ellipse at 70% 20%,rgba(200,255,0,0.04) 0%,transparent 60%);pointer-events:none;z-index:0;"></div>
+  <!-- ═══ HOME ═══ -->
+  <div id="screen-home" class="screen active">
+    <div class="content">
+      <p class="label-xs anim-title" id="home-date" style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:var(--inter)"></p>
+      <h1 class="home-greeting anim-title" id="home-greeting" style="margin-bottom:28px"></h1>
 
-    <!-- ─────────── HOME ─────────── -->
-    <div id="screen-home" class="screen active">
-        <div class="glow-blob"></div>
-        <div class="content">
-            <!-- date -->
-            <p class="label-xs anim-title" id="home-date" style="margin-bottom:6px;"></p>
+      <!-- Children -->
+      <div id="children-grid" class="count-1 anim-1"></div>
 
-            <!-- greeting -->
-            <div style="overflow:visible;margin-bottom:36px;">
-                <h1 id="home-greeting" class="clash anim-title" style="font-size:clamp(40px,12vw,52px);font-weight:700;color:var(--text);letter-spacing:-2px;line-height:1.05;white-space:nowrap;"></h1>
+      <!-- Today -->
+      <p style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px" class="anim-2">Сегодня</p>
+      <div class="today-card anim-3" onclick="navigate('booking')">
+        <div class="today-ghost"><span id="today-ghost"></span></div>
+        <div style="position:relative;z-index:1">
+          <h2 id="today-section" style="font-size:52px;font-family:var(--clash);font-weight:700;color:var(--text);letter-spacing:-2.5px;line-height:1;white-space:nowrap"></h2>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
+            <div style="width:24px;height:24px;border-radius:50%;overflow:hidden;background:var(--card);flex-shrink:0">
+              <img id="today-trainer-photo" src="" alt="" style="width:100%;height:100%;object-fit:cover">
             </div>
-
-            <!-- children cards -->
-            <div style="position:relative;margin-bottom:108px;" class="anim-card-1">
-                <!-- main child card -->
-                <div class="child-card-main" id="main-child-card" onclick="navigate(3)">
-                    <p class="label-xs" style="margin-bottom:4px;">Активный</p>
-                    <h2 id="child1-name" class="clash" style="font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1;color:var(--text);"></h2>
-                    <p id="child1-age" style="font-size:13px;color:var(--muted);margin-top:4px;"></p>
-                    <!-- arc -->
-                    <div class="arc-wrap">
-                        <svg id="arc-svg" width="192" height="192" viewBox="0 0 192 192" style="overflow:visible;">
-                            <path id="arc-track" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="2" stroke-linecap="round"/>
-                            <path id="arc-progress" fill="none" stroke="#C8FF00" stroke-width="2.5" stroke-linecap="round"/>
-                            <text id="arc-value" x="96" y="102" text-anchor="middle" fill="#C8FF00" font-size="44" font-weight="700" font-family="'Clash Display',sans-serif" letter-spacing="-2"></text>
-                            <text x="96" y="120" text-anchor="middle" fill="#52525B" font-size="9.5" font-family="Inter,sans-serif" letter-spacing="1.5">ЗАНЯТИЙ</text>
-                        </svg>
-                    </div>
-                    <!-- avatar -->
-                    <div class="child-avatar">
-                        <img id="child1-avatar" src="" alt="" style="width:100%;height:100%;object-fit:cover;">
-                    </div>
-                </div>
-
-                <!-- second child mini card (hidden if only 1 child) -->
-                <div class="child-card-mini anim-card-2" id="child2-card" onclick="navigate(3)" style="display:none;">
-                    <p class="label-xs" style="margin-bottom:2px;" id="child2-label"></p>
-                    <p id="child2-section" class="clash" style="font-size:20px;font-weight:700;letter-spacing:-0.5px;color:var(--text);"></p>
-                    <p id="child2-lessons" style="font-size:11px;color:var(--muted);margin-top:3px;"></p>
-                </div>
-            </div>
-
-            <!-- today -->
-            <p class="label-xs" style="margin-bottom:14px;">Сегодня</p>
-            <div class="today-card anim-card-3" onclick="navigate(1)">
-                <div class="today-ghost"><span id="today-ghost-text"></span></div>
-                <div style="position:relative;z-index:1;padding:22px 52px 22px 24px;">
-                    <h2 id="today-section" class="clash" style="font-size:58px;font-weight:700;color:var(--text);letter-spacing:-2.5px;line-height:1;white-space:nowrap;"></h2>
-                </div>
-                <!-- trainer bottom-left -->
-                <div style="position:absolute;bottom:20px;left:24px;display:flex;align-items:center;gap:8px;z-index:1;">
-                    <div style="width:26px;height:26px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--card);">
-                        <img id="today-trainer-photo" src="" alt="" style="width:100%;height:100%;object-fit:cover;">
-                    </div>
-                    <span id="today-trainer-name" style="font-size:12px;color:var(--muted);"></span>
-                </div>
-                <!-- time rotated right -->
-                <div style="position:absolute;right:18px;top:50%;transform:translateY(-50%) rotate(90deg);z-index:1;">
-                    <span id="today-time" class="clash" style="font-size:17px;color:var(--muted);font-weight:600;letter-spacing:0.04em;"></span>
-                </div>
-            </div>
+            <span id="today-trainer-name" style="font-size:12px;color:var(--muted)"></span>
+            <span style="margin-left:auto;font-size:14px;font-family:var(--clash);color:var(--muted)" id="today-time"></span>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <!-- ─────────── SCHEDULE ─────────── -->
-    <div id="screen-schedule" class="screen">
-        <div class="content">
-            <h1 class="clash anim-title" style="font-size:clamp(40px,12vw,52px);font-weight:700;color:var(--text);letter-spacing:-2px;line-height:1.05;margin-bottom:28px;">Расписание</h1>
-
-            <div class="view-toggle">
-                <button class="active" onclick="setScheduleView('week',this)">Неделя</button>
-                <button onclick="setScheduleView('month',this)">Месяц</button>
-            </div>
-
-            <div class="day-strip" id="day-strip"></div>
-
-            <div id="lessons-list"></div>
-        </div>
+  <!-- ═══ SCHEDULE ═══ -->
+  <div id="screen-schedule" class="screen">
+    <div class="content">
+      <h1 class="anim-title" style="font-size:clamp(36px,10vw,48px);font-family:var(--clash);font-weight:700;letter-spacing:-2px;line-height:1.05;color:var(--text);margin-bottom:24px">Расписание</h1>
+      <div class="view-toggle anim-1">
+        <button class="active" onclick="setView('week',this)">Неделя</button>
+        <button onclick="setView('month',this)">Месяц</button>
+      </div>
+      <div class="day-strip anim-2" id="day-strip"></div>
+      <div id="lessons-list"></div>
     </div>
+  </div>
 
-    <!-- ─────────── TRAINER ─────────── -->
-    <div id="screen-trainer" class="screen">
-        <!-- photo -->
-        <div class="photo-zone">
-            <img id="trainer-photo" src="" alt="">
-            <div class="photo-lime-overlay"></div>
-            <div class="photo-fade"></div>
-            <div class="trainer-name">
-                <h1 id="trainer-name-text" class="clash anim-title" style="font-size:clamp(36px,9vw,48px);font-weight:700;color:var(--text);letter-spacing:-1.5px;line-height:1;"></h1>
-            </div>
-            <div class="trainer-spec">
-                <span id="trainer-spec-text" style="font-size:10px;color:var(--muted);font-family:var(--font-inter);letter-spacing:0.14em;text-transform:uppercase;"></span>
-            </div>
+  <!-- ═══ BOOKING ═══ -->
+  <div id="screen-booking" class="screen">
+    <div class="content">
+      <p style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px" class="anim-title">Запись</p>
+      <h1 id="booking-title" class="anim-title" style="font-size:clamp(48px,14vw,68px);font-family:var(--clash);font-weight:700;color:var(--text);letter-spacing:-2.5px;line-height:1;margin-bottom:6px;white-space:nowrap;overflow:visible"></h1>
+      <p id="booking-subtitle" style="font-size:13px;color:var(--muted);margin-bottom:28px" class="anim-1"></p>
+
+      <!-- Phone prompt (shown once) -->
+      <div id="phone-prompt" class="phone-prompt anim-1" style="display:none">
+        <p>👋 Для первой записи укажите номер телефона — мы запомним его и больше не будем спрашивать.</p>
+        <input id="first-phone" class="form-input" type="tel" placeholder="+7 (999) 123-45-67" style="margin-bottom:8px">
+        <button class="submit-btn" onclick="savePhoneAndContinue()" style="padding:11px;font-size:13px">Сохранить и продолжить</button>
+      </div>
+
+      <!-- Slots -->
+      <div id="slot-loading" style="display:none;text-align:center;padding:20px;color:var(--muted);font-size:13px">Загружаем доступное время…</div>
+      <div id="time-slots" class="anim-2"></div>
+
+      <!-- Booking form -->
+      <div id="booking-form" class="booking-form" style="display:none">
+        <p class="form-label">Ребёнок</p>
+        <select id="form-child" class="form-select"></select>
+
+        <p class="form-label">Способ оплаты</p>
+        <div class="payment-toggle" id="payment-toggle">
+          <button class="pay-btn active" data-method="card" onclick="selectPayment('card')">💳 По карте</button>
+          <button class="pay-btn" data-method="cash" onclick="selectPayment('cash')">💵 Наличными</button>
         </div>
 
-        <div class="trainer-content" style="overflow-y:auto;height:calc(100% - 34vh);">
-            <div class="stats-row anim-card-1">
-                <div style="display:flex;align-items:baseline;gap:8px;">
-                    <span id="trainer-exp" class="stat-num"></span>
-                    <span style="font-size:13px;color:var(--muted);">лет опыта</span>
-                </div>
-                <div style="display:flex;align-items:baseline;gap:8px;">
-                    <span id="trainer-age-range" class="stat-num"></span>
-                    <span style="font-size:13px;color:var(--muted);">лет ученики</span>
-                </div>
-            </div>
+        <p class="form-label">Комментарий (необязательно)</p>
+        <textarea id="form-comment" class="form-textarea" placeholder="Пожелания, вопросы…"></textarea>
 
-            <div style="height:1px;background:var(--border);margin-bottom:24px;"></div>
-
-            <p id="trainer-bio" style="font-size:15px;color:var(--muted);line-height:1.72;margin-bottom:28px;" class="anim-card-2"></p>
-
-            <div class="rating-card anim-card-3">
-                <div style="display:flex;align-items:baseline;gap:10px;">
-                    <span id="trainer-rating" class="clash" style="font-size:42px;font-weight:700;color:var(--lime);letter-spacing:-1.5px;line-height:1;"></span>
-                    <span style="font-size:13px;color:var(--muted);">средняя оценка</span>
-                </div>
-                <div class="rating-bars" id="rating-bars"></div>
-            </div>
-        </div>
+        <button id="submit-btn" class="submit-btn" onclick="submitBooking()">
+          <span id="submit-text">Записать</span>
+        </button>
+      </div>
     </div>
+  </div>
 
-    <!-- ─────────── BOOKING ─────────── -->
-    <div id="screen-booking" class="screen">
-        <div class="content">
-            <p class="label-xs" style="margin-bottom:6px;">Запись</p>
-            <h1 id="booking-title" class="clash anim-title" style="font-size:clamp(52px,16vw,72px);font-weight:700;color:var(--text);letter-spacing:-2.5px;line-height:1;white-space:nowrap;overflow:visible;margin-bottom:6px;"></h1>
-            <p id="booking-subtitle" style="font-size:14px;color:var(--muted);margin-bottom:36px;"></p>
-
-            <!-- time slots -->
-            <div id="time-slots"></div>
-
-            <!-- form (appears after slot selected) -->
-            <div id="booking-form" style="display:none;">
-                <label>Ребёнок</label>
-                <select id="form-child"></select>
-
-                <label>Телефон для подтверждения</label>
-                <input id="form-phone" type="tel" placeholder="+7 (999) 123-45-67">
-
-                <label>Комментарий (необязательно)</label>
-                <textarea id="form-comment" placeholder="Пожелания или вопросы..."></textarea>
-
-                <button id="confirm-btn" class="visible" onclick="submitBooking()">
-                    <span id="confirm-btn-text">Записать</span>
-                </button>
-            </div>
-        </div>
+  <!-- ═══ TRAINER ═══ -->
+  <div id="screen-trainer" class="screen">
+    <div class="photo-zone">
+      <img id="trainer-photo" src="" alt="">
+      <div class="photo-lime"></div>
+      <div class="photo-fade"></div>
+      <div class="trainer-name-overlay">
+        <h1 id="trainer-name" class="anim-title" style="font-size:clamp(32px,9vw,44px);font-family:var(--clash);font-weight:700;color:var(--text);letter-spacing:-1.5px;line-height:1"></h1>
+      </div>
+      <div class="trainer-spec-side">
+        <span id="trainer-spec" style="font-size:9px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase"></span>
+      </div>
     </div>
+    <div style="padding:24px 20px 20px;overflow-y:auto;height:calc(100% - 240px)">
+      <div style="display:flex;gap:28px;margin-bottom:22px" class="anim-1">
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <span id="trainer-exp" style="font-size:38px;font-family:var(--clash);font-weight:700;color:var(--lime);letter-spacing:-1.5px;line-height:1"></span>
+          <span style="font-size:12px;color:var(--muted)">лет опыта</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:6px">
+          <span id="trainer-ages" style="font-size:38px;font-family:var(--clash);font-weight:700;color:var(--lime);letter-spacing:-1.5px;line-height:1"></span>
+          <span style="font-size:12px;color:var(--muted)">лет ученики</span>
+        </div>
+      </div>
+      <div style="height:1px;background:var(--border);margin-bottom:18px"></div>
+      <p id="trainer-bio" style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:22px" class="anim-2"></p>
+      <div class="card" style="padding:18px" class="anim-3">
+        <div style="display:flex;align-items:baseline;gap:8px">
+          <span id="trainer-rating" style="font-size:38px;font-family:var(--clash);font-weight:700;color:var(--lime);letter-spacing:-1.5px;line-height:1"></span>
+          <span style="font-size:12px;color:var(--muted)">средняя оценка</span>
+        </div>
+        <div id="rating-bars" style="display:flex;gap:5px;margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
 
-    <!-- ─────────── NAV DOTS ─────────── -->
-    <nav id="nav-dots">
-        <button class="active" onclick="navigate(0)" title="Главная"><div class="dot"></div></button>
-        <button onclick="navigate(1)" title="Расписание"><div class="dot"></div></button>
-        <button onclick="navigate(2)" title="Тренер"><div class="dot"></div></button>
-        <button onclick="navigate(3)" title="Запись"><div class="dot"></div></button>
-    </nav>
+  <!-- ═══ PAYMENT INFO ═══ -->
+  <div id="screen-payment" class="screen">
+    <div class="content">
+      <h1 class="anim-title" style="font-size:clamp(36px,10vw,44px);font-family:var(--clash);font-weight:700;letter-spacing:-2px;color:var(--text);margin-bottom:6px">Оплата</h1>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:24px" class="anim-1">Информация о вашем абонементе</p>
 
-    <!-- ─────────── ADD BTN ─────────── -->
-    <button id="add-btn" onclick="navigate(3)" title="Записаться">
-        <span>+</span>
+      <!-- Subscription card -->
+      <div class="payment-card anim-1" id="sub-card">
+        <p style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Абонемент</p>
+        <div class="price-big" id="sub-lessons-left">—</div>
+        <p style="font-size:12px;color:var(--muted)" id="sub-expires"></p>
+        <div style="margin-top:14px;height:4px;border-radius:2px;background:rgba(255,255,255,.06)">
+          <div id="sub-progress-bar" style="height:100%;border-radius:2px;background:var(--lime);transition:width .8s cubic-bezier(.16,1,.3,1);width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Payment methods info -->
+      <div class="payment-card anim-2">
+        <h3>Способы оплаты</h3>
+        <p id="payment-methods-text" style="margin-top:8px"></p>
+      </div>
+
+      <!-- Payment history placeholder -->
+      <div class="payment-card anim-3">
+        <h3>История занятий</h3>
+        <p style="margin-top:8px" id="visit-count-text"></p>
+      </div>
+
+      <!-- Contact for payment -->
+      <div class="payment-card anim-4" style="background:rgba(200,255,0,.05);border-color:rgba(200,255,0,.2)">
+        <p style="font-size:13px;color:var(--text)">Для покупки или продления абонемента свяжитесь с администратором:</p>
+        <p style="font-size:15px;font-weight:600;color:var(--lime);margin-top:8px" id="contact-for-payment"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTACTS ═══ -->
+  <div id="screen-contacts" class="screen">
+    <div class="content">
+      <h1 class="anim-title" style="font-size:clamp(36px,10vw,44px);font-family:var(--clash);font-weight:700;letter-spacing:-2px;color:var(--text);margin-bottom:6px">Контакты</h1>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:24px" class="anim-1">Быстрая связь с администрацией</p>
+      <div id="contacts-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══ BOTTOM NAV ═══ -->
+  <nav id="bottom-nav">
+    <button class="nav-tab active" data-screen="home" onclick="navigate('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10m-9 0l2-2"/></svg>
+      Главная
     </button>
+    <button class="nav-tab" data-screen="schedule" onclick="navigate('schedule')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Расписание
+    </button>
+    <button class="nav-tab" data-screen="booking" onclick="navigate('booking')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Запись
+    </button>
+    <button class="nav-tab" data-screen="payment" onclick="navigate('payment')">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      Оплата
+    </button>
+    <button class="nav-tab" data-screen="trainer" onclick="navigate('trainer')">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Тренер
+    </button>
+    <button class="nav-tab" data-screen="contacts" onclick="navigate('contacts')">
+      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.62A2 2 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      Контакты
+    </button>
+  </nav>
 
-    <!-- ─────────── TOAST ─────────── -->
-    <div id="toast">
-        <div class="toast-icon">✓</div>
-        <div class="toast-text" id="toast-text"></div>
+  <!-- ═══ ADD CHILD MODAL ═══ -->
+  <div class="modal-overlay" id="add-child-modal" onclick="closeAddChildModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <h2 style="font-size:20px;font-family:var(--clash);font-weight:700;color:var(--text);margin-bottom:20px">Добавить ребёнка</h2>
+      <p class="form-label">Имя</p>
+      <input id="new-child-name" class="form-input" type="text" placeholder="Максим">
+      <p class="form-label">Возраст</p>
+      <input id="new-child-age" class="form-input" type="number" placeholder="9" min="3" max="18">
+      <p class="form-label">Секция</p>
+      <select id="new-child-section" class="form-select"></select>
+      <button class="submit-btn" onclick="submitAddChild()">Добавить</button>
     </div>
+  </div>
 
-</div>
+  <!-- ═══ TOAST ═══ -->
+  <div id="toast">
+    <span class="toast-icon" id="toast-icon">✓</span>
+    <span class="toast-msg" id="toast-msg"></span>
+  </div>
+
+</div><!-- /app -->
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
 /* =====================================================================
- *  CONFIG — ЕДИНСТВЕННОЕ МЕСТО, КОТОРОЕ МЕНЯЕТСЯ ПОД КАЖДОГО КЛИЕНТА.
- *  Всё что ниже этого блока — общий движок.
+ *  CONFIG
  * ===================================================================== */
 const CONFIG = {
-    pageTitle: 'Детские занятия',
+  pageTitle:   'Детские занятия',
+  parentName:  'Анна',
+  backendUrl:  'https://script.google.com/macros/s/AKfycbwcaldQ8HsUaJCOTQHmYZwAj0VR6aNYyV8BtcWkNMNtP0Z6tf1-31-aTFSa9to_K0rA/exec',
 
-    // Родитель (имя на главном экране "Привет, [имя]")
-    parentName: 'Анна',
+  // Рабочие дни (0=вс,1=пн,...,6=сб). Только эти дни кликабельны в расписании
+  workDays: [1, 2, 3, 4, 5],  // пн–пт
 
-    // Google Apps Script URL для отправки записей
-    backendUrl: 'https://script.google.com/macros/s/AKfycbwGZZ9ogTdV2dL97cjQxniQmoLbr-biHMfQH73yEP8elEd8HdJWBV0761bfyoL0HNri/exec',
+  // Максимальный горизонт записи (дней вперёд)
+  bookingHorizonDays: 30,
 
-    // Дети. Первый — "активный" (большая карточка).
-    // Если детей > 1 — второй показывается в мини-карточке.
-    children: [
-        {
-            name: 'Максим',
-            age: 9,
-            section: 'ФУТБОЛ',
-            time: '17:00',
-            lessonsLeft: 8,
-            lessonsTotal: 12,
-            avatar: 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=160&h=160&fit=crop&auto=format'
-        },
-        {
-            name: 'Соня',
-            age: 7,
-            section: 'ГИМН.',
-            lessonsLeft: 5,
-            lessonsTotal: 10,
-            avatar: null
-        }
-    ],
+  // Ребёнок "по умолчанию" — пока не загрузились данные с backend
+  defaultChildren: [
+    { name: 'Максим', age: 9,  section: 'ФУТБОЛ' }
+  ],
 
-    // Расписание на неделю. День (0=пн, 1=вт, ..., 6=вс)
-    schedule: [
-        { day: 0, time: '10:00', section: 'ФУТБОЛ',     trainer: 'А. Козлов',    primary: true  },
-        { day: 0, time: '12:30', section: 'ПЛАВАНИЕ',   trainer: 'И. Морозова',  primary: false },
-        { day: 0, time: '15:00', section: 'ГИМНАСТИКА', trainer: 'Е. Петрова',   primary: false },
-        { day: 0, time: '17:00', section: 'ФУТБОЛ',     trainer: 'А. Козлов',    primary: false },
-        { day: 2, time: '10:00', section: 'ФУТБОЛ',     trainer: 'А. Козлов',    primary: true  },
-        { day: 2, time: '15:00', section: 'ГИМНАСТИКА', trainer: 'Е. Петрова',   primary: false },
-        { day: 4, time: '10:00', section: 'ФУТБОЛ',     trainer: 'А. Козлов',    primary: true  },
-        { day: 4, time: '12:30', section: 'ПЛАВАНИЕ',   trainer: 'И. Морозова',  primary: false },
-    ],
+  // Тренер(а). trainers[0] показывается на экране Тренер
+  trainers: [{
+    name:       'Алексей\nКозлов',
+    photo:      'https://images.unsplash.com/photo-1546961342-ea5f62d5e5ee?w=400&h=380&fit=crop&auto=format',
+    spec:       'ФУТБОЛ · СПОРТ',
+    experience: 8,
+    ageRange:   '6–14',
+    bio:        'Тренер высшей категории. Специализация — детский футбол и командная тактика. Чемпион города 2019, мастер спорта.',
+    rating:     4.9
+  }],
 
-    // Тренеры (массив — движок готов к нескольким, сейчас берём [0])
-    trainers: [
-        {
-            name: 'Алексей\nКозлов',
-            photo: 'https://images.unsplash.com/photo-1546961342-ea5f62d5e5ee?w=400&h=380&fit=crop&auto=format',
-            spec: 'ФУТБОЛ · СПОРТ',
-            experience: 8,
-            ageRange: '6–14',
-            bio: 'Тренер высшей категории. Специализация — детский футбол и командная тактика. Чемпион города по юношескому футболу 2019, мастер спорта.',
-            rating: 4.9
-        }
-    ],
+  // Расписание (day: 0=вс,1=пн,...6=сб)
+  schedule: [
+    { day:1, time:'10:00', section:'ФУТБОЛ',     trainer:'А. Козлов',   primary:true  },
+    { day:1, time:'12:30', section:'ПЛАВАНИЕ',   trainer:'И. Морозова', primary:false },
+    { day:2, time:'10:00', section:'ГИМНАСТИКА', trainer:'Е. Петрова',  primary:true  },
+    { day:3, time:'10:00', section:'ФУТБОЛ',     trainer:'А. Козлов',   primary:true  },
+    { day:3, time:'15:00', section:'ПЛАВАНИЕ',   trainer:'И. Морозова', primary:false },
+    { day:4, time:'10:00', section:'ГИМНАСТИКА', trainer:'Е. Петрова',  primary:true  },
+    { day:5, time:'10:00', section:'ФУТБОЛ',     trainer:'А. Козлов',   primary:true  },
+  ],
 
-    // Слоты для записи. free: true — доступен
-    timeSlots: [
-        { time: '09:00', free: false },
-        { time: '10:30', free: true  },
-        { time: '12:00', free: true  },
-        { time: '14:00', free: false },
-        { time: '15:30', free: true  },
-        { time: '17:00', free: false },
-        { time: '18:30', free: true  },
-        { time: '20:00', free: true  },
-    ],
+  // Слоты для записи (в экране Запись)
+  bookingSection: 'ФУТБОЛ',
+  bookingTrainer: 'А. Козлов',
+  timeSlots: [
+    { time:'09:00', limit:10 },
+    { time:'10:30', limit:10 },
+    { time:'12:00', limit:8  },
+    { time:'14:00', limit:10 },
+    { time:'15:30', limit:10 },
+    { time:'17:00', limit:8  },
+    { time:'18:30', limit:10 },
+    { time:'20:00', limit:6  },
+  ],
 
-    // Для экрана "Запись": секция и тренер (откуда пишем)
-    bookingSection: 'ФУТБОЛ',
-    bookingTrainer: 'А. Козлов',
+  // Все доступные секции (для добавления ребёнка)
+  sections: ['ФУТБОЛ','ПЛАВАНИЕ','ГИМНАСТИКА','ВОЛЕЙБОЛ'],
 
-    // Тема (CSS-переменные)
-    theme: {
-        bg:     '#0A0A0F',
-        card:   '#111116',
-        lime:   '#C8FF00',
-        muted:  '#52525B',
-        text:   '#F0EEE8',
-    }
+  // Информация об оплате (экран Оплата)
+  paymentMethods: 'Принимаем оплату по карте (переводом на карту), наличными на месте, а также через систему СБП.',
+
+  // Контакты (экран Контакты)
+  contacts: [
+    { icon:'💬', label:'Telegram',   sub:'Написать сразу', href:'https://t.me/admin_username' },
+    { icon:'📞', label:'+7 (999) 123-45-67', sub:'Звонок или WhatsApp', href:'tel:+79991234567' },
+    { icon:'📍', label:'ул. Примерная, 1',   sub:'Секция ФУТБОЛ — зал №3', href:'#' },
+    { icon:'🕐', label:'Пн–Пт 09:00–21:00', sub:'Часы работы секции', href:'#' },
+  ],
+
+  adminContact: '@admin_username',
+
+  theme: { bg:'#0A0A0F', card:'#111116', lime:'#C8FF00', muted:'#52525B', text:'#F0EEE8' }
 };
 /* =====================================================================
- *  КОНЕЦ CONFIG. Дальше — общий движок, одинаковый для всех клиентов.
+ *  КОНЕЦ CONFIG
  * ===================================================================== */
 
-// ── Применяем тему ────────────────────────────────────────────────────
-(function applyTheme() {
-    const t = CONFIG.theme;
-    const r = document.documentElement;
-    r.style.setProperty('--bg',    t.bg);
-    r.style.setProperty('--card',  t.card);
-    r.style.setProperty('--lime',  t.lime);
-    r.style.setProperty('--muted', t.muted);
-    r.style.setProperty('--text',  t.text);
+// Apply theme
+(()=>{
+  const r=document.documentElement,t=CONFIG.theme;
+  r.style.setProperty('--bg',t.bg);r.style.setProperty('--card',t.card);
+  r.style.setProperty('--lime',t.lime);r.style.setProperty('--muted',t.muted);
+  r.style.setProperty('--text',t.text);
 })();
 
 document.getElementById('page-title').textContent = CONFIG.pageTitle;
 
-// ── Telegram WebApp init ──────────────────────────────────────────────
-if (window.Telegram?.WebApp) {
-    window.Telegram.WebApp.ready();
-    window.Telegram.WebApp.expand();
+if(window.Telegram?.WebApp){
+  window.Telegram.WebApp.ready();
+  window.Telegram.WebApp.expand();
 }
 
-// ── State ─────────────────────────────────────────────────────────────
-const state = {
-    activeScreen: 0,
-    scheduleView: 'week',
-    activeDayIdx: 0,
-    selectedSlot: null,
-    submitting: false,
-    submitted: false
+/* ── STATE ── */
+const S = {
+  screen:       'home',
+  schedView:    'week',
+  activeDayIdx: -1,      // -1 = auto (today)
+  slotData:     {},      // {time: {count, limit, full}} from backend
+  slotsLoaded:  false,
+  selectedSlot: null,
+  payMethod:    'card',
+  submitting:   false,
+  submitted:    false,
+  // User data (from backend)
+  phone:        null,
+  children:     [],
+  subscription: 'none',
+  lessonsLeft:  0,
+  subExpires:   null,
+  visits:       0,
 };
 
-const SCREENS = ['home', 'schedule', 'trainer', 'booking'];
+const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
+const userId = String(tgUser.id || 'guest');
 
-// ── Navigation ────────────────────────────────────────────────────────
-function navigate(idx) {
-    if (idx === state.activeScreen) return;
-    const prev = document.getElementById('screen-' + SCREENS[state.activeScreen]);
-    const next = document.getElementById('screen-' + SCREENS[idx]);
-    const navBtns = document.querySelectorAll('#nav-dots button');
-
-    prev.classList.remove('active');
-    prev.style.animation = 'screenExit 280ms ease-in both';
-    setTimeout(() => { prev.style.animation = ''; }, 290);
-
-    next.classList.add('active');
-    next.style.animation = 'screenEnter 500ms cubic-bezier(0.16,1,0.3,1) both';
-    setTimeout(() => { next.style.animation = ''; }, 510);
-
-    navBtns.forEach((b, i) => b.classList.toggle('active', i === idx));
-    state.activeScreen = idx;
-
-    // refresh per-screen
-    if (idx === 1) renderSchedule();
-    if (idx === 2) renderTrainer();
-    if (idx === 3) renderBooking();
+/* ── NAV ── */
+function navigate(name){
+  if(name===S.screen) return;
+  document.getElementById('screen-'+S.screen)?.classList.remove('active');
+  document.getElementById('screen-'+name)?.classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.toggle('active',b.dataset.screen===name));
+  S.screen=name;
+  if(name==='schedule') renderSchedule();
+  if(name==='trainer')  renderTrainer();
+  if(name==='booking')  onOpenBooking();
+  if(name==='payment')  renderPayment();
+  if(name==='contacts') renderContacts();
 }
 
-// ── HOME ──────────────────────────────────────────────────────────────
-function renderHome() {
-    // date
-    const now = new Date();
-    const days = ['ВС','ПН','ВТ','СР','ЧТ','ПТ','СБ'];
-    const months = ['ЯНВАРЯ','ФЕВРАЛЯ','МАРТА','АПРЕЛЯ','МАЯ','ИЮНЯ','ИЮЛЯ','АВГУСТА','СЕНТЯБРЯ','ОКТЯБРЯ','НОЯБРЯ','ДЕКАБРЯ'];
-    document.getElementById('home-date').textContent =
-        `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+/* ── INIT ── */
+async function init(){
+  renderHome();
+  renderSchedule();
+  renderContacts();
+  fillChildSelect();
+  // Load user data from backend
+  try{
+    const data = await apiFetch('GET',`?event=get_user&user_id=${userId}`);
+    S.phone        = data.phone       || null;
+    S.children     = data.children    || [];
+    S.subscription = data.subscription|| 'none';
+    S.lessonsLeft  = data.lessons_left|| 0;
+    S.subExpires   = data.subscription_expires||null;
+    S.visits       = data.visits      || 0;
+    if(!S.children.length) S.children = CONFIG.defaultChildren;
+    renderChildren();
+    fillChildSelect();
+  } catch(e){
+    S.children = CONFIG.defaultChildren;
+    renderChildren();
+  }
+}
 
-    document.getElementById('home-greeting').textContent = `Привет, ${CONFIG.parentName}`;
+/* ── HOME ── */
+function renderHome(){
+  const now=new Date();
+  const dNames=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const mNames=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  document.getElementById('home-date').textContent=`${dNames[now.getDay()]}, ${now.getDate()} ${mNames[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('home-greeting').textContent=`Привет,\n${CONFIG.parentName}`;
 
-    // child 1
-    const c1 = CONFIG.children[0];
-    document.getElementById('child1-name').textContent = c1.name;
-    document.getElementById('child1-age').textContent = `${c1.age} лет`;
-    document.getElementById('child1-avatar').src = c1.avatar || 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=160&h=160&fit=crop&auto=format';
-    document.getElementById('child1-avatar').alt = c1.name;
+  // Today card
+  const t=CONFIG.trainers[0];
+  const todayDay=now.getDay();
+  const todayLesson=CONFIG.schedule.find(l=>l.day===todayDay&&l.primary)||CONFIG.schedule.find(l=>l.primary)||CONFIG.schedule[0];
+  if(todayLesson){
+    document.getElementById('today-ghost').textContent=todayLesson.section;
+    document.getElementById('today-section').textContent=todayLesson.section;
+    document.getElementById('today-time').textContent=todayLesson.time;
+    document.getElementById('today-trainer-name').textContent=t.name.replace('\n',' ');
+    document.getElementById('today-trainer-photo').src=t.photo;
+  }
+  renderChildren();
+}
 
-    // arc
-    renderArc(c1.lessonsLeft, c1.lessonsTotal);
+/* ── CHILDREN GRID ── */
+function renderChildren(){
+  const grid=document.getElementById('children-grid');
+  const list=S.children.length?S.children:CONFIG.defaultChildren;
+  const count=list.length;
 
-    // child 2
-    if (CONFIG.children.length > 1) {
-        const c2 = CONFIG.children[1];
-        const card2 = document.getElementById('child2-card');
-        card2.style.display = 'block';
-        document.getElementById('child2-label').textContent = `${c2.name} · ${c2.age} лет`;
-        document.getElementById('child2-section').textContent = c2.section;
-        document.getElementById('child2-lessons').textContent = `${c2.lessonsLeft} занятий`;
+  // Set grid class
+  grid.className=`count-${count<=3?count:'more'}`;
+
+  grid.innerHTML='';
+  list.forEach((c,i)=>{
+    const isPrimary=i===0;
+    const compact=count>2||!isPrimary;
+    const div=document.createElement('div');
+    div.className=`child-card${isPrimary?' primary':''}${compact?' compact':''}`;
+    div.style.animation=`fadeUp 500ms cubic-bezier(.16,1,.3,1) ${80+i*80}ms both`;
+    div.onclick=()=>navigate('booking');
+
+    // Arc for primary card
+    let arcHtml='';
+    if(isPrimary&&S.lessonsLeft>0){
+      arcHtml=`<div class="arc-corner">${buildArcSvg(S.lessonsLeft,S.lessonsLeft+S.visits||12)}</div>`;
     }
 
-    // today card
-    document.getElementById('today-ghost-text').textContent = c1.section;
-    document.getElementById('today-section').textContent = c1.section;
-    document.getElementById('today-time').textContent = c1.time;
+    div.innerHTML=`
+      ${arcHtml}
+      <div class="child-name">${c.name}</div>
+      <div class="child-sub">${c.age} лет</div>
+      <div class="child-section">${c.section}</div>
+    `;
+    grid.appendChild(div);
+  });
 
-    const t0 = CONFIG.trainers[0];
-    document.getElementById('today-trainer-photo').src = t0.photo;
-    document.getElementById('today-trainer-name').textContent = t0.name.replace('\n', ' ');
+  // "+" Add child button
+  if(count<6){
+    const btn=document.createElement('button');
+    btn.className='add-child-btn';
+    btn.style.animation=`fadeUp 500ms cubic-bezier(.16,1,.3,1) ${80+count*80}ms both`;
+    btn.innerHTML='<span style="font-size:20px;color:var(--lime)">+</span> Добавить ребёнка';
+    btn.onclick=openAddChildModal;
+    grid.appendChild(btn);
+  }
 }
 
-// ── ARC PROGRESS ─────────────────────────────────────────────────────
-function renderArc(value, total) {
-    const r = 66, cx = 96, cy = 96;
-    function toXY(deg) {
-        const rad = ((deg - 90) * Math.PI) / 180;
-        return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-    }
-    const start = toXY(225);
-    const end   = toXY(135);
-    const d = `M ${start.x.toFixed(2)} ${start.y.toFixed(2)} A ${r} ${r} 0 1 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
-    const arcLen = r * (270 * Math.PI) / 180;
-    const progress = value / total;
-    const dashOffset = arcLen * (1 - progress);
-
-    document.getElementById('arc-track').setAttribute('d', d);
-    document.getElementById('arc-progress').setAttribute('d', d);
-    document.getElementById('arc-progress').setAttribute('stroke-dasharray', arcLen);
-    document.getElementById('arc-progress').setAttribute('stroke-dashoffset', arcLen); // start at 0
-    document.getElementById('arc-value').textContent = value;
-
-    // animate after paint
-    requestAnimationFrame(() => {
-        setTimeout(() => {
-            document.getElementById('arc-progress').style.transition = 'stroke-dashoffset 1100ms cubic-bezier(0.34,1.56,0.64,1)';
-            document.getElementById('arc-progress').setAttribute('stroke-dashoffset', dashOffset);
-        }, 300);
-    });
+/* Mini arc SVG */
+function buildArcSvg(value,total){
+  const r=44,cx=56,cy=56;
+  const toXY=deg=>{const rad=((deg-90)*Math.PI)/180;return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)}};
+  const s=toXY(225),e=toXY(135);
+  const d=`M${s.x.toFixed(1)} ${s.y.toFixed(1)} A${r} ${r} 0 1 1 ${e.x.toFixed(1)} ${e.y.toFixed(1)}`;
+  const arcLen=r*(270*Math.PI)/180;
+  const offset=arcLen*(1-(value/total));
+  return `<svg width="112" height="112" viewBox="0 0 112 112" style="overflow:visible">
+    <path d="${d}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="${d}" fill="none" stroke="var(--lime)" stroke-width="2" stroke-linecap="round"
+      stroke-dasharray="${arcLen}" stroke-dashoffset="${arcLen}"
+      style="transition:stroke-dashoffset 1.1s cubic-bezier(.34,1.56,.64,1);--target:${offset}"
+      id="arc-prog-${Date.now()}"/>
+    <text x="${cx}" y="${cy+5}" text-anchor="middle" fill="var(--lime)" font-size="28" font-weight="700"
+      font-family="'Clash Display',sans-serif" letter-spacing="-1">${value}</text>
+    <text x="${cx}" y="${cy+20}" text-anchor="middle" fill="var(--muted)" font-size="6.5"
+      letter-spacing="1.2">ЗАНЯТИЙ</text>
+  </svg>`;
 }
 
-// ── SCHEDULE ─────────────────────────────────────────────────────────
-function renderSchedule() {
-    // build week days anchored to today
-    const today = new Date();
-    const todayDow = today.getDay(); // 0=вс,1=пн...
-    // Monday-based week offset
-    const mondayOffset = todayDow === 0 ? -6 : 1 - todayDow;
-    const DAY_LETTERS = ['П','В','С','Ч','П','С','В']; // пн..вс
+// Animate arc after render
+setTimeout(()=>{
+  document.querySelectorAll('[id^="arc-prog-"]').forEach(path=>{
+    const target=path.style.getPropertyValue('--target');
+    if(target) setTimeout(()=>{path.style.strokeDashoffset=target},200);
+  });
+},200);
 
-    const strip = document.getElementById('day-strip');
-    strip.innerHTML = '';
+/* ── SCHEDULE ── */
+const DAY_LETTERS=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const DAY_SHORT  =['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const MONTHS_RU  =['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const MONTHS_FULL=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 
-    // которой индекс по умолчанию = сегодня
-    let todayIdx = todayDow === 0 ? 6 : todayDow - 1;
-    if (state.activeDayIdx === 0) state.activeDayIdx = todayIdx;
+function isWorkDay(dow){ return CONFIG.workDays.includes(dow); }
 
-    for (let i = 0; i < 7; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + mondayOffset + i);
-        const btn = document.createElement('button');
-        btn.className = 'day-btn' + (i === state.activeDayIdx ? ' active' : '');
-        btn.innerHTML = `
-            <span class="day-l">${DAY_LETTERS[i]}</span>
-            <span class="day-d">${date.getDate()}</span>
-            <div class="day-dot"></div>`;
-        btn.onclick = () => { state.activeDayIdx = i; renderSchedule(); };
-        strip.appendChild(btn);
-    }
+function renderSchedule(){
+  const today=new Date();
+  const todayDow=today.getDay();
+  // Monday-based week
+  const mondayOff=todayDow===0?-6:1-todayDow;
 
-    // lessons for active day (0=пн)
-    const daySchedule = CONFIG.schedule.filter(l => l.day === state.activeDayIdx);
-    const list = document.getElementById('lessons-list');
-    list.innerHTML = '';
+  if(S.activeDayIdx<0){
+    // default: today (convert 0-based Mon week)
+    S.activeDayIdx=todayDow===0?6:todayDow-1;
+  }
 
-    if (daySchedule.length === 0) {
-        list.innerHTML = `<p style="color:var(--muted);font-size:15px;padding:20px 0;">Занятий нет</p>`;
-        return;
-    }
+  // Build day strip (Mon=0…Sun=6)
+  const strip=document.getElementById('day-strip');
+  strip.innerHTML='';
+  for(let i=0;i<7;i++){
+    const d=new Date(today);
+    d.setDate(today.getDate()+mondayOff+i);
+    const dow=d.getDay();
+    const work=isWorkDay(dow);
+    const btn=document.createElement('button');
+    btn.className='day-btn'+(i===S.activeDayIdx?' active':'')+(!work?' disabled':'');
+    btn.title=!work?'Нерабочий день':'';
+    btn.innerHTML=`<span class="dl">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][i]}</span><span class="dd">${d.getDate()}</span><div class="dot"></div>`;
+    if(work) btn.onclick=()=>{ S.activeDayIdx=i; renderSchedule(); };
+    strip.appendChild(btn);
+  }
 
-    daySchedule.forEach((lesson, i) => {
-        const delay = i * 80 + 80;
-        if (lesson.primary) {
-            list.innerHTML += `
-            <div class="lesson-card-primary" style="animation:cardSlide 500ms cubic-bezier(0.16,1,0.3,1) ${delay}ms both;">
-                <p class="label-xs" style="margin-bottom:6px;">${lesson.time}</p>
-                <h3 class="clash" style="font-size:32px;font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1;">${lesson.section}</h3>
-                <p style="font-size:13px;color:var(--muted);margin-top:6px;">${lesson.trainer}</p>
-            </div>`;
-        } else {
-            list.innerHTML += `
-            <div class="lesson-row" style="animation:cardSlide 500ms cubic-bezier(0.16,1,0.3,1) ${delay}ms both;">
-                <span style="font-size:14px;color:var(--muted);min-width:44px;">${lesson.time}</span>
-                <div class="lesson-divider"></div>
-                <span class="clash" style="font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.4px;flex:1;">${lesson.section}</span>
-                <div class="lesson-divider"></div>
-                <span style="font-size:12px;color:var(--muted);">${lesson.trainer}</span>
-            </div>`;
-        }
-    });
-}
+  // Lessons for chosen day (Mon=0→dow=1, …, Sun=6→dow=0)
+  const dowMapping=[1,2,3,4,5,6,0]; // index i → day-of-week
+  const activeDow=dowMapping[S.activeDayIdx];
+  const dayLessons=CONFIG.schedule.filter(l=>l.day===activeDow);
+  const list=document.getElementById('lessons-list');
+  list.innerHTML='';
 
-function setScheduleView(v, btn) {
-    state.scheduleView = v;
-    document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderSchedule();
-}
+  if(!isWorkDay(activeDow)){
+    list.innerHTML=`<p style="color:var(--muted);font-size:14px;padding:16px 0">Нерабочий день — занятий нет.</p>`;
+    return;
+  }
+  if(!dayLessons.length){
+    list.innerHTML=`<p style="color:var(--muted);font-size:14px;padding:16px 0">Занятий нет</p>`;
+    return;
+  }
 
-// ── TRAINER ───────────────────────────────────────────────────────────
-function renderTrainer() {
-    const t = CONFIG.trainers[0];
-    document.getElementById('trainer-photo').src = t.photo;
-    document.getElementById('trainer-photo').alt = t.name.replace('\n',' ');
-    document.getElementById('trainer-name-text').innerHTML = t.name.replace('\n','<br>');
-    document.getElementById('trainer-spec-text').textContent = t.spec;
-    document.getElementById('trainer-exp').textContent = t.experience;
-    document.getElementById('trainer-age-range').textContent = t.ageRange;
-    document.getElementById('trainer-bio').textContent = t.bio;
-    document.getElementById('trainer-rating').textContent = t.rating;
-
-    // rating bars (filled based on rating/5)
-    const bars = document.getElementById('rating-bars');
-    bars.innerHTML = '';
-    for (let i = 1; i <= 5; i++) {
-        const bar = document.createElement('div');
-        bar.className = 'rating-bar';
-        const pct = t.rating / 5;
-        bar.style.background = i / 5 <= pct ? 'var(--lime)' : 'rgba(200,255,0,0.2)';
-        bars.appendChild(bar);
-    }
-}
-
-// ── BOOKING ───────────────────────────────────────────────────────────
-function renderBooking() {
-    // today's date for subtitle
-    const today = new Date();
-    const DAY_NAMES = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-    const MONTH_NAMES = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
-    const dateStr = `${DAY_NAMES[today.getDay()]}, ${today.getDate()} ${MONTH_NAMES[today.getMonth()]}`;
-
-    document.getElementById('booking-title').textContent = CONFIG.bookingSection;
-    document.getElementById('booking-subtitle').textContent = `${dateStr} · ${CONFIG.bookingTrainer}`;
-
-    // time slots
-    const slotsEl = document.getElementById('time-slots');
-    slotsEl.innerHTML = '';
-    CONFIG.timeSlots.forEach((slot, i) => {
-        const btn = document.createElement('button');
-        const isSel = state.selectedSlot === slot.time;
-        btn.className = 'time-slot' + (isSel ? ' selected' : '') + (!slot.free ? ' disabled' : '');
-        btn.style.animation = `cardSlide 450ms cubic-bezier(0.16,1,0.3,1) ${i * 45 + 80}ms both`;
-        btn.innerHTML = `
-            <span class="slot-time">${slot.time}</span>
-            <span class="slot-label">${slot.free ? 'свободно' : 'занято'}</span>`;
-        if (slot.free) {
-            btn.onclick = () => {
-                state.selectedSlot = isSel ? null : slot.time;
-                state.submitted = false;
-                renderBookingSlots();
-                updateBookingForm();
-            };
-        }
-        slotsEl.appendChild(btn);
-    });
-
-    updateBookingForm();
-
-    // populate child selector
-    const sel = document.getElementById('form-child');
-    sel.innerHTML = '';
-    CONFIG.children.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c.name;
-        opt.textContent = `${c.name}, ${c.age} лет · ${c.section}`;
-        sel.appendChild(opt);
-    });
-
-    // pre-fill phone from Telegram
-    const tg = window.Telegram?.WebApp?.initDataUnsafe?.user;
-    if (tg?.phone_number && !document.getElementById('form-phone').value) {
-        document.getElementById('form-phone').value = tg.phone_number;
-    }
-}
-
-function renderBookingSlots() {
-    // just re-render slot classes without animation
-    const buttons = document.querySelectorAll('#time-slots .time-slot');
-    buttons.forEach((btn, i) => {
-        const slot = CONFIG.timeSlots[i];
-        const isSel = state.selectedSlot === slot.time;
-        btn.className = 'time-slot' + (isSel ? ' selected' : '') + (!slot.free ? ' disabled' : '');
-        btn.style.animation = '';
-    });
-}
-
-function updateBookingForm() {
-    const form = document.getElementById('booking-form');
-    if (!state.selectedSlot) { form.style.display = 'none'; return; }
-    form.style.display = 'block';
-    const btn = document.getElementById('confirm-btn');
-    const btnText = document.getElementById('confirm-btn-text');
-    if (state.submitted) {
-        btn.className = 'visible confirmed';
-        btnText.textContent = `✓ Записано на ${state.selectedSlot}`;
+  dayLessons.forEach((l,i)=>{
+    const delay=i*70+60;
+    if(l.primary){
+      list.innerHTML+=`<div class="lesson-card" style="animation:fadeUp 450ms cubic-bezier(.16,1,.3,1) ${delay}ms both">
+        <p style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">${l.time}</p>
+        <h3 style="font-size:30px;font-family:var(--clash);font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1">${l.section}</h3>
+        <p style="font-size:12px;color:var(--muted);margin-top:6px">${l.trainer}</p>
+      </div>`;
     } else {
-        btn.className = 'visible';
-        btnText.textContent = `Записать на ${state.selectedSlot}`;
+      list.innerHTML+=`<div class="lesson-row" style="animation:fadeUp 450ms cubic-bezier(.16,1,.3,1) ${delay}ms both">
+        <span style="font-size:13px;color:var(--muted);min-width:40px">${l.time}</span>
+        <div class="lesson-sep"></div>
+        <span style="font-size:14px;font-family:var(--clash);font-weight:600;color:var(--text);flex:1;letter-spacing:-.4px">${l.section}</span>
+        <div class="lesson-sep"></div>
+        <span style="font-size:11px;color:var(--muted)">${l.trainer}</span>
+      </div>`;
     }
+  });
 }
 
-// ── SUBMIT BOOKING ────────────────────────────────────────────────────
-function submitBooking() {
-    if (state.submitting || state.submitted) return;
-    const phone = document.getElementById('form-phone').value.trim();
-    if (!phone) { showToast('Введите телефон для подтверждения', false); return; }
-    if (!state.selectedSlot) return;
+function setView(v,btn){
+  S.schedView=v;
+  document.querySelectorAll('.view-toggle button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSchedule();
+}
 
-    state.submitting = true;
-    const btn = document.getElementById('confirm-btn');
-    const btnText = document.getElementById('confirm-btn-text');
-    btn.disabled = true;
-    btnText.textContent = 'Отправка...';
+/* ── TRAINER ── */
+function renderTrainer(){
+  const t=CONFIG.trainers[0];
+  document.getElementById('trainer-photo').src=t.photo;
+  document.getElementById('trainer-name').innerHTML=t.name.replace('\n','<br>');
+  document.getElementById('trainer-spec').textContent=t.spec;
+  document.getElementById('trainer-exp').textContent=t.experience;
+  document.getElementById('trainer-ages').textContent=t.ageRange;
+  document.getElementById('trainer-bio').textContent=t.bio;
+  document.getElementById('trainer-rating').textContent=t.rating;
+  const bars=document.getElementById('rating-bars');
+  bars.innerHTML='';
+  for(let i=1;i<=5;i++){
+    const b=document.createElement('div');
+    b.style.cssText=`flex:1;height:3px;border-radius:2px;background:${i/5<=t.rating/5?'var(--lime)':'rgba(200,255,0,.2)'}`;
+    bars.appendChild(b);
+  }
+}
 
-    const tg = window.Telegram?.WebApp;
-    const user = tg?.initDataUnsafe?.user || {};
-    const today = new Date();
+/* ── BOOKING ── */
+async function onOpenBooking(){
+  const hasPhone=!!S.phone;
+  document.getElementById('phone-prompt').style.display=hasPhone?'none':'block';
+  if(hasPhone) await loadSlotsForToday();
+}
 
-    const data = {
-        event: 'booking_submit',
-        user_id: user.id || 'unknown',
-        username: user.username || '',
-        first_name: user.first_name || '',
-        timestamp: new Date().toISOString(),
-        booking: {
-            booking_id: `BK_${Date.now()}_${Math.random().toString(36).substr(2,6).toUpperCase()}`,
-            child: document.getElementById('form-child').value,
-            section: CONFIG.bookingSection,
-            trainer: CONFIG.bookingTrainer,
-            date: `${today.getDate()}.${today.getMonth()+1}.${today.getFullYear()}`,
-            time: state.selectedSlot,
-            phone: phone,
-            comment: document.getElementById('form-comment').value.trim() || null
-        }
-    };
+async function loadSlotsForToday(){
+  const today=new Date();
+  const dateStr=formatDateISO(today);
+  document.getElementById('slot-loading').style.display='block';
+  document.getElementById('time-slots').innerHTML='';
 
-    fetch(CONFIG.backendUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        mode: 'no-cors'
-    })
-    .then(() => {
-        state.submitting = false;
-        state.submitted = true;
-        btn.disabled = false;
+  try{
+    const res=await apiFetch('GET',`?event=get_slots&date=${dateStr}&section=${encodeURIComponent(CONFIG.bookingSection)}`);
+    // Build map from backend data
+    S.slotData={};
+    (res.slots||[]).forEach(s=>{ S.slotData[s.time]={count:s.count,limit:s.limit,full:s.full}; });
+    S.slotsLoaded=true;
+  } catch(e){
+    // On error keep empty slotData (all slots at 0)
+    S.slotsLoaded=true;
+  }
+
+  document.getElementById('slot-loading').style.display='none';
+  renderSlots();
+}
+
+function renderSlots(){
+  const today=new Date();
+  const todayDow=today.getDay();
+  const now=new Date();
+
+  // Header
+  const dateStr=`${today.getDate()} ${MONTHS_FULL[today.getMonth()]}`;
+  document.getElementById('booking-title').textContent=CONFIG.bookingSection;
+  document.getElementById('booking-subtitle').textContent=`${dateStr} · ${CONFIG.bookingTrainer}`;
+
+  const container=document.getElementById('time-slots');
+  container.innerHTML='';
+
+  // Check if today is a work day
+  if(!isWorkDay(todayDow)){
+    container.innerHTML=`<p style="color:var(--muted);font-size:14px;padding:12px 0">Сегодня нерабочий день — запись недоступна.<br>Приходите в рабочие дни.</p>`;
+    return;
+  }
+
+  CONFIG.timeSlots.forEach((slot,i)=>{
+    const backend=S.slotData[slot.time]||{count:0,limit:slot.limit,full:false};
+    const count=backend.count;
+    const limit=backend.limit||slot.limit;
+    const isFull=backend.full||(count>=limit);
+
+    // Past time check
+    const [h,m]=slot.time.split(':').map(Number);
+    const slotDate=new Date(today);
+    slotDate.setHours(h,m,0,0);
+    const isPast=slotDate<=now;
+
+    const isDisabled=isFull||isPast;
+    const isSel=S.selectedSlot===slot.time&&!isDisabled;
+
+    // Capacity dots (max 5 visible)
+    const dotsTotal=Math.min(limit,8);
+    const dotsFilled=Math.min(count,dotsTotal);
+    const pct=count/limit;
+    let dots='';
+    for(let d=0;d<dotsTotal;d++){
+      const filled=d<dotsFilled;
+      const danger=pct>=.8;
+      dots+=`<div class="cap-dot${filled?' filled'+(danger?' danger':''):''}"></div>`;
+    }
+    const capLabel=isFull?'мест нет':isPast?'прошло':`${limit-count} мест`;
+
+    const btn=document.createElement('button');
+    btn.className=`slot-btn${isSel?' selected':''}${isDisabled?' disabled':''}`;
+    btn.style.animation=`fadeUp 400ms cubic-bezier(.16,1,.3,1) ${i*40+60}ms both`;
+    btn.innerHTML=`
+      <span class="st">${slot.time}</span>
+      <div class="slot-capacity">
+        <div class="cap-bar">${dots}</div>
+        <span class="sl" style="min-width:56px;text-align:right">${capLabel}</span>
+      </div>`;
+
+    if(!isDisabled){
+      btn.onclick=()=>{
+        S.selectedSlot=isSel?null:slot.time;
+        S.submitted=false;
+        renderSlots();
         updateBookingForm();
-        showToast(`<strong>${document.getElementById('form-child').value}</strong> записан на ${state.selectedSlot}`, true);
-    })
-    .catch(err => {
-        console.error(err);
-        state.submitting = false;
-        btn.disabled = false;
-        btnText.textContent = `Записать на ${state.selectedSlot}`;
-        showToast('Ошибка. Попробуйте ещё раз', false);
+      };
+    }
+    container.appendChild(btn);
+  });
+  updateBookingForm();
+}
+
+function updateBookingForm(){
+  const form=document.getElementById('booking-form');
+  if(!S.selectedSlot){ form.style.display='none'; return; }
+  form.style.display='block';
+  const btn=document.getElementById('submit-btn');
+  const txt=document.getElementById('submit-text');
+  if(S.submitted){
+    btn.className='submit-btn done';
+    txt.textContent=`✓ Записано на ${S.selectedSlot}`;
+  } else {
+    btn.className='submit-btn';
+    txt.textContent=`Записать на ${S.selectedSlot}`;
+  }
+}
+
+/* ── PHONE SAVE ── */
+async function savePhoneAndContinue(){
+  const ph=document.getElementById('first-phone').value.trim();
+  if(!ph){ showToast('Введите номер телефона','error'); return; }
+  try{
+    await apiFetch('POST',null,{event:'save_phone',user_id:userId,username:tgUser.username||'',first_name:tgUser.first_name||'',phone:ph});
+    S.phone=ph;
+    document.getElementById('phone-prompt').style.display='none';
+    await loadSlotsForToday();
+  } catch(e){
+    showToast('Ошибка при сохранении телефона','error');
+  }
+}
+
+/* ── SUBMIT BOOKING ── */
+async function submitBooking(){
+  if(S.submitting||S.submitted) return;
+  if(!S.selectedSlot) return;
+
+  const child=document.getElementById('form-child').value;
+  if(!child){ showToast('Выберите ребёнка','error'); return; }
+
+  S.submitting=true;
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;
+  document.getElementById('submit-text').textContent='Отправляем…';
+
+  const today=new Date();
+  const bookingData={
+    event:'booking_submit',
+    user_id:userId,
+    username:tgUser.username||'',
+    first_name:tgUser.first_name||'',
+    timestamp:new Date().toISOString(),
+    booking:{
+      booking_id:`BK_${Date.now()}_${Math.random().toString(36).substr(2,5).toUpperCase()}`,
+      child,
+      section:CONFIG.bookingSection,
+      trainer:CONFIG.bookingTrainer,
+      date:formatDateISO(today),
+      time:S.selectedSlot,
+      phone:S.phone||'',
+      comment:document.getElementById('form-comment').value.trim()||null,
+      payment_method:S.payMethod
+    }
+  };
+
+  try{
+    const res=await apiFetch('POST',null,bookingData);
+    S.submitting=false;
+    btn.disabled=false;
+    if(res.status==='error'){
+      showToast(res.message||'Ошибка при записи','error');
+      document.getElementById('submit-text').textContent=`Записать на ${S.selectedSlot}`;
+      // Reload slots — might be full now
+      await loadSlotsForToday();
+    } else {
+      S.submitted=true;
+      S.visits++;
+      updateBookingForm();
+      showToast(`${child} записан${getChildGender(child)?'а':''} на ${S.selectedSlot}`,'success');
+    }
+  } catch(e){
+    S.submitting=false;
+    btn.disabled=false;
+    document.getElementById('submit-text').textContent=`Записать на ${S.selectedSlot}`;
+    showToast('Ошибка соединения. Попробуйте ещё раз','error');
+  }
+}
+
+function getChildGender(name){ return ['а','я','ья','ья'].some(s=>name.toLowerCase().endsWith(s)); }
+
+function selectPayment(method){
+  S.payMethod=method;
+  document.querySelectorAll('.pay-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.method===method);
+  });
+}
+
+/* ── PAYMENT SCREEN ── */
+function renderPayment(){
+  // Subscription
+  const hasAbo=S.subscription!=='none'&&S.lessonsLeft>0;
+  const ll=S.lessonsLeft;
+  document.getElementById('sub-lessons-left').textContent=hasAbo?`${ll} занят${ll===1?'ие':ll<5?'ия':'ий'} осталось`:'Нет активного абонемента';
+  document.getElementById('sub-expires').textContent=S.subExpires?`Действует до: ${S.subExpires}`:'';
+
+  const total=ll+(S.visits||0);
+  const pct=total>0?Math.round((ll/total)*100):0;
+  document.getElementById('sub-progress-bar').style.width=pct+'%';
+
+  document.getElementById('payment-methods-text').textContent=CONFIG.paymentMethods;
+  document.getElementById('visit-count-text').textContent=`Всего посещено занятий: ${S.visits}`;
+  document.getElementById('contact-for-payment').textContent=CONFIG.adminContact;
+}
+
+/* ── CONTACTS ── */
+function renderContacts(){
+  const list=document.getElementById('contacts-list');
+  list.innerHTML='';
+  CONFIG.contacts.forEach((c,i)=>{
+    const a=document.createElement(c.href&&c.href!=='#'?'a':'div');
+    a.className='contact-item';
+    a.style.animation=`fadeUp 450ms cubic-bezier(.16,1,.3,1) ${i*70+60}ms both`;
+    if(c.href&&c.href!=='#'){a.href=c.href;a.target='_blank';a.rel='noopener';}
+    a.innerHTML=`
+      <div class="contact-icon">${c.icon}</div>
+      <div><h4>${c.label}</h4><p>${c.sub}</p></div>`;
+    list.appendChild(a);
+  });
+}
+
+/* ── ADD CHILD MODAL ── */
+function openAddChildModal(){
+  // Fill sections
+  const sel=document.getElementById('new-child-section');
+  sel.innerHTML=CONFIG.sections.map(s=>`<option value="${s}">${s}</option>`).join('');
+  document.getElementById('new-child-name').value='';
+  document.getElementById('new-child-age').value='';
+  document.getElementById('add-child-modal').classList.add('open');
+}
+function closeAddChildModal(e){
+  if(e.target===document.getElementById('add-child-modal')||e===true)
+    document.getElementById('add-child-modal').classList.remove('open');
+}
+async function submitAddChild(){
+  const name=document.getElementById('new-child-name').value.trim();
+  const age=document.getElementById('new-child-age').value;
+  const section=document.getElementById('new-child-section').value;
+  if(!name){ showToast('Введите имя ребёнка','error'); return; }
+
+  try{
+    const res=await apiFetch('POST',null,{
+      event:'add_child',user_id:userId,
+      username:tgUser.username||'',first_name:tgUser.first_name||'',
+      child:{name,age:Number(age)||0,section}
     });
+    if(res.status==='error'){ showToast(res.message,'error'); return; }
+    S.children=res.children||[...S.children,{name,age:Number(age)||0,section}];
+    closeAddChildModal(true);
+    renderChildren();
+    fillChildSelect();
+    showToast(`${name} добавлен${getChildGender(name)?'а':''}!`,'success');
+  } catch(e){
+    // Offline fallback
+    S.children.push({name,age:Number(age)||0,section});
+    closeAddChildModal(true);
+    renderChildren();
+    fillChildSelect();
+    showToast(`${name} добавлен${getChildGender(name)?'а':''}!`,'success');
+  }
 }
 
-// ── TOAST ─────────────────────────────────────────────────────────────
-let toastTimer;
-function showToast(html, success = true) {
-    const toast = document.getElementById('toast');
-    const icon  = toast.querySelector('.toast-icon');
-    const text  = document.getElementById('toast-text');
-    icon.textContent = success ? '✓' : '!';
-    icon.style.color = success ? 'var(--lime)' : '#ff6b6b';
-    toast.style.borderColor = success ? 'var(--lime)' : '#ff6b6b';
-    text.innerHTML = html;
-    toast.classList.add('visible');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('visible'), 4000);
+function fillChildSelect(){
+  const sel=document.getElementById('form-child');
+  const list=S.children.length?S.children:CONFIG.defaultChildren;
+  sel.innerHTML=list.map(c=>`<option value="${c.name}">${c.name}, ${c.age} лет · ${c.section}</option>`).join('');
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────
-function init() {
-    renderHome();
-    renderSchedule();
-    // trainer & booking rendered on demand
+/* ── API ── */
+async function apiFetch(method,path,body){
+  const url=CONFIG.backendUrl+(path||'');
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(body) opts.body=JSON.stringify(body);
+  const resp=await fetch(url,opts);
+  return resp.json();
 }
 
-document.addEventListener('DOMContentLoaded', init);
+/* ── TOAST ── */
+let _toastTimer;
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  const i=document.getElementById('toast-icon');
+  const m=document.getElementById('toast-msg');
+  i.textContent=type==='error'?'!':'✓';
+  i.style.color=type==='error'?'var(--danger)':'var(--lime)';
+  t.style.borderColor=type==='error'?'var(--danger)':'var(--lime)';
+  m.textContent=msg;
+  t.classList.add('visible');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>t.classList.remove('visible'),4500);
+}
+
+/* ── HELPERS ── */
+function formatDateISO(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ── START ── */
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
