@@ -1,1357 +1,1078 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
-<title id="page-title">Детские занятия</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@700,600,500&display=swap">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<title>MiniApp.pro — демо магазина в Telegram</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:#111}
-body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;color:#F0EEE8}
-button{font-family:inherit;cursor:pointer;border:none;background:none}
-::-webkit-scrollbar{display:none}
-input,select,textarea{font-family:inherit}
-
 :root{
-  --bg:#0A0A0F;--card:#111116;--lime:#C8FF00;--muted:#52525B;
-  --text:#F0EEE8;--border:rgba(255,255,255,0.06);
-  --danger:#ff4d4d;--success:#4dff91;
-  --clash:'Clash Display',sans-serif;--inter:'Inter',sans-serif;
+  --bg:#02040a; --panel:#0b1220; --panel-2:#0f172a;
+  --line:#1e293b; --line-soft:#172033;
+  --text:#f1f5f9; --muted:#94a3b8; --muted-2:#64748b;
+  --accent:#f59e0b; --brand:#2563eb;
+  --card-r:16px; --btn-r:10px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
 }
-
-/* ── APP SHELL ── */
-#app{
-  position:relative;
-  width:min(390px,100vw);height:min(844px,100dvh);
-  margin:0 auto;background:var(--bg);
-  border-radius:clamp(0px,4vw,40px);overflow:hidden;
-  box-shadow:0 64px 128px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.07);
-  display:flex;flex-direction:column;
+body.light{
+  --bg:#f1f5f9; --panel:#ffffff; --panel-2:#ffffff;
+  --line:#e2e8f0; --line-soft:#e8edf4;
+  --text:#0f172a; --muted:#475569; --muted-2:#94a3b8;
 }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Inter,system-ui,sans-serif;
+  overscroll-behavior-y:contain;transition:background .3s,color .3s;}
+body{max-width:520px;margin:0 auto;position:relative;min-height:100vh;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,select{font-family:inherit;}
+.hidden{display:none!important;}
 
-/* ── SCREENS ── */
-.screen{flex:1;overflow-y:auto;overflow-x:hidden;display:none;padding-bottom:72px}
-.screen.active{display:block}
+/* ---------- animations ---------- */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-9deg)}75%{transform:rotate(9deg)}}
+@keyframes flyUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-46px) scale(.6)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@keyframes confetti{0%{transform:translateY(-10vh) rotate(0)}100%{transform:translateY(110vh) rotate(720deg)}}
+@keyframes glowline{0%{left:-40%}100%{left:110%}}
+.anim-in{animation:fadeUp .45s cubic-bezier(.16,1,.3,1) both;}
+.pressable{transition:transform .12s;}
+.pressable:active{transform:scale(.95);}
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes titleReveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0% 0 0)}}
-.anim-title{animation:titleReveal 700ms cubic-bezier(.16,1,.3,1) both}
-.anim-1{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 80ms both}
-.anim-2{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 180ms both}
-.anim-3{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 280ms both}
-.anim-4{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 380ms both}
+/* ---------- header ---------- */
+.cover{position:relative;height:158px;overflow:hidden;}
+.cover-art{position:absolute;inset:0;transition:background .5s;}
+.cover-art::before{content:"";position:absolute;inset:0;opacity:.16;
+  background-image:radial-gradient(circle at 20% 30%, #fff 1.5px, transparent 1.5px),
+                   radial-gradient(circle at 70% 60%, #fff 1px, transparent 1px),
+                   radial-gradient(circle at 45% 85%, #fff 1.2px, transparent 1.2px);
+  background-size:90px 90px,60px 60px,110px 110px;}
+.cover-emoji{position:absolute;font-size:64px;right:14px;bottom:34px;opacity:.5;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.4));animation:float 4s ease-in-out infinite;}
+.cover::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,var(--bg) 4%,transparent 62%);}
+.cover-bar{position:absolute;left:14px;right:14px;bottom:12px;z-index:2;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.shop-id{display:flex;align-items:center;gap:10px;min-width:0;}
+.shop-logo{width:40px;height:40px;border-radius:13px;background:rgba(2,4,10,.55);
+  border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto;transition:.2s;}
+.shop-name{font-weight:800;font-size:15.5px;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.shop-sub{font-size:9.5px;color:rgba(255,255,255,.75);margin-top:1px;text-shadow:0 1px 6px rgba(0,0,0,.5);}
+.online{flex:0 0 auto;font-size:9px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  padding:4px 9px;border-radius:999px;background:rgba(2,4,10,.5);border:1px solid rgba(255,255,255,.2);
+  color:#fff;backdrop-filter:blur(6px);display:flex;align-items:center;gap:5px;}
+.online .dot{width:6px;height:6px;border-radius:99px;background:#4ade80;animation:pulse 1.6s infinite;}
+.badge-demo{position:absolute;top:calc(10px + var(--safe-top));left:14px;z-index:3;
+  font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#fff;
+  padding:5px 10px;border-radius:999px;background:rgba(37,99,235,.92);
+  box-shadow:0 6px 18px -6px rgba(37,99,235,.8);overflow:hidden;position:absolute;}
+.badge-demo::after{content:"";position:absolute;top:0;bottom:0;width:36%;left:-40%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);
+  animation:glowline 2.8s ease-in-out infinite;}
+.fab-row{position:absolute;top:calc(9px + var(--safe-top));right:14px;z-index:3;display:flex;gap:8px;}
+.fab{width:36px;height:36px;border-radius:12px;background:rgba(2,4,10,.55);
+  border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:15px;}
 
-/* ── BOTTOM NAV ── */
-#bottom-nav{
-  flex-shrink:0;height:60px;
-  background:rgba(17,17,22,.96);
-  border-top:1px solid var(--border);
-  backdrop-filter:blur(12px);
-  display:flex;align-items:center;
-  overflow-x:auto;gap:0;
-  padding:0 4px;
-}
-#bottom-nav::-webkit-scrollbar{display:none}
-.nav-tab{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;flex:1;min-width:60px;height:52px;
-  border-radius:10px;color:var(--muted);
-  transition:color .2s,background .2s;font-size:10px;letter-spacing:.02em;
-}
-.nav-tab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.nav-tab.active{color:var(--lime)}
-.nav-tab.active svg{filter:drop-shadow(0 0 4px rgba(200,255,0,.5))}
+/* ---------- template chips ---------- */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 14px 4px;scrollbar-width:none;}
+.chips::-webkit-scrollbar{display:none;}
+.chip{flex:0 0 auto;font-size:12px;font-weight:700;padding:9px 14px;border-radius:999px;
+  background:var(--panel);border:1px solid var(--line);color:var(--muted);
+  transition:all .2s;white-space:nowrap;position:relative;overflow:hidden;}
+.chip.active{color:#fff;border-color:transparent;transform:scale(1.04);
+  box-shadow:0 8px 20px -8px rgba(0,0,0,.7);}
 
-/* ── SCREEN PADDING ── */
-.content{padding:44px 20px 20px}
+/* ---------- category tabs (working filters) ---------- */
+.cat-row{display:flex;gap:8px;overflow-x:auto;padding:9px 14px 2px;scrollbar-width:none;}
+.cat-row::-webkit-scrollbar{display:none;}
+.cat{flex:0 0 auto;font-size:10.5px;font-weight:800;padding:6px 12px;border-radius:999px;color:var(--muted);
+  background:var(--panel);border:1px solid var(--line);white-space:nowrap;transition:all .2s;}
+.cat.on{color:#fff;border-color:transparent;transform:scale(1.05);}
+.cat .cnt{opacity:.75;font-weight:700;margin-left:3px;font-size:9px;}
 
-/* ── CARD ── */
-.card{background:var(--card);border-radius:16px;border:1px solid var(--border)}
-.card-sm{border-radius:12px}
+/* ---------- catalog ---------- */
+.catalog{padding:12px 14px 8px;display:grid;grid-template-columns:1fr 1fr;gap:11px;min-height:180px;}
+.catalog.list{grid-template-columns:1fr;}
+.card{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--card-r);
+  overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,border-color .2s;}
+.card:active{transform:scale(.97);}
+.catalog.list .card{flex-direction:row;align-items:stretch;}
+.card-img{position:relative;aspect-ratio:16/10;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.catalog.list .card-img{aspect-ratio:auto;width:96px;flex:0 0 96px;}
+.card-img .bg{position:absolute;inset:0;}
+.card-img .bg::after{content:"";position:absolute;inset:0;opacity:.2;
+  background-image:radial-gradient(circle at 25% 25%, #fff 1.5px, transparent 1.5px),
+                   radial-gradient(circle at 75% 70%, #fff 1px, transparent 1px);
+  background-size:46px 46px,30px 30px;}
+.card-img .emo{position:relative;font-size:40px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));
+  transition:transform .2s;}
+.card:active .emo{transform:scale(1.15) rotate(-6deg);}
+.catalog.list .card-img .emo{font-size:32px;}
+.qbadge{position:absolute;top:6px;right:6px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;
+  box-shadow:0 3px 8px rgba(0,0,0,.4);animation:pop .3s cubic-bezier(.16,1.4,.5,1);}
+.tag{position:absolute;top:6px;left:6px;font-size:8px;font-weight:800;letter-spacing:.5px;
+  text-transform:uppercase;color:#fff;background:rgba(2,4,10,.55);backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,.2);padding:3px 7px;border-radius:99px;}
+.card-body{padding:10px 10px 11px;display:flex;flex-direction:column;gap:8px;flex:1;}
+.card-name{font-size:11.5px;font-weight:600;line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:30px;}
+.catalog.list .card-name{min-height:0;}
+.card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:6px;}
+.price{font-size:13px;font-weight:800;}
+.old-price{font-size:9.5px;color:var(--muted-2);text-decoration:line-through;margin-left:4px;font-weight:600;}
+.add-btn{display:flex;align-items:center;gap:3px;font-size:10px;font-weight:800;color:#fff;
+  padding:7px 11px;border-radius:var(--btn-r);transition:transform .12s;position:relative;}
+.add-btn:active{transform:scale(.9);}
+.stepper{display:flex;align-items:center;gap:8px;}
+.step{width:23px;height:23px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;color:#fff;line-height:1;transition:transform .12s;}
+.step:active{transform:scale(.85);}
+.step.minus{background:var(--line);}
+.qnum{font-size:12px;font-weight:800;min-width:12px;text-align:center;}
+.fly{position:fixed;z-index:80;font-size:20px;pointer-events:none;animation:flyUp .6s ease-out forwards;}
+.empty-cat{grid-column:1/-1;text-align:center;padding:26px 10px;color:var(--muted-2);font-size:12px;}
 
-/* ── HOME ── */
-.home-greeting{font-size:clamp(36px,10vw,48px);font-family:var(--clash);font-weight:700;
-  color:var(--text);letter-spacing:-2px;line-height:1.05}
+/* ---------- reviews ---------- */
+.section{padding:16px 14px 4px;}
+.sec-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:7px;margin:0 0 3px;}
+.sec-sub{font-size:11px;color:var(--muted-2);margin:0 0 12px;}
+.reviews{display:flex;gap:11px;overflow-x:auto;padding:2px 14px 6px;scrollbar-width:none;scroll-snap-type:x mandatory;}
+.reviews::-webkit-scrollbar{display:none;}
+.review{flex:0 0 84%;max-width:330px;scroll-snap-align:center;background:var(--panel);
+  border:1px solid var(--line-soft);border-radius:18px;padding:14px;position:relative;overflow:hidden;}
+.review::before{content:"“";position:absolute;top:-8px;right:10px;font-size:70px;font-weight:800;
+  color:var(--accent);opacity:.12;line-height:1;}
+.rv-head{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.rv-ava{width:38px;height:38px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;color:#fff;flex:0 0 auto;box-shadow:0 4px 12px rgba(0,0,0,.3);}
+.rv-name{font-size:12px;font-weight:800;}
+.rv-role{font-size:9.5px;color:var(--muted-2);margin-top:1px;line-height:1.3;}
+.rv-stars{font-size:10px;letter-spacing:1px;margin-bottom:7px;color:#fbbf24;}
+.rv-text{font-size:11px;line-height:1.6;color:var(--muted);margin:0;}
+.rv-tg{display:inline-block;margin-top:9px;font-size:10px;font-weight:700;color:#60a5fa;}
+.rv-dots{display:flex;gap:5px;justify-content:center;padding:8px 0 0;}
+.rv-dot{width:6px;height:6px;border-radius:99px;background:var(--line);transition:all .25s;}
+.rv-dot.on{width:16px;background:var(--accent);}
 
-/* Children grid */
-#children-grid{display:grid;gap:12px;margin-bottom:24px}
+/* ---------- FAQ ---------- */
+.faq{padding:4px 14px 8px;display:flex;flex-direction:column;gap:8px;}
+.qa{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;overflow:hidden;transition:border-color .2s;}
+.qa.open{border-color:var(--accent);}
+.qa-q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:13px 14px;font-size:12px;font-weight:700;text-align:left;}
+.qa-q .arr{transition:transform .25s;color:var(--muted-2);font-size:11px;flex:0 0 auto;}
+.qa.open .qa-q .arr{transform:rotate(180deg);color:var(--accent);}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+.qa-a p{margin:0;padding:0 14px 13px;font-size:11px;line-height:1.6;color:var(--muted);}
 
-/* 1 ребёнок */
-#children-grid.count-1{grid-template-columns:1fr}
-/* 2 ребёнка */
-#children-grid.count-2{grid-template-columns:1fr 1fr}
-/* 3+ */
-#children-grid.count-3,
-#children-grid.count-more{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}
-#children-grid.count-3 .child-card:first-child{grid-column:1/-1}
+/* ---------- pitch / stats ---------- */
+.pitch{padding:14px 18px 20px;text-align:center;}
+.p-badge{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:800;
+  letter-spacing:.8px;text-transform:uppercase;color:#93c5fd;padding:5px 11px;border-radius:999px;
+  background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);margin-bottom:10px;}
+.pitch h2{font-size:17px;font-weight:800;margin:0 0 8px;line-height:1.3;}
+.pitch p{font-size:12px;color:var(--muted);line-height:1.55;margin:0 auto;max-width:340px;}
+.stats{display:flex;gap:8px;margin:16px 0 0;}
+.stat{flex:1;background:var(--panel);border:1px solid var(--line-soft);border-radius:13px;padding:12px 6px;}
+.stat .num{font-size:17px;font-weight:800;}
+.stat .lab{font-size:9px;color:var(--muted-2);margin-top:2px;line-height:1.3;}
+.hint{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--muted-2);
+  font-size:10.5px;padding:10px 14px 120px;text-align:center;}
 
-.child-card{
-  background:var(--card);border-radius:16px;border:1px solid var(--border);
-  padding:18px 16px;cursor:pointer;
-  transition:border-color .2s,transform .2s;
-  position:relative;overflow:hidden;min-height:110px;
-}
-.child-card:active{transform:scale(.97)}
-.child-card.primary{border-color:rgba(200,255,0,.25)}
-.child-card .child-name{font-family:var(--clash);font-size:26px;font-weight:700;
-  color:var(--text);letter-spacing:-1px;line-height:1.1;margin-bottom:2px}
-.child-card.compact .child-name{font-size:20px}
-.child-card .child-sub{font-size:12px;color:var(--muted)}
-.child-card .child-section{
-  display:inline-block;margin-top:8px;
-  font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--lime);background:rgba(200,255,0,.1);
-  padding:3px 10px;border-radius:20px}
-.child-card .arc-corner{position:absolute;right:-6px;top:-6px;pointer-events:none}
+/* ---------- cart bar ---------- */
+.cartbar{position:fixed;left:0;right:0;bottom:0;z-index:40;max-width:520px;margin:0 auto;
+  padding:10px 14px calc(12px + var(--safe-bottom));
+  background:linear-gradient(to top,var(--bg) 60%,transparent);
+  transform:translateY(140%);transition:transform .3s cubic-bezier(.16,1,.3,1);}
+.cartbar.show{transform:translateY(0);}
+.cartbtn{width:100%;padding:14px 16px;border-radius:15px;display:flex;align-items:center;justify-content:space-between;
+  color:#fff;font-size:13px;font-weight:800;box-shadow:0 10px 30px -10px rgba(0,0,0,.9);
+  position:relative;overflow:hidden;}
+.cartbtn::after{content:"";position:absolute;top:0;bottom:0;width:30%;left:-40%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);
+  animation:glowline 2.4s ease-in-out infinite;}
+.cartbtn .l{display:flex;align-items:center;gap:8px;}
+.cart-ico{display:inline-block;}
+.cart-ico.wig{animation:wiggle .4s;}
+.cart-count{background:rgba(255,255,255,.25);border-radius:999px;padding:1px 8px;font-size:12px;}
+.cartbtn .r{display:flex;align-items:center;gap:8px;font-size:14px;}
 
-/* Add child button */
-.add-child-btn{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  background:var(--card);border-radius:16px;border:1.5px dashed rgba(255,255,255,.15);
-  padding:18px;color:var(--muted);font-size:14px;font-weight:500;
-  cursor:pointer;transition:border-color .2s,color .2s;min-height:70px;
-}
-.add-child-btn:hover{border-color:var(--lime);color:var(--lime)}
+.fallback-cta{position:fixed;left:0;right:0;bottom:0;z-index:45;max-width:520px;margin:0 auto;
+  padding:12px 14px calc(14px + var(--safe-bottom));background:linear-gradient(to top,var(--bg) 70%,transparent);}
+.fallback-cta button{width:100%;padding:15px;border-radius:14px;background:var(--brand);color:#fff;
+  font-size:14px;font-weight:800;box-shadow:0 10px 30px -10px rgba(37,99,235,.7);}
 
-/* Today card */
-.today-card{
-  background:var(--card);border-radius:16px;border:1px solid var(--border);
-  padding:20px;cursor:pointer;position:relative;overflow:hidden;
-  transition:border-color .2s;
-}
-.today-card:hover{border-color:rgba(200,255,0,.3)}
-.today-ghost{
-  position:absolute;inset:0;display:flex;align-items:center;padding-left:20px;
-  pointer-events:none;
-}
-.today-ghost span{
-  font-size:80px;font-family:var(--clash);font-weight:700;
-  color:rgba(240,238,232,.04);letter-spacing:-3px;white-space:nowrap;user-select:none}
+/* ---------- sheets ---------- */
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);backdrop-filter:blur(2px);
+  opacity:0;pointer-events:none;transition:opacity .25s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:520px;margin:0 auto;
+  background:var(--panel-2);border-top:1px solid var(--line);border-radius:22px 22px 0 0;
+  max-height:92vh;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.16,1,.3,1);
+  padding-bottom:calc(10px + var(--safe-bottom));box-shadow:0 -20px 60px rgba(0,0,0,.5);}
+.sheet.show{transform:translateY(0);}
+.grip{width:38px;height:4px;border-radius:999px;background:var(--line);margin:9px auto 4px;flex:0 0 auto;}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;padding:6px 18px 12px;
+  border-bottom:1px solid var(--line-soft);flex:0 0 auto;}
+.sheet-title{font-size:14px;font-weight:800;display:flex;align-items:center;gap:7px;}
+.sheet-close{font-size:13px;font-weight:700;color:var(--muted);padding:4px 6px;}
+.sheet-body{overflow-y:auto;padding:14px 18px 18px;-webkit-overflow-scrolling:touch;}
 
-/* ── SCHEDULE ── */
-.view-toggle{display:flex;gap:24px;margin-bottom:24px}
-.view-toggle button{
-  font-size:14px;color:var(--muted);font-family:var(--inter);
-  border-bottom:1.5px solid transparent;padding-bottom:4px;transition:all .2s}
-.view-toggle button.active{color:var(--text);font-weight:500;border-bottom-color:var(--lime)}
+.field-label{display:block;font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--muted-2);margin:0 0 8px;}
+.step-block{margin-bottom:20px;}
+.tinput{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;
+  padding:12px 13px;font-size:13.5px;font-weight:600;color:var(--text);outline:none;transition:.15s;}
+.tinput:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%,transparent);}
 
-.day-strip{display:flex;gap:16px;overflow-x:auto;padding-bottom:6px;margin-bottom:24px}
-.day-btn{display:flex;flex-direction:column;align-items:center;gap:3px;
-  flex-shrink:0;cursor:pointer;padding:0;border:none;background:none}
-.day-btn .dl{font-size:10px;color:var(--muted);letter-spacing:.04em;transition:color .2s}
-.day-btn .dd{font-size:14px;font-family:var(--clash);font-weight:600;color:var(--muted);transition:color .2s}
-.day-btn .dot{width:4px;height:4px;border-radius:50%;background:transparent;transition:background .2s}
-.day-btn.active .dl,.day-btn.active .dd{color:var(--lime)}
-.day-btn.active .dot{background:var(--lime)}
-.day-btn.disabled .dl,.day-btn.disabled .dd{color:rgba(82,82,91,.4)}
-.day-btn.disabled{pointer-events:none}
+.swatches{display:flex;gap:11px;flex-wrap:wrap;}
+.sw{width:38px;height:38px;border-radius:999px;border:2px solid transparent;position:relative;transition:.15s;}
+.sw.on{border-color:var(--text);transform:scale(1.1);}
+.sw.on::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:800;font-size:14px;text-shadow:0 1px 4px rgba(0,0,0,.5);}
 
-.lesson-card{background:var(--card);border-radius:12px;padding:16px 18px;margin-bottom:12px}
-.lesson-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
-.lesson-row:last-child{border-bottom:none}
-.lesson-sep{width:1px;height:12px;background:rgba(255,255,255,.12);flex-shrink:0}
+.emoji-grid{display:flex;gap:9px;flex-wrap:wrap;}
+.emo-opt{width:42px;height:42px;border-radius:12px;background:var(--bg);border:1.5px solid var(--line);
+  font-size:20px;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.emo-opt.on{border-color:var(--accent);transform:scale(1.1);background:color-mix(in srgb,var(--accent) 12%,var(--bg));}
 
-/* ── TRAINER ── */
-.photo-zone{position:relative;height:240px;background:var(--card);flex-shrink:0}
-.photo-zone img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(100%)}
-.photo-lime{position:absolute;inset:0;background:rgba(200,255,0,.07);mix-blend-mode:screen}
-.photo-fade{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(10,10,15,0) 40%,#0A0A0F 100%)}
-.trainer-name-overlay{position:absolute;bottom:0;left:20px;right:40px}
-.trainer-spec-side{position:absolute;right:14px;bottom:28px;writing-mode:vertical-rl;transform:rotate(180deg)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.seg.three{grid-template-columns:1fr 1fr 1fr;}
+.seg-opt{padding:11px 6px;border-radius:12px;font-size:11px;font-weight:700;text-align:center;
+  border:1.5px solid var(--line);background:var(--bg);color:var(--muted);transition:.15s;}
+.seg-opt.on{color:var(--text);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg));transform:scale(1.02);}
 
-/* ── BOOKING ── */
-.slot-btn{
-  display:flex;align-items:center;justify-content:space-between;
-  width:100%;padding:14px 0;background:transparent;
-  border:none;border-bottom:1px solid var(--border);
-  border-radius:0;transition:all .2s cubic-bezier(.16,1,.3,1);
-}
-.slot-btn.selected{padding:14px 14px;background:var(--lime);border-bottom:none;border-radius:10px}
-.slot-btn.disabled{cursor:not-allowed}
-.slot-btn .st{font-size:22px;font-family:var(--clash);font-weight:600;letter-spacing:-.5px;color:var(--text);transition:color .2s}
-.slot-btn.selected .st{color:#0A0A0F}
-.slot-btn.disabled .st{color:var(--muted)}
-.slot-btn .sl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);transition:color .2s}
-.slot-btn.selected .sl{color:#0A0A0F}
-.slot-capacity{display:flex;align-items:center;gap:4px}
-.cap-bar{display:flex;gap:2px;align-items:center}
-.cap-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.15)}
-.cap-dot.filled{background:var(--lime)}
-.cap-dot.filled.danger{background:var(--danger)}
-.slot-btn.selected .cap-dot{background:rgba(10,10,15,.2)}
-.slot-btn.selected .cap-dot.filled{background:#0A0A0F}
+.plist{display:flex;flex-direction:column;gap:9px;}
+.prow{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--line-soft);
+  border-radius:13px;padding:9px;animation:fadeUp .3s both;}
+.p-emo{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:19px;flex:0 0 auto;}
+.prow .pfields{flex:1;min-width:0;}
+.pname{width:100%;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text);
+  font-size:12px;font-weight:600;padding:1px 0;outline:none;}
+.pname:focus{border-bottom-color:var(--accent);}
+.pprice-wrap{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;}
+.pprice-wrap span{font-size:10px;color:var(--muted-2);}
+.pprice{width:64px;background:transparent;border:none;border-bottom:1px solid transparent;
+  color:#60a5fa;font-size:12px;font-weight:800;padding:1px 0;outline:none;}
+.pprice:focus{border-bottom-color:var(--accent);}
+.pcat{background:var(--panel);border:1px solid var(--line);border-radius:7px;color:var(--muted);
+  font-size:9.5px;font-weight:700;padding:2px 6px;outline:none;}
+.pdel{color:var(--muted-2);font-size:15px;padding:6px;flex:0 0 auto;transition:.15s;}
+.pdel:active{color:#f87171;transform:scale(1.2);}
+.add-prod{margin-top:11px;width:100%;padding:12px;border-radius:12px;border:1.5px dashed var(--line);
+  color:var(--accent);font-size:12px;font-weight:800;background:color-mix(in srgb,var(--accent) 6%,transparent);}
+.add-prod:active{transform:scale(.98);}
 
-/* Form */
-.booking-form{margin-top:24px;animation:fadeUp 350ms cubic-bezier(.16,1,.3,1) both}
-.form-label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;
-  letter-spacing:.08em;text-transform:uppercase}
-.form-input,.form-select,.form-textarea{
-  width:100%;background:var(--card);
-  border:1px solid rgba(255,255,255,.1);border-radius:10px;
-  padding:12px 14px;color:var(--text);font-size:14px;margin-bottom:16px;
-  transition:border-color .2s;-webkit-appearance:none;outline:none;
-}
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--lime)}
-.form-select option{background:#1a1a22}
-.form-textarea{resize:none;height:70px}
+/* ---------- checkout ---------- */
+.co-line{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:var(--muted);}
+.co-line .n{color:var(--text);max-width:64%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.co-line .v{font-weight:700;color:var(--text);}
+.co-sep{height:1px;background:var(--line-soft);margin:10px 0;}
+.co-total{display:flex;justify-content:space-between;font-size:14px;font-weight:800;}
+.co-total .v{color:#60a5fa;}
+.promo-row{display:flex;gap:8px;margin:12px 0 2px;}
+.promo-row .tinput{flex:1;padding:10px 12px;font-size:12px;}
+.promo-btn{padding:0 16px;border-radius:12px;font-size:11px;font-weight:800;color:#fff;flex:0 0 auto;}
+.promo-ok{font-size:10px;color:#4ade80;font-weight:700;margin:6px 2px 0;display:none;}
+.promo-ok.show{display:block;animation:fadeUp .3s both;}
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0;}
+.pm{padding:12px 6px;border-radius:12px;font-size:11px;font-weight:700;text-align:center;
+  border:1.5px solid var(--line);background:var(--bg);color:var(--muted);transition:.15s;}
+.pm.on{color:var(--text);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg));transform:scale(1.02);}
+.pay-btn{width:100%;padding:15px;border-radius:14px;color:#fff;font-size:14px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden;}
+.pay-btn::after{content:"";position:absolute;top:0;bottom:0;width:30%;left:-40%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.3),transparent);
+  animation:glowline 2.2s ease-in-out infinite;}
+.pay-btn:active{transform:scale(.98);}
+.pay-btn.loading{pointer-events:none;opacity:.85;}
+.spinner{width:15px;height:15px;border-radius:99px;border:2px solid rgba(255,255,255,.35);
+  border-top-color:#fff;animation:spin .7s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pay-btn.loading .spinner{display:inline-block;}
+.pay-note{text-align:center;font-size:9.5px;color:var(--muted-2);margin-top:9px;}
 
-/* Payment method toggle */
-.payment-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-.pay-btn{
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  padding:11px;border-radius:10px;font-size:13px;font-weight:500;
-  border:1.5px solid rgba(255,255,255,.1);color:var(--muted);
-  background:var(--card);transition:all .2s;
-}
-.pay-btn.active{border-color:var(--lime);color:var(--lime);background:rgba(200,255,0,.08)}
+/* ---------- success ---------- */
+.success{position:fixed;inset:0;z-index:60;max-width:520px;margin:0 auto;background:color-mix(in srgb,var(--bg) 97%,transparent);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:30px;opacity:0;pointer-events:none;transition:opacity .3s;}
+.success.show{opacity:1;pointer-events:auto;}
+.check{width:78px;height:78px;border-radius:999px;background:rgba(74,222,128,.1);
+  border:1.5px solid rgba(74,222,128,.35);display:flex;align-items:center;justify-content:center;
+  font-size:38px;color:#4ade80;margin-bottom:18px;animation:pop .5s cubic-bezier(.16,1.4,.5,1);}
+.success h3{font-size:20px;font-weight:800;margin:0 0 8px;}
+.success p{font-size:12.5px;color:var(--muted);max-width:290px;line-height:1.55;margin:0;}
+.success .acts{margin-top:26px;display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;}
+.btn-primary{width:100%;padding:14px;border-radius:13px;color:#fff;font-size:13px;font-weight:800;
+  box-shadow:0 8px 24px -8px rgba(0,0,0,.6);}
+.btn-ghost{width:100%;padding:13px;border-radius:13px;color:var(--muted);font-size:12.5px;font-weight:600;
+  background:color-mix(in srgb,var(--text) 6%,transparent);border:1px solid var(--line);}
+.confetti-piece{position:fixed;top:-20px;z-index:65;width:8px;height:12px;border-radius:2px;
+  animation:confetti linear forwards;pointer-events:none;}
 
-/* Submit button */
-.submit-btn{
-  width:100%;padding:16px;background:var(--lime);border:none;border-radius:12px;
-  font-size:14px;font-family:var(--clash);font-weight:700;letter-spacing:-.2px;
-  color:#0A0A0F;transition:all .3s;cursor:pointer;
-}
-.submit-btn:disabled{opacity:.5;cursor:not-allowed}
-.submit-btn.done{background:rgba(200,255,0,.15);border:1.5px solid var(--lime);color:var(--lime)}
+/* ---------- bot toast ---------- */
+.bot-toast{position:fixed;top:calc(10px + var(--safe-top));left:14px;right:14px;z-index:70;max-width:492px;margin:0 auto;
+  background:color-mix(in srgb,var(--bg) 96%,transparent);border:1.5px solid var(--brand);border-radius:18px;padding:13px;
+  box-shadow:0 20px 50px rgba(0,0,0,.7),0 0 22px rgba(37,99,235,.25);
+  transform:translateY(-170%);transition:transform .45s cubic-bezier(.16,1,.3,1);}
+.bot-toast.show{transform:translateY(0);animation:float 2.6s ease-in-out infinite .5s;}
+.bt-head{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.bt-ava{width:30px;height:30px;border-radius:999px;background:rgba(37,99,235,.18);
+  border:1px solid rgba(37,99,235,.4);display:flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 auto;}
+.bt-name{flex:1;font-size:10px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#93c5fd;line-height:1.3;}
+.bt-x{color:var(--muted-2);font-size:17px;font-weight:700;padding:0 4px;}
+.bt-msg{font-size:11.5px;line-height:1.55;color:var(--text);white-space:pre-line;padding-left:2px;}
+.bt-foot{display:flex;align-items:center;justify-content:space-between;margin-top:9px;padding-top:8px;
+  border-top:1px solid var(--line-soft);}
+.bt-foot .t{font-size:9px;color:var(--muted-2);}
+.bt-foot .a{font-size:10px;font-weight:800;color:#60a5fa;}
 
-/* ── PAYMENT SCREEN ── */
-.payment-card{background:var(--card);border-radius:16px;padding:20px;border:1px solid var(--border);margin-bottom:16px}
-.payment-card h3{font-size:16px;font-family:var(--clash);font-weight:700;color:var(--text);margin-bottom:4px}
-.payment-card p{font-size:13px;color:var(--muted);line-height:1.5}
-.payment-card .price-big{font-size:36px;font-family:var(--clash);font-weight:700;color:var(--lime);letter-spacing:-1.5px;margin:12px 0 4px}
-
-/* ── CONTACTS SCREEN ── */
-.contact-item{
-  display:flex;align-items:center;gap:14px;
-  background:var(--card);border-radius:14px;padding:16px 18px;
-  border:1px solid var(--border);margin-bottom:12px;
-  cursor:pointer;transition:border-color .2s;text-decoration:none;
-}
-.contact-item:hover{border-color:rgba(200,255,0,.3)}
-.contact-icon{
-  width:44px;height:44px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(200,255,0,.1);font-size:20px;flex-shrink:0;
-}
-.contact-item h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
-.contact-item p{font-size:12px;color:var(--muted)}
-
-/* ── ADD CHILD MODAL ── */
-.modal-overlay{
-  position:absolute;inset:0;background:rgba(0,0,0,.7);
-  backdrop-filter:blur(8px);z-index:200;
-  display:flex;align-items:flex-end;justify-content:center;
-  opacity:0;pointer-events:none;transition:opacity .25s;
-}
-.modal-overlay.open{opacity:1;pointer-events:auto}
-.modal-sheet{
-  background:var(--bg);border-radius:20px 20px 0 0;
-  border-top:1px solid var(--border);
-  padding:24px 20px 40px;width:100%;
-  transform:translateY(100%);transition:transform .3s cubic-bezier(.16,1,.3,1);
-}
-.modal-overlay.open .modal-sheet{transform:translateY(0)}
-.modal-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 20px}
-
-/* ── TOAST ── */
-#toast{
-  position:absolute;bottom:72px;left:16px;right:16px;
-  background:var(--card);border:1px solid var(--lime);border-radius:12px;
-  padding:12px 16px;display:flex;align-items:center;gap:10px;
-  z-index:300;opacity:0;transform:translateY(12px);
-  transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;
-}
-#toast.visible{opacity:1;transform:translateY(0)}
-#toast.error{border-color:var(--danger)}
-.toast-icon{font-size:16px;flex-shrink:0}
-.toast-msg{font-size:13px;color:var(--text);line-height:1.4}
-
-/* ── PHONE PROMPT ── */
-.phone-prompt{
-  background:rgba(200,255,0,.06);border:1.5px solid rgba(200,255,0,.25);
-  border-radius:14px;padding:16px 18px;margin-bottom:20px;
-}
-.phone-prompt p{font-size:13px;color:var(--text);line-height:1.5;margin-bottom:12px}
-
-/* ── PLANS ── */
-.plan-card{
-  background:var(--card);border-radius:14px;padding:18px;
-  border:1px solid var(--border);margin-bottom:12px;
-  transition:border-color .2s;
-}
-.plan-card:hover{border-color:rgba(200,255,0,.3)}
-.plan-name{font-size:16px;font-family:var(--clash);font-weight:700;color:var(--text)}
-.plan-meta{font-size:12px;color:var(--muted);margin-top:2px}
-.plan-price{font-size:22px;font-family:var(--clash);font-weight:700;color:var(--lime);letter-spacing:-1px;white-space:nowrap}
-.plan-buy-btn{
-  width:100%;padding:11px;background:var(--lime);border:none;border-radius:10px;
-  font-size:13px;font-family:var(--clash);font-weight:700;color:#0A0A0F;
-  cursor:pointer;transition:opacity .2s;
-}
-.plan-buy-btn:disabled{opacity:.5;cursor:not-allowed}
-.plan-buy-btn:hover:not(:disabled){opacity:.9}
-
-/* ── ARC SVG ── */
-.arc-corner svg{display:block}
+/* toast snackbar */
+.snack{position:fixed;bottom:calc(96px + var(--safe-bottom));left:50%;transform:translate(-50%,20px);
+  z-index:75;background:var(--panel-2);border:1px solid var(--line);color:var(--text);
+  font-size:11.5px;font-weight:700;padding:10px 16px;border-radius:12px;opacity:0;
+  transition:.3s;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.5);white-space:nowrap;}
+.snack.show{opacity:1;transform:translate(-50%,0);}
 </style>
 </head>
 <body>
-<div id="app">
 
-  <!-- ═══ HOME ═══ -->
-  <div id="screen-home" class="screen active">
-    <div class="content">
-      <p class="label-xs anim-title" id="home-date" style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-family:var(--inter)"></p>
-      <h1 class="home-greeting anim-title" id="home-greeting" style="margin-bottom:28px"></h1>
+<!-- ===== HEADER ===== -->
+<div class="badge-demo">Demo · MiniApp.pro</div>
+<div class="fab-row">
+  <button class="fab pressable" id="themeBtn" aria-label="Тема">🌙</button>
+  <button class="fab pressable" id="openSettings" aria-label="Конструктор">⚙️</button>
+</div>
 
-      <!-- Children -->
-      <div id="children-grid" class="count-1 anim-1"></div>
-
-      <!-- Today -->
-      <p style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px" class="anim-2">Сегодня</p>
-      <div class="today-card anim-3" onclick="navigate('booking')">
-        <div class="today-ghost"><span id="today-ghost"></span></div>
-        <div style="position:relative;z-index:1">
-          <h2 id="today-section" style="font-size:52px;font-family:var(--clash);font-weight:700;color:var(--text);letter-spacing:-2.5px;line-height:1;white-space:nowrap"></h2>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
-            <div style="width:24px;height:24px;border-radius:50%;overflow:hidden;background:var(--card);flex-shrink:0">
-              <img id="today-trainer-photo" src="" alt="" style="width:100%;height:100%;object-fit:cover">
-            </div>
-            <span id="today-trainer-name" style="font-size:12px;color:var(--muted)"></span>
-            <span style="margin-left:auto;font-size:14px;font-family:var(--clash);color:var(--muted)" id="today-time"></span>
-          </div>
-        </div>
+<div class="cover">
+  <div class="cover-art" id="coverArt"></div>
+  <div class="cover-emoji" id="coverEmoji">☕</div>
+  <div class="cover-bar">
+    <div class="shop-id">
+      <div class="shop-logo" id="shopLogo">🛍️</div>
+      <div style="min-width:0">
+        <div class="shop-name" id="shopNameLabel">Магазин</div>
+        <div class="shop-sub">⚡ Работает 24/7 без сбоев</div>
       </div>
     </div>
+    <div class="online"><span class="dot"></span>Онлайн</div>
   </div>
+</div>
 
-  <!-- ═══ SCHEDULE ═══ -->
-  <div id="screen-schedule" class="screen">
-    <div class="content">
-      <h1 class="anim-title" style="font-size:clamp(36px,10vw,48px);font-family:var(--clash);font-weight:700;letter-spacing:-2px;line-height:1.05;color:var(--text);margin-bottom:24px">Расписание</h1>
-      <div class="view-toggle anim-1">
-        <button class="active" onclick="setView('week',this)">Неделя</button>
-        <button onclick="setView('month',this)">Месяц</button>
-      </div>
-      <div class="day-strip anim-2" id="day-strip"></div>
-      <div id="lessons-list"></div>
-    </div>
+<div class="chips" id="chips"></div>
+<div class="cat-row" id="catRow"></div>
+<div class="catalog" id="catalog"></div>
+
+<!-- ===== REVIEWS ===== -->
+<div class="section anim-in">
+  <h2 class="sec-title">💬 Что говорят владельцы</h2>
+  <p class="sec-sub">Реальные отзывы клиентов платформы MiniApp.pro</p>
+</div>
+<div class="reviews" id="reviews"></div>
+<div class="rv-dots" id="rvDots"></div>
+
+<!-- ===== FAQ ===== -->
+<div class="section anim-in">
+  <h2 class="sec-title">❓ Частые вопросы</h2>
+  <p class="sec-sub">Коротко о главном</p>
+</div>
+<div class="faq" id="faq"></div>
+
+<!-- ===== PITCH ===== -->
+<div class="pitch anim-in">
+  <span class="p-badge">✦ Что вы только что попробовали</span>
+  <h2>Так ваш магазин выглядит внутри Telegram</h2>
+  <p>Каталог, корзина, оплата по СБП и мгновенные уведомления о заказах — без сайта, приложений и программистов. Настраивается за 20 минут.</p>
+  <div class="stats">
+    <div class="stat"><div class="num" data-count="20">0</div><div class="lab">минут на запуск</div></div>
+    <div class="stat"><div class="num" data-count="92" data-suffix="%">0</div><div class="lab">открытий рассылок</div></div>
+    <div class="stat"><div class="num" data-count="14">0</div><div class="lab">дней теста — 0 ₽</div></div>
   </div>
+</div>
+<div class="hint">👆 Меняйте сферу бизнеса вверху и жмите ⚙️ — конструктор: логотип, цвет, вид каталога, товары</div>
 
-  <!-- ═══ BOOKING ═══ -->
-  <div id="screen-booking" class="screen">
-    <div class="content">
-      <p style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px" class="anim-title">Запись</p>
-      <h1 id="booking-title" class="anim-title" style="font-size:clamp(48px,14vw,68px);font-family:var(--clash);font-weight:700;color:var(--text);letter-spacing:-2.5px;line-height:1;margin-bottom:6px;white-space:nowrap;overflow:visible"></h1>
-      <p id="booking-subtitle" style="font-size:13px;color:var(--muted);margin-bottom:28px" class="anim-1"></p>
+<!-- ===== CART BAR ===== -->
+<div class="cartbar" id="cartbar">
+  <button class="cartbtn" id="cartBtn">
+    <span class="l"><span class="cart-ico" id="cartIco">🛒</span><span class="cart-count" id="cartCount">0</span></span>
+    <span class="r">Оформить <b id="cartSum">0 ₽</b> →</span>
+  </button>
+</div>
 
-      <!-- Phone prompt (shown once) -->
-      <div id="phone-prompt" class="phone-prompt anim-1" style="display:none">
-        <p>👋 Для первой записи укажите номер телефона — мы запомним его и больше не будем спрашивать.</p>
-        <input id="first-phone" class="form-input" type="tel" placeholder="+7 (999) 123-45-67" style="margin-bottom:8px">
-        <button class="submit-btn" onclick="savePhoneAndContinue()" style="padding:11px;font-size:13px">Сохранить и продолжить</button>
-      </div>
+<div class="fallback-cta hidden" id="fallbackCta">
+  <button id="fallbackBtn" class="pressable">Создать такой Mini App бесплатно →</button>
+</div>
 
-      <!-- Slots -->
-      <div id="slot-loading" style="display:none;text-align:center;padding:20px;color:var(--muted);font-size:13px">Загружаем доступное время…</div>
-      <div id="time-slots" class="anim-2"></div>
+<div class="scrim" id="scrim"></div>
 
-      <!-- Booking form -->
-      <div id="booking-form" class="booking-form" style="display:none">
-        <p class="form-label">Ребёнок</p>
-        <select id="form-child" class="form-select"></select>
-
-        <p class="form-label">Способ оплаты</p>
-        <div class="payment-toggle" id="payment-toggle">
-          <button class="pay-btn active" data-method="card" onclick="selectPayment('card')">💳 По карте</button>
-          <button class="pay-btn" data-method="cash" onclick="selectPayment('cash')">💵 Наличными</button>
-        </div>
-
-        <p class="form-label">Комментарий (необязательно)</p>
-        <textarea id="form-comment" class="form-textarea" placeholder="Пожелания, вопросы…"></textarea>
-
-        <button id="submit-btn" class="submit-btn" onclick="submitBooking()">
-          <span id="submit-text">Записать</span>
-        </button>
-      </div>
-    </div>
+<!-- ===== BUILDER SHEET ===== -->
+<div class="sheet" id="settingsSheet">
+  <div class="grip"></div>
+  <div class="sheet-head">
+    <div class="sheet-title">🎨 Конструктор (no-code)</div>
+    <button class="sheet-close" data-close>Готово</button>
   </div>
-
-  <!-- ═══ TRAINER ═══ -->
-  <div id="screen-trainer" class="screen">
-    <div class="photo-zone">
-      <img id="trainer-photo" src="" alt="">
-      <div class="photo-lime"></div>
-      <div class="photo-fade"></div>
-      <div class="trainer-name-overlay">
-        <h1 id="trainer-name" class="anim-title" style="font-size:clamp(32px,9vw,44px);font-family:var(--clash);font-weight:700;color:var(--text);letter-spacing:-1.5px;line-height:1"></h1>
-      </div>
-      <div class="trainer-spec-side">
-        <span id="trainer-spec" style="font-size:9px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase"></span>
-      </div>
+  <div class="sheet-body">
+    <div class="step-block">
+      <label class="field-label">Название магазина / бренда</label>
+      <input class="tinput" id="shopNameInput" maxlength="25" placeholder="Пример: Мой бутик одежды"/>
     </div>
-    <div style="padding:24px 20px 20px;overflow-y:auto;height:calc(100% - 240px)">
-      <div style="display:flex;gap:28px;margin-bottom:22px" class="anim-1">
-        <div style="display:flex;align-items:baseline;gap:6px">
-          <span id="trainer-exp" style="font-size:38px;font-family:var(--clash);font-weight:700;color:var(--lime);letter-spacing:-1.5px;line-height:1"></span>
-          <span style="font-size:12px;color:var(--muted)">лет опыта</span>
-        </div>
-        <div style="display:flex;align-items:baseline;gap:6px">
-          <span id="trainer-ages" style="font-size:38px;font-family:var(--clash);font-weight:700;color:var(--lime);letter-spacing:-1.5px;line-height:1"></span>
-          <span style="font-size:12px;color:var(--muted)">лет ученики</span>
-        </div>
-      </div>
-      <div style="height:1px;background:var(--border);margin-bottom:18px"></div>
-      <p id="trainer-bio" style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:22px" class="anim-2"></p>
-      <div class="card" style="padding:18px" class="anim-3">
-        <div style="display:flex;align-items:baseline;gap:8px">
-          <span id="trainer-rating" style="font-size:38px;font-family:var(--clash);font-weight:700;color:var(--lime);letter-spacing:-1.5px;line-height:1"></span>
-          <span style="font-size:12px;color:var(--muted)">средняя оценка</span>
-        </div>
-        <div id="rating-bars" style="display:flex;gap:5px;margin-top:10px"></div>
+    <div class="step-block">
+      <label class="field-label">Логотип магазина</label>
+      <div class="emoji-grid" id="logoGrid"></div>
+    </div>
+    <div class="step-block">
+      <label class="field-label">Цветовой акцент</label>
+      <div class="swatches" id="swatches"></div>
+    </div>
+    <div class="step-block">
+      <label class="field-label">Вид каталога</label>
+      <div class="seg" id="layoutSeg">
+        <button class="seg-opt on" data-layout="grid">▦ Сетка</button>
+        <button class="seg-opt" data-layout="list">☰ Список</button>
       </div>
     </div>
-  </div>
-
-  <!-- ═══ PAYMENT INFO ═══ -->
-  <div id="screen-payment" class="screen">
-    <div class="content">
-      <h1 class="anim-title" style="font-size:clamp(36px,10vw,44px);font-family:var(--clash);font-weight:700;letter-spacing:-2px;color:var(--text);margin-bottom:6px">Оплата</h1>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:24px" class="anim-1">Абонементы и статус</p>
-
-      <!-- Текущий абонемент -->
-      <div class="payment-card anim-1" id="sub-card">
-        <p style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Ваш абонемент</p>
-        <div class="price-big" id="sub-lessons-left">—</div>
-        <p style="font-size:12px;color:var(--muted)" id="sub-expires"></p>
-        <div style="margin-top:14px;height:4px;border-radius:2px;background:rgba(255,255,255,.06)">
-          <div id="sub-progress-bar" style="height:100%;border-radius:2px;background:var(--lime);transition:width .8s cubic-bezier(.16,1,.3,1);width:0%"></div>
-        </div>
-      </div>
-
-      <!-- Тарифы -->
-      <div class="anim-2" style="margin-bottom:6px">
-        <p style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Выберите тариф</p>
-        <div id="plans-wrap"></div>
-      </div>
-
-      <!-- Способы оплаты -->
-      <div class="payment-card anim-3">
-        <h3>Способы оплаты</h3>
-        <p id="payment-methods-text" style="margin-top:8px"></p>
-      </div>
-
-      <!-- Статистика -->
-      <div class="payment-card anim-4">
-        <h3>История занятий</h3>
-        <p style="margin-top:8px" id="visit-count-text"></p>
-      </div>
-
-      <!-- Контакт -->
-      <div class="payment-card" style="background:rgba(200,255,0,.05);border-color:rgba(200,255,0,.2)">
-        <p style="font-size:13px;color:var(--text)">По вопросам оплаты:</p>
-        <p style="font-size:15px;font-weight:600;color:var(--lime);margin-top:6px" id="contact-for-payment"></p>
+    <div class="step-block">
+      <label class="field-label">Форма кнопок и карточек</label>
+      <div class="seg three" id="shapeSeg">
+        <button class="seg-opt" data-shape="sharp">Строгие</button>
+        <button class="seg-opt on" data-shape="soft">Мягкие</button>
+        <button class="seg-opt" data-shape="round">Круглые</button>
       </div>
     </div>
-  </div>
-
-  <!-- ═══ CONTACTS ═══ -->
-  <div id="screen-contacts" class="screen">
-    <div class="content">
-      <h1 class="anim-title" style="font-size:clamp(36px,10vw,44px);font-family:var(--clash);font-weight:700;letter-spacing:-2px;color:var(--text);margin-bottom:6px">Контакты</h1>
-      <p style="font-size:13px;color:var(--muted);margin-bottom:24px" class="anim-1">Быстрая связь с администрацией</p>
-      <div id="contacts-list"></div>
+    <div class="step-block">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <label class="field-label" style="margin:0">Товары и услуги</label>
+        <button id="addProductTop" style="color:var(--accent);font-size:12px;font-weight:800;">＋ Добавить</button>
+      </div>
+      <div class="plist" id="plist"></div>
+      <button class="add-prod" id="addProduct">＋ Добавить товар / услугу</button>
     </div>
   </div>
+</div>
 
-  <!-- ═══ BOTTOM NAV ═══ -->
-  <nav id="bottom-nav">
-    <button class="nav-tab active" data-screen="home" onclick="navigate('home')">
-      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10m-9 0l2-2"/></svg>
-      Главная
-    </button>
-    <button class="nav-tab" data-screen="schedule" onclick="navigate('schedule')">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-      Расписание
-    </button>
-    <button class="nav-tab" data-screen="booking" onclick="navigate('booking')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-      Запись
-    </button>
-    <button class="nav-tab" data-screen="payment" onclick="navigate('payment')">
-      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-      Оплата
-    </button>
-    <button class="nav-tab" data-screen="trainer" onclick="navigate('trainer')">
-      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      Тренер
-    </button>
-    <button class="nav-tab" data-screen="contacts" onclick="navigate('contacts')">
-      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.62A2 2 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-      Контакты
-    </button>
-  </nav>
-
-  <!-- ═══ ADD CHILD MODAL ═══ -->
-  <div class="modal-overlay" id="add-child-modal" onclick="closeAddChildModal(event)">
-    <div class="modal-sheet" onclick="event.stopPropagation()">
-      <div class="modal-handle"></div>
-      <h2 style="font-size:20px;font-family:var(--clash);font-weight:700;color:var(--text);margin-bottom:20px">Добавить ребёнка</h2>
-      <p class="form-label">Имя</p>
-      <input id="new-child-name" class="form-input" type="text" placeholder="Максим">
-      <p class="form-label">Возраст</p>
-      <input id="new-child-age" class="form-input" type="number" placeholder="9" min="3" max="18">
-      <p class="form-label">Секция</p>
-      <select id="new-child-section" class="form-select"></select>
-      <button class="submit-btn" onclick="submitAddChild()">Добавить</button>
+<!-- ===== CHECKOUT SHEET ===== -->
+<div class="sheet" id="checkoutSheet">
+  <div class="grip"></div>
+  <div class="sheet-head">
+    <div class="sheet-title">💳 Оплата в Telegram</div>
+    <button class="sheet-close" data-close>Отмена</button>
+  </div>
+  <div class="sheet-body">
+    <div id="coItems"></div>
+    <div class="promo-row">
+      <input class="tinput" id="promoInput" placeholder="Промокод (попробуйте DEMO10)"/>
+      <button class="promo-btn" id="promoBtn">OK</button>
     </div>
+    <div class="promo-ok" id="promoOk">✓ Промокод применён: скидка 10%</div>
+    <div class="co-sep"></div>
+    <div class="co-line"><span class="n">Доставка (курьер Telegram)</span><span class="v" style="color:#60a5fa">0 ₽</span></div>
+    <div class="co-line" id="discountLine" style="display:none"><span class="n">Скидка по промокоду</span><span class="v" style="color:#4ade80" id="discountVal">−0 ₽</span></div>
+    <div class="co-total"><span>Итого</span><span class="v" id="coTotal">0 ₽</span></div>
+    <div class="pay-methods" id="payMethods">
+      <button class="pm on" data-pm="СБП">⚡ Быстрая оплата (СБП)</button>
+      <button class="pm" data-pm="Карта">💳 Банковская карта</button>
+      <button class="pm" data-pm="Telegram Stars">⭐ Telegram Stars</button>
+      <button class="pm" data-pm="При получении">📦 При получении</button>
+    </div>
+    <button class="pay-btn" id="payBtn"><span class="spinner"></span>✈️ Оплатить <span id="payAmount">0 ₽</span></button>
+    <div class="pay-note">🔒 Защищено официальным эквайрингом Telegram API</div>
   </div>
+</div>
 
-  <!-- ═══ TOAST ═══ -->
-  <div id="toast">
-    <span class="toast-icon" id="toast-icon">✓</span>
-    <span class="toast-msg" id="toast-msg"></span>
+<!-- ===== SUCCESS ===== -->
+<div class="success" id="success">
+  <div class="check">✓</div>
+  <h3>Заказ подтверждён!</h3>
+  <p>Вы симулировали покупку — телеграм-бот мгновенно отправил уведомление владельцу магазина и передал заказ в CRM.</p>
+  <div class="acts">
+    <button class="btn-primary pressable" id="successCta">Хочу такой магазин</button>
+    <button class="btn-ghost pressable" id="resetDemo">Сбросить демо и повторить</button>
   </div>
+</div>
 
-</div><!-- /app -->
+<!-- ===== BOT TOAST ===== -->
+<div class="bot-toast" id="botToast">
+  <div class="bt-head">
+    <div class="bt-ava">🤖</div>
+    <div class="bt-name">@MiniAppPro_bot · моментальное уведомление</div>
+    <button class="bt-x" id="botX">×</button>
+  </div>
+  <div class="bt-msg" id="botMsg"></div>
+  <div class="bt-foot">
+    <span class="t">Пришло за 0.8 с</span>
+    <button class="a" id="botCta">Тестировать в CRM →</button>
+  </div>
+</div>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<div class="snack" id="snack"></div>
+
 <script>
-/* =====================================================================
- *  CONFIG
- * ===================================================================== */
-const CONFIG = {
-  pageTitle:   'Детские занятия',
-  parentName:  'Анна',
-  backendUrl:  'https://script.google.com/macros/s/AKfycbytYYtV59lpBcm5G6nglwddh-9CSwMAWTNR05m3-fEDB2NNwujsOsesvXV53hpcTCzS/exec',
+/* ============================================================
+   MiniApp.pro — Telegram Mini App demo. Один файл, без внешних
+   картинок: визуалы = градиент + эмодзи, работают всегда.
+   ============================================================ */
 
-  // Рабочие дни (0=вс,1=пн,...,6=сб). Только эти дни кликабельны в расписании
-  workDays: [1, 2, 3, 4, 5],  // пн–пт
+// >>> НАСТРОЙКА: замените на свой @username / ссылку для заявок
+const CONTACT_URL = "https://t.me/MiniAppPro_Support";
 
-  // Максимальный горизонт записи (дней вперёд)
-  bookingHorizonDays: 30,
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+const inTelegram = !!(tg && tg.initData !== undefined && tg.platform && tg.platform !== "unknown");
 
-  // Ребёнок "по умолчанию" — пока не загрузились данные с backend
-  defaultChildren: [
-    { name: 'Максим', age: 9,  section: 'ФУТБОЛ' }
-  ],
+/* ---------- ДАННЫЕ ---------- */
+/* cat: hot | new | premium — вкладки реально фильтруют */
+const TEMPLATES = [
+  { id:"cafe", name:"Кофейня ☕", title:"Моя Кофейня ☕", accent:"#f59e0b", coverEmoji:"☕",
+    grad:["#78350f","#b45309"],
+    products:[
+      {id:"c1",name:"Капучино на миндальном",price:280,emoji:"☕",grad:["#92400e","#d97706"],cat:"hot"},
+      {id:"c2",name:"Матча Латте Грин",price:320,emoji:"🍵",grad:["#14532d","#16a34a"],cat:"new"},
+      {id:"c3",name:"Французский Круассан",price:190,emoji:"🥐",grad:["#a16207","#eab308"],cat:"hot"},
+      {id:"c4",name:"Набор Макарон (5 шт)",price:450,old:520,emoji:"🍬",grad:["#9d174d","#ec4899"],cat:"premium"},
+      {id:"c5",name:"Фильтр-кофе Эфиопия",price:250,emoji:"🫖",grad:["#7c2d12","#ea580c"],cat:"new"},
+      {id:"c6",name:"Чизкейк Сан-Себастьян",price:390,emoji:"🍰",grad:["#713f12","#ca8a04"],cat:"premium"},
+    ]},
+  { id:"beauty", name:"Салон красоты ✨", title:"Studio Beauty ✨", accent:"#ec4899", coverEmoji:"💅",
+    grad:["#831843","#db2777"],
+    products:[
+      {id:"b1",name:"Аппаратный маникюр + лак",price:1800,emoji:"💅",grad:["#9d174d","#ec4899"],cat:"hot"},
+      {id:"b2",name:"Стрижка шегги & укладка",price:2500,emoji:"💇‍♀️",grad:["#6b21a8","#a855f7"],cat:"hot"},
+      {id:"b3",name:"Авторский уход за лицом",price:3500,old:4200,emoji:"🧖‍♀️",grad:["#155e75","#06b6d4"],cat:"premium"},
+      {id:"b4",name:"Макияж «Smoky Eyes»",price:3000,emoji:"💄",grad:["#7f1d1d","#ef4444"],cat:"premium"},
+      {id:"b5",name:"Ламинирование бровей",price:1500,emoji:"👁️",grad:["#3730a3","#6366f1"],cat:"new"},
+      {id:"b6",name:"Спа-педикюр Deluxe",price:2200,emoji:"🦶",grad:["#065f46","#10b981"],cat:"new"},
+    ]},
+  { id:"apparel", name:"Одежда ⚡", title:"STREETWEAR LAB ⚡", accent:"#3b82f6", coverEmoji:"🧥",
+    grad:["#1e3a8a","#2563eb"],
+    products:[
+      {id:"a1",name:"Худи «Cyberpunk Noir»",price:5900,emoji:"🧥",grad:["#1e293b","#475569"],cat:"hot"},
+      {id:"a2",name:"Джоггеры «Apex Tech»",price:4500,emoji:"👖",grad:["#1e3a8a","#3b82f6"],cat:"hot"},
+      {id:"a3",name:"Кроссовки «Quantum-1»",price:8900,old:10900,emoji:"👟",grad:["#312e81","#6366f1"],cat:"premium"},
+      {id:"a4",name:"Кепка «Minimalist»",price:1800,emoji:"🧢",grad:["#134e4a","#14b8a6"],cat:"new"},
+      {id:"a5",name:"Лонгслив «Acid Wash»",price:3200,emoji:"👕",grad:["#701a75","#d946ef"],cat:"new"},
+      {id:"a6",name:"Сумка «Tech Sling»",price:4200,emoji:"🎒",grad:["#7c2d12","#f97316"],cat:"premium"},
+    ]},
+];
+const CATS = [
+  {id:"all", label:"🔥 Все"},
+  {id:"hot", label:"Популярное"},
+  {id:"new", label:"Новинки"},
+  {id:"premium", label:"Премиум"},
+];
+const COLORS = ["#f59e0b","#ec4899","#3b82f6","#10b981","#8b5cf6","#ef4444","#2563eb"];
+const LOGOS = ["🛍️","☕","💅","🧥","🍕","💐","🎂","📱","🏋️","📚","💎","🚗"];
+const PRODUCT_EMOJIS = ["⭐️","🎁","🔥","💎","🍩","🌸","🎧","🕶️"];
+const PRODUCT_GRADS = [["#7c3aed","#a78bfa"],["#0e7490","#22d3ee"],["#b45309","#fbbf24"],["#be185d","#f472b6"],["#166534","#4ade80"]];
 
-  // Тренер(а). trainers[0] показывается на экране Тренер
-  trainers: [{
-    name:       'Алексей\nКозлов',
-    photo:      'https://images.unsplash.com/photo-1546961342-ea5f62d5e5ee?w=400&h=380&fit=crop&auto=format',
-    spec:       'ФУТБОЛ · СПОРТ',
-    experience: 8,
-    ageRange:   '6–14',
-    bio:        'Тренер высшей категории. Специализация — детский футбол и командная тактика. Чемпион города 2019, мастер спорта.',
-    rating:     4.9
-  }],
+/* Отзывы — из лендинга (data.ts) */
+const REVIEWS = [
+  { name:"Дмитрий В.", role:"Основатель спешелти кофейни «Слой»", tgname:"@dmitry_sloi", grad:["#b45309","#f59e0b"], initial:"Д",
+    text:"Раньше разработка приложения в Telegram стоила от 300 тысяч рублей у фрилансеров. С MiniApp.pro мы настроили всё за 25 минут. Наша конверсия в повторный заказ выросла на 48% за счёт push-уведомлений о готовности заказа прямо в ТГ!" },
+  { name:"Александра К.", role:"Директор сети салонов красоты «Lash Bar»", tgname:"@sasha_lashbar", grad:["#be185d","#ec4899"], initial:"А",
+    text:"Клиенты обожают записываться через Mini App. Не нужно выходить из переписки, качать тяжёлые приложения или вводить пароли на сайтах. Всё происходит мгновенно в 3 клика. Настоящая палочка-выручалочка для бьюти-сферы." },
+  { name:"Артём М.", role:"CEO бренда одежды «Shift Custom»", tgname:"@artem_shift", grad:["#1d4ed8","#3b82f6"], initial:"А",
+    text:"Принимаем оплату по СБП и картам через встроенный эквайринг Telegram. Чек улетает клиенту автоматически. Сервис экономит нам около 45 000 рублей в месяц на менеджерах, которые раньше вручную согласовывали заказы." },
+];
 
-  // Расписание (day: 0=вс,1=пн,...6=сб)
-  schedule: [
-    { day:1, time:'10:00', section:'ФУТБОЛ',     trainer:'А. Козлов',   primary:true  },
-    { day:1, time:'12:30', section:'ПЛАВАНИЕ',   trainer:'И. Морозова', primary:false },
-    { day:2, time:'10:00', section:'ГИМНАСТИКА', trainer:'Е. Петрова',  primary:true  },
-    { day:3, time:'10:00', section:'ФУТБОЛ',     trainer:'А. Козлов',   primary:true  },
-    { day:3, time:'15:00', section:'ПЛАВАНИЕ',   trainer:'И. Морозова', primary:false },
-    { day:4, time:'10:00', section:'ГИМНАСТИКА', trainer:'Е. Петрова',  primary:true  },
-    { day:5, time:'10:00', section:'ФУТБОЛ',     trainer:'А. Козлов',   primary:true  },
-  ],
+/* FAQ — из лендинга */
+const FAQ = [
+  { q:"Нужны ли навыки программирования?", a:"Нет. Платформа — это no-code конструктор с визуальным редактором. Вы заполняете каталог, настраиваете дизайн, подключаете оплату по инструкции — и мини-приложение готово." },
+  { q:"Как работает оплата внутри Mini App?", a:"Интеграция с ЮKassa, СБП, Robokassa, PayAnyWay, Stripe и др. Клиент жмёт «Оплатить» — открывается официальное безопасное окно Telegram. Деньги идут напрямую на ваш расчётный счёт." },
+  { q:"Где хранятся данные клиентов и заказы?", a:"В вашей панели управления MiniApp.pro. Можно выгружать в Excel, интегрировать с Битрикс24, amoCRM, МойСклад или получать уведомления в закрытый Telegram-чат команды." },
+  { q:"Можно ли делать рассылки по клиентам?", a:"Да — это ключевое преимущество перед сайтами. Бесплатные push-уведомления в личку всем, кто хоть раз открыл ваше приложение. Открываемость таких сообщений — более 92%." },
+  { q:"Что входит в бесплатный 14-дневный тест?", a:"Полный функционал без ограничений: каталог, приём реальных заказов, рассылки, интеграции и статистика. Привязка банковской карты не требуется." },
+];
 
-  // Слоты для записи (в экране Запись)
-  bookingSection: 'ФУТБОЛ',
-  bookingTrainer: 'А. Козлов',
-  timeSlots: [
-    { time:'09:00', limit:10 },
-    { time:'10:30', limit:10 },
-    { time:'12:00', limit:8  },
-    { time:'14:00', limit:10 },
-    { time:'15:30', limit:10 },
-    { time:'17:00', limit:8  },
-    { time:'18:30', limit:10 },
-    { time:'20:00', limit:6  },
-  ],
-
-  // Все доступные секции (для добавления ребёнка)
-  sections: ['ФУТБОЛ','ПЛАВАНИЕ','ГИМНАСТИКА','ВОЛЕЙБОЛ'],
-
-  // Информация об оплате (экран Оплата)
-  paymentMethods: 'Принимаем оплату по карте (переводом на карту), наличными на месте, а также через систему СБП.',
-
-  // Контакты (экран Контакты)
-  contacts: [
-    { icon:'💬', label:'Telegram',   sub:'Написать сразу', href:'https://t.me/admin_username' },
-    { icon:'📞', label:'+7 (999) 123-45-67', sub:'Звонок или WhatsApp', href:'tel:+79991234567' },
-    { icon:'📍', label:'ул. Примерная, 1',   sub:'Секция ФУТБОЛ — зал №3', href:'#' },
-    { icon:'🕐', label:'Пн–Пт 09:00–21:00', sub:'Часы работы секции', href:'#' },
-  ],
-
-  adminContact: '@admin_username',
-
-  // Фолбэк-тарифы (показываются если backend недоступен)
-  // Основные тарифы хранятся и редактируются в листе Plans таблицы
-  fallbackPlans: [
-    { id:'plan_8',   name:'Старт',    price:3200, lessons:8,  days:30, description:'8 занятий на 30 дней' },
-    { id:'plan_12',  name:'Стандарт', price:4200, lessons:12, days:30, description:'12 занятий на 30 дней' },
-    { id:'plan_inf', name:'Безлимит', price:6000, lessons:-1, days:30, description:'Безлимит занятий на 30 дней' },
-  ],
-
-  theme: { bg:'#0A0A0F', card:'#111116', lime:'#C8FF00', muted:'#52525B', text:'#F0EEE8' }
+/* ---------- СОСТОЯНИЕ ---------- */
+let state = {
+  tpl: TEMPLATES[0],
+  shopName: TEMPLATES[0].title,
+  accent: TEMPLATES[0].accent,
+  logo: "☕",
+  products: clone(TEMPLATES[0].products),
+  cart: {},
+  activeCat: "all",
+  layout: "grid",
+  shape: "soft",
+  light: false,
+  promo: false,
+  payMethod: "СБП",
 };
-/* =====================================================================
- *  КОНЕЦ CONFIG
- * ===================================================================== */
+function clone(x){ return JSON.parse(JSON.stringify(x)); }
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
 
-// Apply theme
-(()=>{
-  const r=document.documentElement,t=CONFIG.theme;
-  r.style.setProperty('--bg',t.bg);r.style.setProperty('--card',t.card);
-  r.style.setProperty('--lime',t.lime);r.style.setProperty('--muted',t.muted);
-  r.style.setProperty('--text',t.text);
-})();
-
-document.getElementById('page-title').textContent = CONFIG.pageTitle;
-
-if(window.Telegram?.WebApp){
-  window.Telegram.WebApp.ready();
-  window.Telegram.WebApp.expand();
-}
-
-/* ── STATE ── */
-const S = {
-  screen:       'home',
-  schedView:    'week',
-  activeDayIdx: -1,      // -1 = auto (today)
-  slotData:     {},      // {time: {count, limit, full}} from backend
-  slotsLoaded:  false,
-  selectedSlot: null,
-  payMethod:    'card',
-  submitting:   false,
-  submitted:    false,
-  // User data (from backend)
-  phone:        null,
-  children:     [],
-  subscription: 'none',
-  lessonsLeft:  0,
-  subExpires:   null,
-  visits:       0,
-};
-
-const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
-const userId = String(tgUser.id || 'guest');
-
-/* ── NAV ── */
-function navigate(name){
-  if(name===S.screen) return;
-  document.getElementById('screen-'+S.screen)?.classList.remove('active');
-  document.getElementById('screen-'+name)?.classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.toggle('active',b.dataset.screen===name));
-  S.screen=name;
-  if(name==='schedule') renderSchedule();
-  if(name==='trainer')  renderTrainer();
-  if(name==='booking')  onOpenBooking();
-  if(name==='payment')  renderPayment();
-  if(name==='contacts') renderContacts();
-}
-
-/* ── INIT ── */
-async function init(){
-  renderHome();
-  renderSchedule();
-  renderContacts();
-  fillChildSelect();
-  // Load user data from backend
+/* ---------- helpers ---------- */
+function haptic(kind){
+  if(!tg || !tg.HapticFeedback) return;
   try{
-    const data = await apiFetch('GET',`?event=get_user&user_id=${userId}`);
-    S.phone        = data.phone       || null;
-    S.children     = data.children    || [];
-    S.subscription = data.subscription|| 'none';
-    S.lessonsLeft  = data.lessons_left|| 0;
-    S.subExpires   = data.subscription_expires||null;
-    S.visits       = data.visits      || 0;
-    if(!S.children.length) S.children = CONFIG.defaultChildren;
-    renderChildren();
-    fillChildSelect();
-  } catch(e){
-    S.children = CONFIG.defaultChildren;
-    renderChildren();
-  }
+    if(kind==="select") tg.HapticFeedback.selectionChanged();
+    else if(kind==="success") tg.HapticFeedback.notificationOccurred("success");
+    else tg.HapticFeedback.impactOccurred(kind||"light");
+  }catch(e){}
+}
+function openContact(){
+  if(tg && tg.openTelegramLink) tg.openTelegramLink(CONTACT_URL);
+  else window.open(CONTACT_URL,"_blank");
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function grad(g){ return `linear-gradient(135deg, ${g[0]}, ${g[1]})`; }
+function snack(msg){
+  const el=$("#snack"); el.textContent=msg; el.classList.add("show");
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),1800);
 }
 
-/* ── HOME ── */
-function renderHome(){
-  const now=new Date();
-  const dNames=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-  const mNames=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-  document.getElementById('home-date').textContent=`${dNames[now.getDay()]}, ${now.getDate()} ${mNames[now.getMonth()]} ${now.getFullYear()}`;
-  document.getElementById('home-greeting').textContent=`Привет,\n${CONFIG.parentName}`;
-
-  // Today card
-  const t=CONFIG.trainers[0];
-  const todayDay=now.getDay();
-  const todayLesson=CONFIG.schedule.find(l=>l.day===todayDay&&l.primary)||CONFIG.schedule.find(l=>l.primary)||CONFIG.schedule[0];
-  if(todayLesson){
-    document.getElementById('today-ghost').textContent=todayLesson.section;
-    document.getElementById('today-section').textContent=todayLesson.section;
-    document.getElementById('today-time').textContent=todayLesson.time;
-    document.getElementById('today-trainer-name').textContent=t.name.replace('\n',' ');
-    document.getElementById('today-trainer-photo').src=t.photo;
-  }
-  renderChildren();
+/* ---------- RENDER: header / chips / cats ---------- */
+function renderHeader(){
+  $("#coverArt").style.background = grad(state.tpl.grad);
+  $("#coverEmoji").textContent = state.tpl.coverEmoji;
+  $("#shopNameLabel").textContent = state.shopName || "Магазин";
+  $("#shopLogo").textContent = state.logo;
 }
-
-/* ── CHILDREN GRID ── */
-function renderChildren(){
-  const grid=document.getElementById('children-grid');
-  const list=S.children.length?S.children:CONFIG.defaultChildren;
-  const count=list.length;
-
-  // Set grid class
-  grid.className=`count-${count<=3?count:'more'}`;
-
-  grid.innerHTML='';
-  list.forEach((c,i)=>{
-    const isPrimary=i===0;
-    const compact=count>2||!isPrimary;
-    const div=document.createElement('div');
-    div.className=`child-card${isPrimary?' primary':''}${compact?' compact':''}`;
-    div.style.animation=`fadeUp 500ms cubic-bezier(.16,1,.3,1) ${80+i*80}ms both`;
-    div.onclick=()=>navigate('booking');
-
-    // Arc for primary card
-    let arcHtml='';
-    if(isPrimary&&S.lessonsLeft>0){
-      arcHtml=`<div class="arc-corner">${buildArcSvg(S.lessonsLeft,S.lessonsLeft+S.visits||12)}</div>`;
-    }
-
-    div.innerHTML=`
-      ${arcHtml}
-      <div class="child-name">${c.name}</div>
-      <div class="child-sub">${c.age} лет</div>
-      <div class="child-section">${c.section}</div>
-    `;
-    grid.appendChild(div);
+function renderChips(){
+  const el=$("#chips"); el.innerHTML="";
+  TEMPLATES.forEach(t=>{
+    const b=document.createElement("button");
+    b.className="chip pressable"+(t.id===state.tpl.id?" active":"");
+    b.textContent=t.name;
+    if(t.id===state.tpl.id) b.style.background=state.accent;
+    b.onclick=()=>{ haptic("select"); switchTemplate(t); };
+    el.appendChild(b);
   });
-
-  // "+" Add child button
-  if(count<6){
-    const btn=document.createElement('button');
-    btn.className='add-child-btn';
-    btn.style.animation=`fadeUp 500ms cubic-bezier(.16,1,.3,1) ${80+count*80}ms both`;
-    btn.innerHTML='<span style="font-size:20px;color:var(--lime)">+</span> Добавить ребёнка';
-    btn.onclick=openAddChildModal;
-    grid.appendChild(btn);
-  }
 }
-
-/* Mini arc SVG */
-function buildArcSvg(value,total){
-  const r=44,cx=56,cy=56;
-  const toXY=deg=>{const rad=((deg-90)*Math.PI)/180;return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)}};
-  const s=toXY(225),e=toXY(135);
-  const d=`M${s.x.toFixed(1)} ${s.y.toFixed(1)} A${r} ${r} 0 1 1 ${e.x.toFixed(1)} ${e.y.toFixed(1)}`;
-  const arcLen=r*(270*Math.PI)/180;
-  const offset=arcLen*(1-(value/total));
-  return `<svg width="112" height="112" viewBox="0 0 112 112" style="overflow:visible">
-    <path d="${d}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="${d}" fill="none" stroke="var(--lime)" stroke-width="2" stroke-linecap="round"
-      stroke-dasharray="${arcLen}" stroke-dashoffset="${arcLen}"
-      style="transition:stroke-dashoffset 1.1s cubic-bezier(.34,1.56,.64,1);--target:${offset}"
-      id="arc-prog-${Date.now()}"/>
-    <text x="${cx}" y="${cy+5}" text-anchor="middle" fill="var(--lime)" font-size="28" font-weight="700"
-      font-family="'Clash Display',sans-serif" letter-spacing="-1">${value}</text>
-    <text x="${cx}" y="${cy+20}" text-anchor="middle" fill="var(--muted)" font-size="6.5"
-      letter-spacing="1.2">ЗАНЯТИЙ</text>
-  </svg>`;
-}
-
-// Animate arc after render
-setTimeout(()=>{
-  document.querySelectorAll('[id^="arc-prog-"]').forEach(path=>{
-    const target=path.style.getPropertyValue('--target');
-    if(target) setTimeout(()=>{path.style.strokeDashoffset=target},200);
+function renderCats(){
+  const el=$("#catRow"); el.innerHTML="";
+  CATS.forEach(c=>{
+    const n = c.id==="all" ? state.products.length : state.products.filter(p=>p.cat===c.id).length;
+    const b=document.createElement("button");
+    b.className="cat pressable"+(c.id===state.activeCat?" on":"");
+    b.innerHTML=`${c.label}<span class="cnt">${n}</span>`;
+    if(c.id===state.activeCat) b.style.background=state.accent;
+    b.onclick=()=>{ haptic("select"); state.activeCat=c.id; renderCats(); renderCatalog(); };
+    el.appendChild(b);
   });
-},200);
-
-/* ── SCHEDULE ── */
-const MONTHS_SHORT=['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
-const MONTHS_FULL =['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-const DOW_MON_BASED=['Пн','Вт','Ср','Чт','Пт','Сб','Вс']; // Mon=0..Sun=6
-
-function isWorkDay(dow){ return CONFIG.workDays.includes(dow); } // dow: 0=вс,1=пн,...
-
-// Возвращает дату понедельника текущей недели
-function getThisMonday(){
-  const t=new Date(); t.setHours(0,0,0,0);
-  const d=t.getDay(); // 0=вс
-  const diff=d===0?-6:1-d;
-  const m=new Date(t); m.setDate(t.getDate()+diff);
-  return m;
 }
 
-// activeDate: Date объект выбранного дня (глобальный)
-// S.schedActiveDate хранит выбранную дату
-// S.schedWeekOffset: смещение недели от текущей (0=эта, 1=след, …)
-
-function renderSchedule(){
-  const today=new Date(); today.setHours(0,0,0,0);
-  const thisMonday=getThisMonday();
-
-  // Инициализация
-  if(!S.schedActiveDate) S.schedActiveDate=new Date(today);
-  if(S.schedWeekOffset===undefined) S.schedWeekOffset=0;
-
-  // Неделя для отображения
-  const weekMonday=new Date(thisMonday);
-  weekMonday.setDate(thisMonday.getDate()+S.schedWeekOffset*7);
-
-  // Заголовок недели
-  const weekEnd=new Date(weekMonday); weekEnd.setDate(weekMonday.getDate()+6);
-  const wLabel=S.schedView==='month'
-    ? `${MONTHS_SHORT[weekMonday.getMonth()]} ${weekMonday.getFullYear()}`
-    : `${weekMonday.getDate()} ${MONTHS_SHORT[weekMonday.getMonth()]} – ${weekEnd.getDate()} ${MONTHS_SHORT[weekEnd.getMonth()]}`;
-
-  // Строим полосу дней
-  const strip=document.getElementById('day-strip');
-  strip.innerHTML='';
-
-  // Кнопки навигации недель
-  const maxWeeks=Math.ceil(CONFIG.bookingHorizonDays/7)+1;
-  const canPrev=S.schedWeekOffset>0;
-  const canNext=S.schedWeekOffset<maxWeeks-1;
-
-  // Prev week
-  const prevBtn=document.createElement('button');
-  prevBtn.className='day-btn'+(canPrev?'':' disabled');
-  prevBtn.innerHTML=`<span class="dl">‹</span><span class="dd" style="font-size:18px">‹</span><div class="dot"></div>`;
-  prevBtn.style.opacity=canPrev?'1':'0.3';
-  if(canPrev) prevBtn.onclick=()=>{ S.schedWeekOffset--; renderSchedule(); };
-  strip.appendChild(prevBtn);
-
-  for(let i=0;i<7;i++){
-    const d=new Date(weekMonday); d.setDate(weekMonday.getDate()+i);
-    const dow=d.getDay(); // 0=вс
-    const isWork=isWorkDay(dow);
-    const isToday=d.getTime()===today.getTime();
-    const isPast=d<today;
-    const isFuture=(d-today)/86400000>CONFIG.bookingHorizonDays;
-    const isActive=S.schedActiveDate&&d.getTime()===S.schedActiveDate.getTime();
-    const clickable=isWork&&!isPast&&!isFuture;
-
-    const btn=document.createElement('button');
-    btn.className='day-btn'+(isActive?' active':'')+(!clickable?' disabled':'');
-    if(isFuture) btn.style.opacity='0.3';
-    btn.innerHTML=`
-      <span class="dl">${DOW_MON_BASED[i]}</span>
-      <span class="dd" style="${isToday?'font-weight:700;color:'+(isActive?'var(--lime)':'var(--text)'):''}">
-        ${d.getDate()}${isToday&&!isActive?'<span style="color:var(--lime);font-size:14px">•</span>':''}
-      </span>
-      <div class="dot"></div>`;
-    if(clickable){
-      btn.onclick=()=>{ S.schedActiveDate=new Date(d); renderSchedule(); };
-    }
-    strip.appendChild(btn);
-  }
-
-  // Next week
-  const nextBtn=document.createElement('button');
-  nextBtn.className='day-btn'+(canNext?'':' disabled');
-  nextBtn.innerHTML=`<span class="dl">›</span><span class="dd" style="font-size:18px">›</span><div class="dot"></div>`;
-  nextBtn.style.opacity=canNext?'1':'0.3';
-  if(canNext) nextBtn.onclick=()=>{ S.schedWeekOffset++; renderSchedule(); };
-  strip.appendChild(nextBtn);
-
-  // Метка недели
-  const list=document.getElementById('lessons-list');
-  const weekLabelEl=document.createElement('p');
-  weekLabelEl.style.cssText='font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;text-align:center';
-  weekLabelEl.textContent=wLabel;
-
-  list.innerHTML='';
-  list.appendChild(weekLabelEl);
-
-  // Занятия для выбранного дня
-  if(!S.schedActiveDate){ return; }
-  const activeDow=S.schedActiveDate.getDay();
-
-  if(!isWorkDay(activeDow)){
-    list.innerHTML+=`<p style="color:var(--muted);font-size:14px;padding:12px 0">Нерабочий день — занятий нет.</p>`;
+/* ---------- RENDER: catalog ---------- */
+function applyShape(){
+  const map={sharp:["8px","6px"],soft:["16px","10px"],round:["24px","999px"]};
+  const [cr,br]=map[state.shape]||map.soft;
+  document.documentElement.style.setProperty("--card-r",cr);
+  document.documentElement.style.setProperty("--btn-r",br);
+}
+function renderCatalog(){
+  const el=$("#catalog");
+  el.className="catalog"+(state.layout==="list"?" list":"");
+  el.innerHTML="";
+  const items = state.products.filter(p=> state.activeCat==="all" || p.cat===state.activeCat);
+  if(items.length===0){
+    el.innerHTML=`<div class="empty-cat">В этой категории пока пусто.<br>Добавьте товар в конструкторе ⚙️</div>`;
     return;
   }
-  const dayLessons=CONFIG.schedule.filter(l=>l.day===activeDow);
-  if(!dayLessons.length){
-    list.innerHTML+=`<p style="color:var(--muted);font-size:14px;padding:12px 0">В этот день занятий нет</p>`;
-    return;
-  }
-
-  dayLessons.forEach((l,i)=>{
-    const delay=i*70+60;
-    if(l.primary){
-      list.innerHTML+=`<div class="lesson-card" style="animation:fadeUp 450ms cubic-bezier(.16,1,.3,1) ${delay}ms both">
-        <p style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">${l.time}</p>
-        <h3 style="font-size:28px;font-family:var(--clash);font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1">${l.section}</h3>
-        <p style="font-size:12px;color:var(--muted);margin-top:6px">${l.trainer}</p>
-        <button onclick="navigate('booking')" style="margin-top:12px;font-size:11px;color:var(--lime);letter-spacing:.08em;text-transform:uppercase;font-weight:600;border:1px solid rgba(200,255,0,.3);padding:5px 12px;border-radius:20px">Записаться →</button>
-      </div>`;
-    } else {
-      list.innerHTML+=`<div class="lesson-row" style="animation:fadeUp 450ms cubic-bezier(.16,1,.3,1) ${delay}ms both">
-        <span style="font-size:13px;color:var(--muted);min-width:40px">${l.time}</span>
-        <div class="lesson-sep"></div>
-        <span style="font-size:14px;font-family:var(--clash);font-weight:600;color:var(--text);flex:1;letter-spacing:-.4px">${l.section}</span>
-        <div class="lesson-sep"></div>
-        <span style="font-size:11px;color:var(--muted)">${l.trainer}</span>
-      </div>`;
-    }
-  });
-}
-
-function setView(v,btn){
-  S.schedView=v;
-  document.querySelectorAll('.view-toggle button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderSchedule();
-}
-
-/* ── TRAINER ── */
-function renderTrainer(){
-  const t=CONFIG.trainers[0];
-  document.getElementById('trainer-photo').src=t.photo;
-  document.getElementById('trainer-name').innerHTML=t.name.replace('\n','<br>');
-  document.getElementById('trainer-spec').textContent=t.spec;
-  document.getElementById('trainer-exp').textContent=t.experience;
-  document.getElementById('trainer-ages').textContent=t.ageRange;
-  document.getElementById('trainer-bio').textContent=t.bio;
-  document.getElementById('trainer-rating').textContent=t.rating;
-  const bars=document.getElementById('rating-bars');
-  bars.innerHTML='';
-  for(let i=1;i<=5;i++){
-    const b=document.createElement('div');
-    b.style.cssText=`flex:1;height:3px;border-radius:2px;background:${i/5<=t.rating/5?'var(--lime)':'rgba(200,255,0,.2)'}`;
-    bars.appendChild(b);
-  }
-}
-
-/* ── BOOKING ── */
-async function onOpenBooking(){
-  const hasPhone=!!S.phone;
-  document.getElementById('phone-prompt').style.display=hasPhone?'none':'block';
-  if(hasPhone) await loadSlots();
-}
-
-async function loadSlots(){
-  const today=new Date();
-  // Используем выбранную дату расписания если она есть и не в прошлом, иначе сегодня
-  let bookDate=S.schedActiveDate&&S.schedActiveDate>=today?S.schedActiveDate:today;
-  S.bookingDate=bookDate;
-
-  const dateStr=formatDateISO(bookDate);
-  document.getElementById('slot-loading').style.display='block';
-  document.getElementById('time-slots').innerHTML='';
-  document.getElementById('booking-form').style.display='none';
-  S.selectedSlot=null;
-
-  try{
-    const res=await apiFetch('GET',`?event=get_slots&date=${dateStr}&section=${encodeURIComponent(CONFIG.bookingSection)}`);
-    S.slotData={};
-    (res.slots||[]).forEach(s=>{ S.slotData[s.time]={count:s.count,limit:s.limit,full:s.full}; });
-    S.slotsLoaded=true;
-  } catch(e){
-    S.slotsLoaded=true;
-  }
-
-  document.getElementById('slot-loading').style.display='none';
-  renderSlots();
-}
-
-function renderSlots(){
-  const today=new Date(); today.setHours(0,0,0,0);
-  const now=new Date();
-  const bookDate=S.bookingDate||today;
-  const isToday=bookDate.getTime()===today.getTime();
-
-  const dayNames=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-  const dateLabel=isToday?'Сегодня':`${dayNames[bookDate.getDay()]}, ${bookDate.getDate()} ${MONTHS_FULL[bookDate.getMonth()]}`;
-  document.getElementById('booking-title').textContent=CONFIG.bookingSection;
-  document.getElementById('booking-subtitle').textContent=`${dateLabel} · ${CONFIG.bookingTrainer}`;
-
-  const container=document.getElementById('time-slots');
-  container.innerHTML='';
-
-  // Check if bookDate is a work day
-  const bookDow=bookDate.getDay();
-  if(!isWorkDay(bookDow)){
-    container.innerHTML=`<p style="color:var(--muted);font-size:14px;padding:12px 0">Нерабочий день — запись недоступна.</p>`;
-    return;
-  }
-
-  CONFIG.timeSlots.forEach((slot,i)=>{
-    const backend=S.slotData[slot.time]||{count:0,limit:slot.limit,full:false};
-    const count=backend.count;
-    const limit=backend.limit||slot.limit;
-    const isFull=backend.full||(count>=limit);
-
-    // Прошедшие слоты только для сегодня
-    const [h,m]=slot.time.split(':').map(Number);
-    const slotDate=new Date(bookDate); slotDate.setHours(h,m,0,0);
-    const isPast=isToday&&slotDate<=now;
-
-    const isDisabled=isFull||isPast;
-    const isSel=S.selectedSlot===slot.time&&!isDisabled;
-
-    // Capacity dots (max 5 visible)
-    const dotsTotal=Math.min(limit,8);
-    const dotsFilled=Math.min(count,dotsTotal);
-    const pct=count/limit;
-    let dots='';
-    for(let d=0;d<dotsTotal;d++){
-      const filled=d<dotsFilled;
-      const danger=pct>=.8;
-      dots+=`<div class="cap-dot${filled?' filled'+(danger?' danger':''):''}"></div>`;
-    }
-    const capLabel=isFull?'мест нет':isPast?'прошло':`${limit-count} мест`;
-
-    const btn=document.createElement('button');
-    btn.className=`slot-btn${isSel?' selected':''}${isDisabled?' disabled':''}`;
-    btn.style.animation=`fadeUp 400ms cubic-bezier(.16,1,.3,1) ${i*40+60}ms both`;
-    btn.innerHTML=`
-      <span class="st">${slot.time}</span>
-      <div class="slot-capacity">
-        <div class="cap-bar">${dots}</div>
-        <span class="sl" style="min-width:56px;text-align:right">${capLabel}</span>
-      </div>`;
-
-    if(!isDisabled){
-      btn.onclick=()=>{
-        S.selectedSlot=isSel?null:slot.time;
-        S.submitted=false;
-        renderSlots();
-        updateBookingForm();
-      };
-    }
-    container.appendChild(btn);
-  });
-  updateBookingForm();
-}
-
-function updateBookingForm(){
-  const form=document.getElementById('booking-form');
-  if(!S.selectedSlot){ form.style.display='none'; return; }
-  form.style.display='block';
-  const btn=document.getElementById('submit-btn');
-  const txt=document.getElementById('submit-text');
-  if(S.submitted){
-    btn.className='submit-btn done';
-    txt.textContent=`✓ Записано на ${S.selectedSlot}`;
-  } else {
-    btn.className='submit-btn';
-    txt.textContent=`Записать на ${S.selectedSlot}`;
-  }
-}
-
-/* ── PHONE SAVE ── */
-async function savePhoneAndContinue(){
-  const ph=document.getElementById('first-phone').value.trim();
-  if(!ph){ showToast('Введите номер телефона','error'); return; }
-  try{
-    await apiFetch('POST',null,{event:'save_phone',user_id:userId,username:tgUser.username||'',first_name:tgUser.first_name||'',phone:ph});
-    S.phone=ph;
-    document.getElementById('phone-prompt').style.display='none';
-    await loadSlotsForToday();
-  } catch(e){
-    showToast('Ошибка при сохранении телефона','error');
-  }
-}
-
-/* ── SUBMIT BOOKING ── */
-async function submitBooking(){
-  if(S.submitting||S.submitted) return;
-  if(!S.selectedSlot) return;
-
-  const child=document.getElementById('form-child').value;
-  if(!child){ showToast('Выберите ребёнка','error'); return; }
-
-  S.submitting=true;
-  const btn=document.getElementById('submit-btn');
-  btn.disabled=true;
-  document.getElementById('submit-text').textContent='Отправляем…';
-
-  const today=new Date();
-  const bookingData={
-    event:'booking_submit',
-    user_id:userId,
-    username:tgUser.username||'',
-    first_name:tgUser.first_name||'',
-    timestamp:new Date().toISOString(),
-    booking:{
-      booking_id:`BK_${Date.now()}_${Math.random().toString(36).substr(2,5).toUpperCase()}`,
-      child,
-      section:CONFIG.bookingSection,
-      trainer:CONFIG.bookingTrainer,
-      date:formatDateISO(today),
-      time:S.selectedSlot,
-      phone:S.phone||'',
-      comment:document.getElementById('form-comment').value.trim()||null,
-      payment_method:S.payMethod
-    }
-  };
-
-  try{
-    const res=await apiFetch('POST',null,bookingData);
-    S.submitting=false;
-    btn.disabled=false;
-    if(res.status==='error'){
-      showToast(res.message||'Ошибка при записи','error');
-      document.getElementById('submit-text').textContent=`Записать на ${S.selectedSlot}`;
-      // Reload slots — might be full now
-      await loadSlotsForToday();
-    } else {
-      S.submitted=true;
-      S.visits++;
-      updateBookingForm();
-      showToast(`${child} записан${getChildGender(child)?'а':''} на ${S.selectedSlot}`,'success');
-    }
-  } catch(e){
-    S.submitting=false;
-    btn.disabled=false;
-    document.getElementById('submit-text').textContent=`Записать на ${S.selectedSlot}`;
-    showToast('Ошибка соединения. Попробуйте ещё раз','error');
-  }
-}
-
-function getChildGender(name){ return ['а','я','ья','ья'].some(s=>name.toLowerCase().endsWith(s)); }
-
-function selectPayment(method){
-  S.payMethod=method;
-  document.querySelectorAll('.pay-btn').forEach(b=>{
-    b.classList.toggle('active',b.dataset.method===method);
-  });
-}
-
-/* ── PAYMENT SCREEN ── */
-async function renderPayment(){
-  // Абонемент
-  const ll=S.lessonsLeft||0;
-  const hasAbo=S.subscription!=='none'&&ll>0;
-  document.getElementById('sub-lessons-left').textContent=
-    hasAbo
-      ? `${ll} занят${ll===1?'ие':ll<5?'ия':'ий'} осталось`
-      : ll===9999?'Безлимит активен':'Нет активного абонемента';
-  document.getElementById('sub-expires').textContent=S.subExpires?`Действует до: ${S.subExpires}`:'';
-
-  const totalEver=(ll===9999?0:ll)+(S.visits||0);
-  const pct=totalEver>0&&ll!==9999?Math.min(100,Math.round((ll/totalEver)*100)):ll===9999?100:0;
-  document.getElementById('sub-progress-bar').style.width=pct+'%';
-  document.getElementById('payment-methods-text').textContent=CONFIG.paymentMethods;
-  document.getElementById('visit-count-text').textContent=`Всего посещено занятий: ${S.visits||0}`;
-  document.getElementById('contact-for-payment').textContent=CONFIG.adminContact;
-
-  // Тарифы
-  const plansWrap=document.getElementById('plans-wrap');
-  plansWrap.innerHTML=`<p style="color:var(--muted);font-size:13px;text-align:center;padding:12px">Загружаем тарифы…</p>`;
-
-  try{
-    const res=await apiFetch('GET','?event=get_plans');
-    S.plans=res.plans||[];
-    renderPlans();
-  } catch(e){
-    // Fallback на CONFIG-тарифы если backend недоступен
-    S.plans=CONFIG.fallbackPlans||[];
-    renderPlans();
-  }
-}
-
-function renderPlans(){
-  const wrap=document.getElementById('plans-wrap');
-  if(!S.plans||!S.plans.length){
-    wrap.innerHTML=`<p style="color:var(--muted);font-size:13px">Тарифы недоступны. Свяжитесь с администратором.</p>`;
-    return;
-  }
-  wrap.innerHTML='';
-  S.plans.forEach((plan,i)=>{
-    const card=document.createElement('div');
-    card.className='plan-card';
-    card.style.animation=`fadeUp 400ms cubic-bezier(.16,1,.3,1) ${i*80+60}ms both`;
-    const lessonsLabel=plan.lessons===-1?'Безлимит':`${plan.lessons} занятий`;
-    const daysLabel=plan.days?`• ${plan.days} дней`:'';
+  items.forEach((p,i)=>{
+    const q=state.cart[p.id]||0;
+    const card=document.createElement("div");
+    card.className="card anim-in";
+    card.style.animationDelay=(i*45)+"ms";
+    const tagLabel = p.cat==="new"?"Новинка":p.cat==="premium"?"Премиум":"";
     card.innerHTML=`
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div>
-          <div class="plan-name">${plan.name}</div>
-          <div class="plan-meta">${lessonsLabel} ${daysLabel}</div>
-        </div>
-        <div class="plan-price">${plan.price.toLocaleString('ru')} ₽</div>
+      <div class="card-img">
+        <div class="bg" style="background:${grad(p.grad)}"></div>
+        <span class="emo">${p.emoji}</span>
+        ${tagLabel?`<span class="tag">${tagLabel}</span>`:""}
+        ${q>0?`<div class="qbadge" style="background:${state.accent}">${q}</div>`:""}
       </div>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.4">${plan.description||''}</p>
-      <button class="plan-buy-btn" onclick="buyPlan('${plan.id}','${plan.name}',${plan.price})">
-        Оплатить онлайн
-      </button>`;
-    wrap.appendChild(card);
-  });
-}
-
-async function buyPlan(planId, planName, price){
-  if(S.buyingPlan) return;
-  S.buyingPlan=true;
-
-  // Показываем loader на кнопке
-  const btn=event.target;
-  const origText=btn.textContent;
-  btn.textContent='Создаём платёж…';
-  btn.disabled=true;
-
-  try{
-    const res=await apiFetch('POST',null,{
-      event:'buy_plan',
-      user_id:userId,
-      username:tgUser.username||'',
-      first_name:tgUser.first_name||'',
-      plan_id:planId
-    });
-
-    if(res.status==='error'){
-      showToast(res.message||'Ошибка при создании платежа','error');
-      btn.textContent=origText; btn.disabled=false;
+      <div class="card-body">
+        <div class="card-name">${escapeHtml(p.name)}</div>
+        <div class="card-foot">
+          <span class="price">${p.price} ₽${p.old?`<span class="old-price">${p.old} ₽</span>`:""}</span>
+          <div class="ctrl"></div>
+        </div>
+      </div>`;
+    const ctrl=card.querySelector(".ctrl");
+    if(q>0){
+      ctrl.className="stepper";
+      const minus=document.createElement("button"); minus.className="step minus"; minus.textContent="−";
+      minus.onclick=e=>{ e.stopPropagation(); haptic("light"); dec(p.id); };
+      const num=document.createElement("span"); num.className="qnum"; num.textContent=q;
+      const plus=document.createElement("button"); plus.className="step"; plus.textContent="+";
+      plus.style.background=state.accent;
+      plus.onclick=e=>{ e.stopPropagation(); haptic("light"); inc(p.id, e); };
+      ctrl.append(minus,num,plus);
     } else {
-      // Открываем ЮKassa в браузере Telegram
-      showToast(`Переходим к оплате "${planName}"…`,'success');
-      setTimeout(()=>{
-        window.open(res.payment_url,'_blank');
-      }, 600);
-      btn.textContent='Открываем оплату…';
-      setTimeout(()=>{ btn.textContent=origText; btn.disabled=false; }, 3000);
+      const add=document.createElement("button"); add.className="add-btn";
+      add.style.background=state.accent; add.innerHTML="＋ В корзину";
+      add.onclick=e=>{ e.stopPropagation(); haptic("light"); inc(p.id, e); };
+      ctrl.replaceWith(add);
     }
-  } catch(e){
-    showToast('Ошибка соединения с сервером','error');
-    btn.textContent=origText; btn.disabled=false;
-  }
-
-  S.buyingPlan=false;
-}
-
-/* ── CONTACTS ── */
-function renderContacts(){
-  const list=document.getElementById('contacts-list');
-  list.innerHTML='';
-  CONFIG.contacts.forEach((c,i)=>{
-    const a=document.createElement(c.href&&c.href!=='#'?'a':'div');
-    a.className='contact-item';
-    a.style.animation=`fadeUp 450ms cubic-bezier(.16,1,.3,1) ${i*70+60}ms both`;
-    if(c.href&&c.href!=='#'){a.href=c.href;a.target='_blank';a.rel='noopener';}
-    a.innerHTML=`
-      <div class="contact-icon">${c.icon}</div>
-      <div><h4>${c.label}</h4><p>${c.sub}</p></div>`;
-    list.appendChild(a);
+    el.appendChild(card);
   });
 }
-
-/* ── ADD CHILD MODAL ── */
-function openAddChildModal(){
-  // Fill sections
-  const sel=document.getElementById('new-child-section');
-  sel.innerHTML=CONFIG.sections.map(s=>`<option value="${s}">${s}</option>`).join('');
-  document.getElementById('new-child-name').value='';
-  document.getElementById('new-child-age').value='';
-  document.getElementById('add-child-modal').classList.add('open');
+function flyEmoji(e, emoji){
+  if(!e || !e.target) return;
+  const r=e.target.getBoundingClientRect();
+  const s=document.createElement("span");
+  s.className="fly"; s.textContent=emoji;
+  s.style.left=(r.left+r.width/2-10)+"px"; s.style.top=(r.top-6)+"px";
+  document.body.appendChild(s);
+  setTimeout(()=>s.remove(),650);
 }
-function closeAddChildModal(e){
-  if(e.target===document.getElementById('add-child-modal')||e===true)
-    document.getElementById('add-child-modal').classList.remove('open');
+function inc(id,e){
+  state.cart[id]=(state.cart[id]||0)+1;
+  const p=state.products.find(x=>x.id===id);
+  if(e&&p) flyEmoji(e,p.emoji);
+  const ico=$("#cartIco"); ico.classList.remove("wig"); void ico.offsetWidth; ico.classList.add("wig");
+  renderCatalog(); renderCart();
 }
-async function submitAddChild(){
-  const name=document.getElementById('new-child-name').value.trim();
-  const age=document.getElementById('new-child-age').value;
-  const section=document.getElementById('new-child-section').value;
-  if(!name){ showToast('Введите имя ребёнка','error'); return; }
+function dec(id){
+  const c=state.cart[id]||0;
+  if(c<=1) delete state.cart[id]; else state.cart[id]=c-1;
+  renderCatalog(); renderCart();
+}
+function cartSum(){
+  return Object.entries(state.cart).reduce((s,[id,q])=>{
+    const p=state.products.find(x=>x.id===id); return s+(p?p.price*q:0);
+  },0);
+}
+function renderCart(){
+  const count=Object.values(state.cart).reduce((a,b)=>a+b,0);
+  $("#cartCount").textContent=count;
+  $("#cartSum").textContent=cartSum()+" ₽";
+  $("#cartBtn").style.background=state.accent;
+  $("#cartbar").classList.toggle("show",count>0);
+}
 
-  try{
-    const res=await apiFetch('POST',null,{
-      event:'add_child',user_id:userId,
-      username:tgUser.username||'',first_name:tgUser.first_name||'',
-      child:{name,age:Number(age)||0,section}
+/* ---------- RENDER: reviews / faq ---------- */
+function renderReviews(){
+  const el=$("#reviews"); el.innerHTML="";
+  REVIEWS.forEach(r=>{
+    const d=document.createElement("div");
+    d.className="review anim-in";
+    d.innerHTML=`
+      <div class="rv-head">
+        <div class="rv-ava" style="background:${grad(r.grad)}">${r.initial}</div>
+        <div><div class="rv-name">${r.name}</div><div class="rv-role">${r.role}</div></div>
+      </div>
+      <div class="rv-stars">★★★★★</div>
+      <p class="rv-text">${r.text}</p>
+      <span class="rv-tg">${r.tgname}</span>`;
+    el.appendChild(d);
+  });
+  const dots=$("#rvDots"); dots.innerHTML="";
+  REVIEWS.forEach((_,i)=>{
+    const s=document.createElement("span");
+    s.className="rv-dot"+(i===0?" on":"");
+    if(i===0) s.style.background=state.accent;
+    dots.appendChild(s);
+  });
+  el.addEventListener("scroll",()=>{
+    const i=Math.round(el.scrollLeft/(el.scrollWidth/REVIEWS.length));
+    $$(".rv-dot").forEach((d,j)=>{
+      d.classList.toggle("on",j===i);
+      d.style.background=j===i?state.accent:"";
     });
-    if(res.status==='error'){ showToast(res.message,'error'); return; }
-    S.children=res.children||[...S.children,{name,age:Number(age)||0,section}];
-    closeAddChildModal(true);
-    renderChildren();
-    fillChildSelect();
-    showToast(`${name} добавлен${getChildGender(name)?'а':''}!`,'success');
-  } catch(e){
-    // Offline fallback
-    S.children.push({name,age:Number(age)||0,section});
-    closeAddChildModal(true);
-    renderChildren();
-    fillChildSelect();
-    showToast(`${name} добавлен${getChildGender(name)?'а':''}!`,'success');
-  }
+  },{passive:true});
 }
-
-function fillChildSelect(){
-  const sel=document.getElementById('form-child');
-  const list=S.children.length?S.children:CONFIG.defaultChildren;
-  sel.innerHTML=list.map(c=>`<option value="${c.name}">${c.name}, ${c.age} лет · ${c.section}</option>`).join('');
-}
-
-/* ── API ──
- * Особенности Google Apps Script Web App:
- * - GET: обычный fetch, CORS разрешён, возвращает JSON
- * - POST: используем text/plain чтобы избежать preflight,
- *   GAS принимает это нормально и парсит через e.postData.contents
- * - Для операций где не нужен ответ (save_phone c no-cors fallback) — тоже работает
- */
-async function apiFetch(method, path, body) {
-  const url = CONFIG.backendUrl + (path || '');
-
-  if (method === 'GET') {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    return resp.json();
-  }
-
-  // POST — text/plain обходит preflight CORS в GAS
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(body)
+function renderFaq(){
+  const el=$("#faq"); el.innerHTML="";
+  FAQ.forEach(item=>{
+    const d=document.createElement("div");
+    d.className="qa anim-in";
+    d.innerHTML=`
+      <button class="qa-q">${item.q}<span class="arr">▼</span></button>
+      <div class="qa-a"><p>${item.a}</p></div>`;
+    const btn=d.querySelector(".qa-q"), a=d.querySelector(".qa-a");
+    btn.onclick=()=>{
+      haptic("light");
+      const open=d.classList.toggle("open");
+      a.style.maxHeight=open?(a.scrollHeight+"px"):"0";
+    };
+    el.appendChild(d);
   });
-  if (!resp.ok) throw new Error('HTTP ' + resp.status);
-  return resp.json();
 }
 
-// Для событий где ответ не критичен (fire-and-forget)
-function apiFetchNoAwait(body) {
-  fetch(CONFIG.backendUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(body)
-  }).catch(()=>{});
+/* ---------- template switching ---------- */
+function switchTemplate(t){
+  state.tpl=t; state.shopName=t.title; state.accent=t.accent;
+  state.logo=t.coverEmoji; state.products=clone(t.products);
+  state.cart={}; state.activeCat="all"; state.promo=false;
+  renderAll(); syncBuilder();
+}
+function renderAll(){
+  renderHeader(); renderChips(); renderCats(); renderCatalog(); renderCart();
+  $$(".rv-dot.on").forEach(d=>d.style.background=state.accent);
+  $("#promoBtn").style.background=state.accent;
 }
 
-/* ── TOAST ── */
-let _toastTimer;
-function showToast(msg,type='success'){
-  const t=document.getElementById('toast');
-  const i=document.getElementById('toast-icon');
-  const m=document.getElementById('toast-msg');
-  i.textContent=type==='error'?'!':'✓';
-  i.style.color=type==='error'?'var(--danger)':'var(--lime)';
-  t.style.borderColor=type==='error'?'var(--danger)':'var(--lime)';
-  m.textContent=msg;
-  t.classList.add('visible');
-  clearTimeout(_toastTimer);
-  _toastTimer=setTimeout(()=>t.classList.remove('visible'),4500);
+/* ---------- BUILDER ---------- */
+function syncBuilder(){
+  $("#shopNameInput").value=state.shopName;
+  renderLogoGrid(); renderSwatches(); renderPlist();
+  $$("#layoutSeg .seg-opt").forEach(b=>b.classList.toggle("on",b.dataset.layout===state.layout));
+  $$("#shapeSeg .seg-opt").forEach(b=>b.classList.toggle("on",b.dataset.shape===state.shape));
+}
+function renderLogoGrid(){
+  const el=$("#logoGrid"); el.innerHTML="";
+  LOGOS.forEach(l=>{
+    const b=document.createElement("button");
+    b.className="emo-opt pressable"+(l===state.logo?" on":"");
+    b.textContent=l;
+    b.onclick=()=>{ haptic("select"); state.logo=l; renderHeader(); renderLogoGrid(); };
+    el.appendChild(b);
+  });
+}
+function renderSwatches(){
+  const el=$("#swatches"); el.innerHTML="";
+  COLORS.forEach(hex=>{
+    const b=document.createElement("button");
+    b.className="sw pressable"+(hex===state.accent?" on":"");
+    b.style.background=hex;
+    b.onclick=()=>{ haptic("select"); state.accent=hex; renderAll(); renderSwatches(); };
+    el.appendChild(b);
+  });
+}
+function renderPlist(){
+  const el=$("#plist"); el.innerHTML="";
+  state.products.forEach(p=>{
+    const row=document.createElement("div"); row.className="prow";
+    row.innerHTML=`
+      <div class="p-emo" style="background:${grad(p.grad)}">${p.emoji}</div>
+      <div class="pfields">
+        <input class="pname" value="${escapeHtml(p.name)}"/>
+        <div class="pprice-wrap">
+          <span>Цена ₽:</span><input class="pprice" type="number" value="${p.price}"/>
+          <select class="pcat">
+            <option value="hot"${p.cat==="hot"?" selected":""}>Популярное</option>
+            <option value="new"${p.cat==="new"?" selected":""}>Новинки</option>
+            <option value="premium"${p.cat==="premium"?" selected":""}>Премиум</option>
+          </select>
+        </div>
+      </div>
+      ${state.products.length>2?`<button class="pdel">🗑</button>`:""}`;
+    row.querySelector(".pname").oninput=e=>{ p.name=e.target.value; renderCatalog(); };
+    row.querySelector(".pprice").oninput=e=>{ p.price=Math.max(0,parseInt(e.target.value)||0); renderCatalog(); renderCart(); };
+    row.querySelector(".pcat").onchange=e=>{ haptic("select"); p.cat=e.target.value; renderCats(); renderCatalog(); };
+    const del=row.querySelector(".pdel");
+    if(del) del.onclick=()=>{
+      haptic("light");
+      state.products=state.products.filter(x=>x.id!==p.id);
+      delete state.cart[p.id];
+      renderPlist(); renderCats(); renderCatalog(); renderCart();
+    };
+    el.appendChild(row);
+  });
+}
+function addProduct(){
+  haptic("light");
+  const i=state.products.length;
+  state.products.push({
+    id:"cst-"+Date.now(),
+    name:"Фирменное предложение ⭐️",
+    price:1500,
+    emoji:PRODUCT_EMOJIS[i%PRODUCT_EMOJIS.length],
+    grad:PRODUCT_GRADS[i%PRODUCT_GRADS.length],
+    cat:"new",
+  });
+  renderPlist(); renderCats(); renderCatalog();
+  snack("Товар добавлен ✓");
+}
+$("#addProduct").onclick=addProduct;
+$("#addProductTop").onclick=addProduct;
+$("#shopNameInput").oninput=e=>{ state.shopName=e.target.value; renderHeader(); };
+$("#layoutSeg").onclick=e=>{
+  const b=e.target.closest(".seg-opt"); if(!b) return;
+  haptic("select"); state.layout=b.dataset.layout;
+  $$("#layoutSeg .seg-opt").forEach(x=>x.classList.toggle("on",x===b));
+  renderCatalog();
+};
+$("#shapeSeg").onclick=e=>{
+  const b=e.target.closest(".seg-opt"); if(!b) return;
+  haptic("select"); state.shape=b.dataset.shape;
+  $$("#shapeSeg .seg-opt").forEach(x=>x.classList.toggle("on",x===b));
+  applyShape();
+};
+
+/* ---------- theme toggle ---------- */
+$("#themeBtn").onclick=()=>{
+  haptic("select");
+  state.light=!state.light;
+  document.body.classList.toggle("light",state.light);
+  $("#themeBtn").textContent=state.light?"☀️":"🌙";
+};
+
+/* ---------- SHEETS ---------- */
+const scrim=$("#scrim");
+let activeSheet=null;
+function openSheet(el){
+  activeSheet=el; scrim.classList.add("show"); el.classList.add("show");
+  if(inTelegram&&tg.BackButton) tg.BackButton.show();
+  syncMainButton();
+}
+function closeSheet(){
+  if(activeSheet){ activeSheet.classList.remove("show"); activeSheet=null; }
+  scrim.classList.remove("show");
+  if(inTelegram&&tg.BackButton) tg.BackButton.hide();
+  syncMainButton();
+}
+scrim.onclick=closeSheet;
+$$("[data-close]").forEach(b=>b.onclick=closeSheet);
+$("#openSettings").onclick=()=>{ haptic("light"); syncBuilder(); openSheet($("#settingsSheet")); };
+
+/* ---------- CHECKOUT ---------- */
+$("#cartBtn").onclick=()=>{ haptic("light"); openCheckout(); };
+function currentTotal(){
+  const s=cartSum();
+  return state.promo? Math.round(s*0.9) : s;
+}
+function refreshCheckoutTotals(){
+  const s=cartSum(), t=currentTotal();
+  $("#coTotal").textContent=t+" ₽";
+  $("#payAmount").textContent=t+" ₽";
+  $("#discountLine").style.display=state.promo?"flex":"none";
+  $("#discountVal").textContent="−"+(s-t)+" ₽";
+}
+function openCheckout(){
+  const box=$("#coItems"); box.innerHTML="";
+  Object.entries(state.cart).forEach(([id,q])=>{
+    const p=state.products.find(x=>x.id===id); if(!p) return;
+    const row=document.createElement("div"); row.className="co-line";
+    row.innerHTML=`<span class="n">${p.emoji} ${escapeHtml(p.name)} × ${q}</span><span class="v">${p.price*q} ₽</span>`;
+    box.appendChild(row);
+  });
+  $("#promoOk").classList.toggle("show",state.promo);
+  refreshCheckoutTotals();
+  $("#payBtn").style.background=state.accent;
+  $("#promoBtn").style.background=state.accent;
+  openSheet($("#checkoutSheet"));
+}
+$("#promoBtn").onclick=()=>{
+  const v=($("#promoInput").value||"").trim().toUpperCase();
+  if(v==="DEMO10"){
+    haptic("success"); state.promo=true;
+    $("#promoOk").classList.add("show");
+    refreshCheckoutTotals(); snack("Скидка 10% применена 🎉");
+  } else {
+    haptic("light"); snack("Промокод не найден. Попробуйте DEMO10");
+  }
+};
+$("#payMethods").onclick=e=>{
+  const b=e.target.closest(".pm"); if(!b) return;
+  haptic("select"); state.payMethod=b.dataset.pm;
+  $$("#payMethods .pm").forEach(x=>x.classList.toggle("on",x===b));
+};
+$("#payBtn").onclick=()=>{
+  const btn=$("#payBtn");
+  btn.classList.add("loading"); haptic("light");
+  setTimeout(()=>{ btn.classList.remove("loading"); placeOrder(); },900);
+};
+
+/* ---------- ORDER / SUCCESS / CONFETTI ---------- */
+function confetti(){
+  const colors=[state.accent,"#4ade80","#fbbf24","#60a5fa","#f472b6"];
+  for(let i=0;i<36;i++){
+    const p=document.createElement("div");
+    p.className="confetti-piece";
+    p.style.left=Math.random()*100+"vw";
+    p.style.background=colors[i%colors.length];
+    p.style.animationDuration=(1.6+Math.random()*1.4)+"s";
+    p.style.animationDelay=(Math.random()*.4)+"s";
+    p.style.width=(6+Math.random()*6)+"px";
+    p.style.height=(8+Math.random()*8)+"px";
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),3400);
+  }
+}
+function placeOrder(){
+  haptic("success");
+  const total=currentTotal();
+  const items=Object.entries(state.cart).map(([id,q])=>{
+    const p=state.products.find(x=>x.id===id); return `«${p?.name}» ×${q}`;
+  }).join(", ");
+  closeSheet();
+  $("#success").classList.add("show");
+  $("#successCta").style.background=state.accent;
+  confetti();
+  setTimeout(()=>{
+    $("#botMsg").textContent=
+      `🔔 Новая продажа в «${state.shopName}»!\n\n`+
+      `👤 Клиент: Дмитрий (Москва)\n`+
+      `📦 Заказ: ${items}\n`+
+      `💳 Оплата: ${state.payMethod} (получено)\n`+
+      (state.promo?`🏷 Промокод: DEMO10 (−10%)\n`:``)+
+      `💰 Сумма: ${total} ₽\n\n`+
+      `🚀 Заказ отправлен в CRM и курьеру!`;
+    $("#botToast").classList.add("show");
+    haptic("light");
+  },1100);
+}
+$("#botX").onclick=()=>$("#botToast").classList.remove("show");
+$("#botCta").onclick=openContact;
+$("#successCta").onclick=openContact;
+$("#resetDemo").onclick=()=>{
+  haptic("light");
+  state.cart={}; state.promo=false;
+  $("#promoInput").value=""; $("#promoOk").classList.remove("show");
+  $("#success").classList.remove("show");
+  $("#botToast").classList.remove("show");
+  renderCatalog(); renderCart();
+};
+
+/* ---------- count-up stats on scroll ---------- */
+function initCounters(){
+  const nums=$$("[data-count]");
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(!en.isIntersecting||en.target._done) return;
+      en.target._done=true;
+      const target=+en.target.dataset.count, suf=en.target.dataset.suffix||"";
+      const t0=performance.now(), dur=900;
+      (function tick(now){
+        const k=Math.min(1,(now-t0)/dur);
+        en.target.textContent=Math.round(target*(1-Math.pow(1-k,3)))+suf;
+        if(k<1) requestAnimationFrame(tick);
+      })(t0);
+    });
+  },{threshold:.5});
+  nums.forEach(n=>io.observe(n));
 }
 
-/* ── HELPERS ── */
-function formatDateISO(d){
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+/* ---------- MAIN BUTTON ---------- */
+function syncMainButton(){
+  if(!inTelegram||!tg.MainButton) return;
+  if(activeSheet||$("#success").classList.contains("show")){ tg.MainButton.hide(); return; }
+  tg.MainButton.setParams({ text:"Создать такой Mini App бесплатно", color:"#2563eb", text_color:"#ffffff", is_visible:true, is_active:true });
 }
 
-/* ── START ── */
-document.addEventListener('DOMContentLoaded',init);
+/* ---------- INIT ---------- */
+function init(){
+  applyShape();
+  renderAll(); syncBuilder();
+  renderReviews(); renderFaq(); initCounters();
+
+  if(inTelegram){
+    tg.ready();
+    try{ tg.expand(); }catch(e){}
+    try{ tg.setHeaderColor("#02040a"); tg.setBackgroundColor("#02040a"); }catch(e){}
+    try{ tg.enableClosingConfirmation(); }catch(e){}
+    if(tg.BackButton) tg.BackButton.onClick(closeSheet);
+    if(tg.MainButton) tg.MainButton.onClick(openContact);
+    syncMainButton();
+  } else {
+    $("#fallbackCta").classList.remove("hidden");
+    $("#fallbackBtn").onclick=openContact;
+  }
+}
+init();
 </script>
 </body>
 </html>
